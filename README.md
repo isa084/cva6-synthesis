@@ -6,8 +6,27 @@
 
 This repository contains helpful scripts to synthesize OpenHWGroup's rendition of CVA6 using open source synthesis tools (e.g. Yosys).
 
-## Setup and usage
+## Setup
+First, setup a docker image using the Dockerfile provided.
+```
+docker build -t Dockerfile
+```
+Now, run a docker container on this image :
+```
+docker run -it <docker-image-name>
+```
+Once inside the container, navigate to cva6-synthesis repository and run the demo program. 
+```
+cd /install/cva6-synthesis
+source setup-env.sh
+bash run-yosys.sh cv64a6_imafdc_sv39 cmos
+```
+This will synthesize cv64a6\_imafdc\_sv39 (a hardware configuration of OpenHWGroup's CVA6), using yosys and CMOS tech library.
 
+Alternately, for nangate45, use :
+```
+bash run-yosys.sh cv64a6_imafdc_sv39 nangate45
+```  
 
 ## License
 
