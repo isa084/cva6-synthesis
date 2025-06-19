@@ -1,0 +1,7 @@
+plugin -i slang
+read_slang --top cva6 -f core/Flist.cva6 -keep-hierarchy
+synth -top cva6 -flatten -noabc
+dfflibmap -liberty ${NANGATE45_LIB_PATH}
+#abc -liberty ${NANGATE45_LIB_PATH}
+hilomap -singleton -hicell LOGIC1_X1 Z -locell LOGIC0_X1 Z 
+stat
