@@ -4,7 +4,7 @@
 
 ## Description
 
-This repository contains helpful scripts to synthesize OpenHWGroup's rendition of CVA6 using open source synthesis tools (e.g. Yosys).
+This repository contains helpful scripts to synthesize OpenHWGroup CVA6 using open source synthesis tools (e.g. Yosys).
 
 ## Setup
 First, setup a docker image using the Dockerfile provided.
