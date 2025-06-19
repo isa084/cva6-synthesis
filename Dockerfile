@@ -6,6 +6,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install all prerequisites from the readme
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    cmake \
     git \
     build-essential \
     lld \
