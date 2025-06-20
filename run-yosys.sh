@@ -10,7 +10,7 @@ if [ -z "$OPENROAD_FLOW_SCRIPTS" ]; then
 fi
 
 # If tech is nangate45, confirm that it is installed.
-if [ "$TECH_CFG" = "nangate45" ] && [ ! -f "${NANGATE45_LIB_PATH}/lib/NangateOpenCellLibrary_typical.lib" ]; then
+if [ "$TECH_CFG" = "nangate45" ] && [ ! -f "${NANGATE45_LIB_PATH}" ]; then
   echo "Error: TECH_CFG is nangate45, but liberty file was not found." >&2
   exit 1
 fi
@@ -23,4 +23,4 @@ if [ ! -f "${YOSYS_CVA6_SCRIPT}" ]; then
 fi
 
 cd ${CVA6_REPO_DIR}
-yosys -s ${YOSYS_CVA6_SCRIPT} 
+yosys -c ${YOSYS_CVA6_SCRIPT}

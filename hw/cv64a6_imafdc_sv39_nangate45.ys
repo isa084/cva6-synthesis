@@ -1,7 +1,20 @@
+set nangate45_lib_path "$::env(NANGATE45_LIB_PATH)"
+set cva6_repo_dir "$::env(CVA6_REPO_DIR)"
+
+yosys -import
 plugin -i slang
-read_slang --top cva6 -f core/Flist.cva6 -keep-hierarchy
-synth -top cva6 -flatten -noabc
-dfflibmap -liberty ${NANGATE45_LIB_PATH}
-#abc -liberty ${NANGATE45_LIB_PATH}
+yosys -import
+read_slang --top cva6 -f "$cva6_repo_dir/core/Flist.cva6" -keep-hierarchy
+
+# setattr avoids the issue of undefined initialization for some variables when using "synth -flatten".
+# This workaround is suggested in povik/yosys-slang#119 on Github.
+setattr -unset init
+synth -top cva6 -noabc -flatten
+
+dfflibmap -liberty "$nangate45_lib_path"
+
+# ABC takes typically 4-5 hours. Don't enable for test purposes.
+#abc -liberty "$nangate45_lib_path"
+
 hilomap -singleton -hicell LOGIC1_X1 Z -locell LOGIC0_X1 Z 
 stat

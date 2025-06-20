@@ -5,4 +5,4 @@
 
 export INSTALL_DIR=$(cd .. && pwd)
 export OPENROAD_FLOW_SCRIPTS="${INSTALL_DIR}/OpenROAD-flow-scripts"
-export NANGATE45_LIB_PATH="${OPENROAD_FLOW_SCRIPTS}/flow/platforms/nangate45"
+export NANGATE45_LIB_PATH="${OPENROAD_FLOW_SCRIPTS}/flow/platforms/nangate45/lib/NangateOpenCellLibrary_typical.lib"
