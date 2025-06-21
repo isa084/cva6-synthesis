@@ -1,5 +1,6 @@
 export CVA6_REPO_DIR="${INSTALL_DIR}/cva6"
 export HPDCACHE_DIR="${CVA6_REPO_DIR}/core/cache_subsystem/hpdcache"
+export LOGFILE_DIR="logs/out-$(date +'%Y-%m-%d_%H-%M-%S')"
 export TARGET_CFG=$1
 TECH_CFG=$2
 
@@ -22,5 +23,8 @@ if [ ! -f "${YOSYS_CVA6_SCRIPT}" ]; then
   exit 1
 fi
 
-cd ${CVA6_REPO_DIR}
+###############################
+# Proceed to script execution #
+###############################
+mkdir -p $LOGFILE_DIR
 yosys -c ${YOSYS_CVA6_SCRIPT}
