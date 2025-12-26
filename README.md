@@ -9,7 +9,8 @@ This repository contains helpful scripts to synthesize OpenHWGroup CVA6 using op
 ## Setup
 First, setup a docker image using the Dockerfile provided.
 ```
-docker build -t Dockerfile
+docker build -t Dockerfile # If using default docker
+docker buildx build .      # If using docker  buildx
 ```
 Now, run a docker container on this image :
 ```

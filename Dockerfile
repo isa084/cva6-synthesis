@@ -8,6 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     cmake \
+    clang \
     git \
     build-essential \
     lld \
@@ -17,16 +18,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gawk \
     tcl-dev \
     libffi-dev \
+    libfl-dev \
     graphviz \
     xdot \
     pkg-config \
     python3 \
-    libboost-system-dev \
-    libboost-python-dev \
-    libboost-filesystem-dev \
     zlib1g-dev \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 # Create and set the main working directory
 WORKDIR /install
 
