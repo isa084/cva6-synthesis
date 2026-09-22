@@ -34,10 +34,7 @@ COPY flow /opt/cva6-synthesis/flow
 COPY tech /opt/cva6-synthesis/tech
 COPY container/entrypoint.sh /opt/cva6-synthesis/entrypoint.sh
 RUN chmod 0755 /opt/cva6-synthesis/entrypoint.sh \
-    && command -v yosys \
-    && command -v sta \
-    && command -v openroad \
-    && yosys -p 'plugin -i slang; help read_slang' >/dev/null
+    && /opt/cva6-synthesis/entrypoint.sh --self-check
 
 WORKDIR /workspace/output
 ENTRYPOINT ["/opt/cva6-synthesis/entrypoint.sh"]
