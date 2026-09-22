@@ -3,6 +3,10 @@ FROM ${IIC_OSIC_TOOLS_IMAGE}
 
 USER root
 
+# The upstream entrypoint adds the prebuilt EDA launchers dynamically. This
+# wrapper replaces that entrypoint, so expose the same tool directory directly.
+ENV PATH="/foss/tools/bin:${PATH}"
+
 # docker-harness supplies these build args. They are intentionally not used by
 # this wrapper image because runtime UID/GID selection is handled by Compose.
 ARG HOST_UID
