@@ -31,8 +31,8 @@ puts "TARGET_CFG=$::env(TARGET_CFG)"
 puts "Top=$top_name"
 puts "Flist=$flist"
 
-plugin -i slang
 yosys -import
+plugin -i slang
 
 set read_cmd [list read_slang --top $top_name -keep-hierarchy --ignore-assertions]
 foreach define [env_lines SYNTH_DEFINES] {

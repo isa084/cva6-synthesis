@@ -5,5 +5,6 @@ set -euo pipefail
 # home rather than depending on a matching passwd entry in the upstream image.
 export HOME=/tmp/cva6-synthesis-home
 mkdir -p "$HOME"
+source /dockerstartup/scripts/generate_container_user.sh
 
 exec python3 /opt/cva6-synthesis/flow/run.py "$@"
