@@ -1,0 +1,6 @@
+.git
+.gitmodules
+docker-harness
+runs
+__pycache__
+*.pyc

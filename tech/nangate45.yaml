@@ -1,0 +1,10 @@
+name: nangate45
+liberty: /opt/OpenROAD-flow-scripts/flow/platforms/nangate45/lib/NangateOpenCellLibrary_typical.lib
+
+tie_high:
+  cell: LOGIC1_X1
+  pin: Z
+
+tie_low:
+  cell: LOGIC0_X1
+  pin: Z

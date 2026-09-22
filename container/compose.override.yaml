@@ -1,0 +1,11 @@
+services:
+  tool:
+    image: "${TOOL_IMAGE:-cva6-synthesis:local}"
+    build:
+      context: "${SYNTH_CONTEXT:?Set SYNTH_CONTEXT to the cva6-synthesis checkout}"
+      dockerfile: container/Dockerfile
+      args:
+        IIC_OSIC_TOOLS_IMAGE: "${IIC_OSIC_TOOLS_IMAGE:-hpretl/iic-osic-tools:2026.07}"
+    entrypoint:
+      - /opt/cva6-synthesis/entrypoint.sh
+    working_dir: /workspace/output

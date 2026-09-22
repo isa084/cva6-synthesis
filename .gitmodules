@@ -1,0 +1,3 @@
+[submodule "docker-harness"]
+	path = docker-harness
+	url = https://github.com/isa084/docker-harness.git
