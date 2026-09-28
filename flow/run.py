@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Minimal driver: YAML target -> Yosys synthesis -> OpenSTA raw report."""
+"""Minimal driver for quick or technology-mapped CVA6 synthesis."""
 
 from __future__ import annotations
 
@@ -80,6 +80,12 @@ def run_command(argv: list[str], env: dict[str, str]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("target", help="target key from /workspace/input/synthesis.yaml")
+    parser.add_argument(
+        "--mode",
+        choices=("quick", "full"),
+        default="full",
+        help="quick skips ABC/STA; full performs technology mapping and STA",
+    )
     args = parser.parse_args()
 
     if not INPUT_DIR.is_dir():
@@ -136,9 +142,12 @@ def main() -> int:
         fail(f"technology profile '{technology_name}' is missing tie-cell data")
 
     require_command("yosys")
-    require_command("sta")
+    if args.mode == "full":
+        require_command("sta")
 
-    mapped_netlist = OUTPUT_DIR / "mapped-netlist.v"
+    output_netlist = OUTPUT_DIR / (
+        "mapped-netlist.v" if args.mode == "full" else "synthesized-netlist.v"
+    )
     timing_report = OUTPUT_DIR / "timing-top10.rpt"
 
     env = os.environ.copy()
@@ -153,12 +162,13 @@ def main() -> int:
             "SYNTH_EXTRA_SOURCES": "\n".join(extra_sources),
             "SYNTH_EXPECT_PRESENT": "\n".join(expect_present),
             "SYNTH_EXPECT_ABSENT": "\n".join(expect_absent),
+            "SYNTH_MODE": args.mode,
             "LIBERTY_PATH": liberty.as_posix(),
             "TIE_HIGH_CELL": require_string(tie_high, "cell", "tie_high"),
             "TIE_HIGH_PIN": require_string(tie_high, "pin", "tie_high"),
             "TIE_LOW_CELL": require_string(tie_low, "cell", "tie_low"),
             "TIE_LOW_PIN": require_string(tie_low, "pin", "tie_low"),
-            "MAPPED_NETLIST": mapped_netlist.as_posix(),
+            "OUTPUT_NETLIST": output_netlist.as_posix(),
             "CLOCK_PORT": clock_port,
             "CLOCK_PERIOD_NS": str(clock_period_ns),
             "TIMING_REPORT": timing_report.as_posix(),
@@ -166,6 +176,7 @@ def main() -> int:
     )
 
     print(f"target={args.target}")
+    print(f"mode={args.mode}")
     print(f"config={config_name}")
     print(f"top={top}")
     print(f"flist={flist}")
@@ -173,14 +184,16 @@ def main() -> int:
     print(f"clock={clock_port} period={clock_period_ns} ns")
 
     run_command(["yosys", "-c", str(FLOW_ROOT / "flow/synthesize.tcl")], env)
-    if not mapped_netlist.is_file():
-        fail("Yosys completed without producing mapped-netlist.v")
+    if not output_netlist.is_file():
+        fail(f"Yosys completed without producing {output_netlist.name}")
 
-    run_command(["sta", "-exit", str(FLOW_ROOT / "flow/sta.tcl")], env)
-    if not timing_report.is_file():
-        fail("OpenSTA completed without producing timing-top10.rpt")
+    if args.mode == "full":
+        env["MAPPED_NETLIST"] = output_netlist.as_posix()
+        run_command(["sta", "-exit", str(FLOW_ROOT / "flow/sta.tcl")], env)
+        if not timing_report.is_file():
+            fail("OpenSTA completed without producing timing-top10.rpt")
 
-    print(f"raw reports written to {OUTPUT_DIR}")
+    print(f"{args.mode} reports written to {OUTPUT_DIR}")
     return 0
 
 

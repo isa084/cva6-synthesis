@@ -25,11 +25,17 @@ set output_dir /workspace/output
 set top_name [required_env SYNTH_TOP]
 set flist [required_env SYNTH_FLIST]
 set liberty_file [required_env LIBERTY_PATH]
-set mapped_netlist [required_env MAPPED_NETLIST]
+set synth_mode [required_env SYNTH_MODE]
+set output_netlist [required_env OUTPUT_NETLIST]
+
+if {$synth_mode ne "quick" && $synth_mode ne "full"} {
+    error "SYNTH_MODE must be 'quick' or 'full'"
+}
 
 puts "TARGET_CFG=$::env(TARGET_CFG)"
 puts "Top=$top_name"
 puts "Flist=$flist"
+puts "Mode=$synth_mode"
 
 yosys -import
 plugin -i slang
@@ -53,21 +59,27 @@ foreach pattern [env_lines SYNTH_EXPECT_ABSENT] {
 }
 select -clear
 
-# Retain the existing workaround used by the working ZP flow.
+# Discard unsupported initialization attributes before generic synthesis.
 setattr -unset init
 
 tee -o [file join $output_dir synth-run-top.rpt] synth -top $top_name -noabc -flatten
-tee -o [file join $output_dir dfflibmap.rpt] dfflibmap -liberty $liberty_file
-tee -o [file join $output_dir abc.rpt] abc -liberty $liberty_file
 
-hilomap -singleton \
-    -hicell [required_env TIE_HIGH_CELL] [required_env TIE_HIGH_PIN] \
-    -locell [required_env TIE_LOW_CELL] [required_env TIE_LOW_PIN]
-clean
+if {$synth_mode eq "full"} {
+    tee -o [file join $output_dir dfflibmap.rpt] dfflibmap -liberty $liberty_file
+    tee -o [file join $output_dir abc.rpt] abc -liberty $liberty_file
 
-tee -o [file join $output_dir stat.rpt] stat -liberty $liberty_file
+    hilomap -singleton \
+        -hicell [required_env TIE_HIGH_CELL] [required_env TIE_HIGH_PIN] \
+        -locell [required_env TIE_LOW_CELL] [required_env TIE_LOW_PIN]
+    clean
+    tee -o [file join $output_dir stat.rpt] stat -liberty $liberty_file
+} else {
+    clean
+    tee -o [file join $output_dir stat.rpt] stat
+}
+
 tee -o [file join $output_dir ltp.rpt] ltp -noff
 
-# Keep hierarchy/net names where Yosys can preserve them. This is a mapped
-# gate-level netlist for raw inspection and OpenSTA, not reconstructed RTL.
-write_verilog -noattr -noexpr -nodec -nohex $mapped_netlist
+# Keep hierarchy/net names where Yosys can preserve them. Full mode produces a
+# mapped netlist for OpenSTA; quick mode produces a generic synthesized netlist.
+write_verilog -noattr -noexpr -nodec -nohex $output_netlist

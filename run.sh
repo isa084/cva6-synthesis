@@ -4,10 +4,11 @@ set -euo pipefail
 usage() {
     cat <<'USAGE'
 Usage:
-  ./synthesis/run.sh --target TARGET [--build]
+  ./synthesis/run.sh --target TARGET [--mode MODE] [--build]
 
 Options:
-  --target TARGET  Target key from repo_home/synthesis.yaml (for example baseline or zp)
+  --target TARGET  Target key from repo_home/synthesis.yaml
+  --mode MODE      quick (no ABC/STA) or full (ABC + STA; default: full)
   --build          Force rebuild of the thin cva6-synthesis wrapper image
   -h, --help       Show this help
 USAGE
@@ -28,12 +29,18 @@ tool_image="${CVA6_SYNTH_IMAGE:-cva6-synthesis:local}"
 project_name="${CVA6_SYNTH_PROJECT:-cva6-synthesis}"
 
 target=
+mode=full
 force_build=false
 while (($# > 0)); do
     case "$1" in
         --target)
             (($# >= 2)) || fail "--target requires a value"
             target=$2
+            shift 2
+            ;;
+        --mode)
+            (($# >= 2)) || fail "--mode requires a value"
+            mode=$2
             shift 2
             ;;
         --build)
@@ -52,24 +59,27 @@ done
 
 [[ -n "$target" ]] || fail "--target is required"
 [[ "$target" =~ ^[A-Za-z0-9_.-]+$ ]] || fail "target contains unsupported characters"
+[[ "$mode" == quick || "$mode" == full ]] || fail "--mode must be 'quick' or 'full'"
 [[ -f "$config_file" && -r "$config_file" ]] || fail "missing readable ${config_file}"
 [[ -x "${harness_dir}/run-tool.sh" ]] || fail \
     "docker-harness submodule is missing; run: git submodule update --init --recursive"
 [[ -f "$override_file" ]] || fail "missing Compose override: ${override_file}"
 
-mkdir -p -- "${output_root}/${target}"
+mkdir -p -- "${output_root}/${target}/${mode}"
 output_root=$(realpath -- "$output_root")
 run_id=$(date '+%Y-%m-%d_%H-%M-%S')
-run_dir="${output_root}/${target}/${run_id}"
+run_dir="${output_root}/${target}/${mode}/${run_id}"
 [[ ! -e "$run_dir" ]] || fail "run directory already exists: ${run_dir}"
 mkdir -- "$run_dir"
 
 metadata_file="${run_dir}/metadata.txt"
 {
     printf 'target=%s\n' "$target"
+    printf 'mode=%s\n' "$mode"
     printf 'start_time=%s\n' "$(date --iso-8601=seconds)"
     printf 'repo_root=%s\n' "$repo_root"
     printf 'tool_image=%s\n' "$tool_image"
+    printf 'synthesis_config_sha256=%s\n' "$(sha256sum "$config_file" | awk '{print $1}')"
     if git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         printf 'repo_commit=%s\n' "$(git -C "$repo_root" rev-parse HEAD)"
         if [[ -n "$(git -C "$repo_root" status --porcelain --untracked-files=no)" ]]; then
@@ -115,7 +125,7 @@ if "$force_build" || ! docker image inspect "$tool_image" >/dev/null 2>&1; then
     docker compose "${compose_args[@]}" build tool
 fi
 
-printf 'Running target %s\n' "$target"
+printf 'Running target %s in %s mode\n' "$target" "$mode"
 printf 'Results: %s\n' "$run_dir"
 
 set +e
@@ -123,7 +133,7 @@ set +e
     --env-file "$env_file" \
     --project "$project_name" \
     --override "$override_file" \
-    -- "$target" 2>&1 | tee "${run_dir}/console.log"
+    -- "$target" --mode "$mode" 2>&1 | tee "${run_dir}/console.log"
 status=${PIPESTATUS[0]}
 set -e
 
@@ -132,9 +142,9 @@ set -e
     printf 'exit_status=%s\n' "$status"
 } >>"$metadata_file"
 
-ln -sfn -- "$run_id" "${output_root}/${target}/latest"
+ln -sfn -- "$run_id" "${output_root}/${target}/${mode}/latest"
 if [[ "$status" -eq 0 ]]; then
-    ln -sfn -- "$run_id" "${output_root}/${target}/latest-success"
+    ln -sfn -- "$run_id" "${output_root}/${target}/${mode}/latest-success"
 fi
 
 exit "$status"
