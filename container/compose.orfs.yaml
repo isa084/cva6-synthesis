@@ -1,0 +1,9 @@
+# Overrides the docker-harness tool service with the pinned prebuilt ORFS
+# image. The flow files come from the read-only input mount: no build.
+services:
+  tool:
+    image: openroad/orfs:26Q4-221-gef324e555@sha256:ca289d6df8401711a4ed310a83b5bd14fd42534d64b9b790bf5cbb02cc496278
+    build: !reset null
+    entrypoint:
+      - /workspace/input/synthesis/container/orfs-entrypoint.sh
+    working_dir: /workspace/output
