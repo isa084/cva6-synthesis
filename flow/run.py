@@ -15,7 +15,7 @@ import yaml
 
 INPUT_DIR = Path("/workspace/input")
 OUTPUT_DIR = Path("/workspace/output")
-FLOW_ROOT = Path("/opt/cva6-synthesis")
+FLOW_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = INPUT_DIR / "synthesis.yaml"
 
 
@@ -82,10 +82,11 @@ def main() -> int:
     parser.add_argument("target", help="target key from /workspace/input/synthesis.yaml")
     parser.add_argument(
         "--mode",
-        choices=("quick", "full"),
-        default="full",
-        help="quick skips ABC/STA; full performs technology mapping and STA",
+        choices=("quick", "full", "fast", "opt"),
+        help="Yosys profile: quick skips ABC/STA, full maps and runs STA (default); "
+        "orfs profile: fast or opt (default fast)",
     )
+    parser.add_argument("--tech", help="orfs profile: technology (default: synthesis.yaml)")
     args = parser.parse_args()
 
     if not INPUT_DIR.is_dir():
@@ -104,6 +105,14 @@ def main() -> int:
     if not isinstance(target, dict):
         available = ", ".join(sorted(str(name) for name in targets))
         fail(f"unknown target '{args.target}' (available: {available})")
+
+    if config.get("profile") == "orfs":
+        from orfs import run as run_orfs
+
+        return run_orfs(args.target, target, config, args.tech, args.mode)
+    args.mode = args.mode or "full"
+    if args.mode not in ("quick", "full"):
+        fail("--mode must be 'quick' or 'full' with the Yosys profile")
 
     technology_name = config.get("technology")
     if not isinstance(technology_name, str) or not technology_name:
