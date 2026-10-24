@@ -4,12 +4,14 @@ set -euo pipefail
 usage() {
     cat <<'USAGE'
 Usage:
-  ./synthesis/run.sh --target TARGET [--mode MODE] [--build]
+  ./synthesis/run.sh --target TARGET [--mode MODE] [--tech TECH] [--build]
 
 Options:
   --target TARGET  Target key from repo_home/synthesis.yaml
-  --mode MODE      quick (no ABC/STA) or full (ABC + STA; default: full)
-  --build          Force rebuild of the thin cva6-synthesis wrapper image
+  --mode MODE      Yosys profile: quick (no ABC/STA) or full (ABC + STA; default: full)
+                   orfs profile: fast or opt (default: fast)
+  --tech TECH      orfs profile: asap7 or nangate45 (default: synthesis.yaml technology)
+  --build          Force rebuild of the thin cva6-synthesis wrapper image (Yosys profile)
   -h, --help       Show this help
 USAGE
 }
@@ -22,14 +24,14 @@ fail() {
 synth_dir=$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 repo_root=$(CDPATH='' cd -- "${synth_dir}/.." && pwd -P)
 harness_dir="${synth_dir}/docker-harness"
-override_file="${synth_dir}/container/compose.override.yaml"
 config_file="${repo_root}/synthesis.yaml"
 output_root="${SYNTH_OUTPUT_ROOT:-${synth_dir}/runs}"
 tool_image="${CVA6_SYNTH_IMAGE:-cva6-synthesis:local}"
 project_name="${CVA6_SYNTH_PROJECT:-cva6-synthesis}"
 
 target=
-mode=full
+mode=
+tech=
 force_build=false
 while (($# > 0)); do
     case "$1" in
@@ -41,6 +43,11 @@ while (($# > 0)); do
         --mode)
             (($# >= 2)) || fail "--mode requires a value"
             mode=$2
+            shift 2
+            ;;
+        --tech)
+            (($# >= 2)) || fail "--tech requires a value"
+            tech=$2
             shift 2
             ;;
         --build)
@@ -59,16 +66,35 @@ done
 
 [[ -n "$target" ]] || fail "--target is required"
 [[ "$target" =~ ^[A-Za-z0-9_.-]+$ ]] || fail "target contains unsupported characters"
-[[ "$mode" == quick || "$mode" == full ]] || fail "--mode must be 'quick' or 'full'"
-[[ -f "$config_file" && -r "$config_file" ]] || fail "missing readable ${config_file}"
+[[ -f "$config_file" && -r "$config_file" ]] || fail "missing readable synthesis.yaml in the repository root"
 [[ -x "${harness_dir}/run-tool.sh" ]] || fail \
     "docker-harness submodule is missing; run: git submodule update --init --recursive"
+
+# Top-level keys of synthesis.yaml; no YAML parser on the host.
+profile=$(sed -n 's/^profile: *\([a-z0-9]*\).*/\1/p' "$config_file")
+technology=$(sed -n 's/^technology: *\([a-z0-9]*\).*/\1/p' "$config_file")
+
+if [[ "$profile" == orfs ]]; then
+    mode=${mode:-fast}
+    tech=${tech:-$technology}
+    [[ "$mode" == fast || "$mode" == opt ]] || fail "--mode must be 'fast' or 'opt' with the orfs profile"
+    [[ "$tech" == asap7 || "$tech" == nangate45 ]] || fail "--tech must be 'asap7' or 'nangate45'"
+    override_file="${synth_dir}/container/compose.orfs.yaml"
+    tool_image=$(sed -n 's/^ *image: *//p' "$override_file")
+    run_path="${target}/${tech}/${mode}"
+else
+    mode=${mode:-full}
+    [[ "$mode" == quick || "$mode" == full ]] || fail "--mode must be 'quick' or 'full'"
+    [[ -z "$tech" ]] || fail "--tech needs the orfs profile"
+    override_file="${synth_dir}/container/compose.override.yaml"
+    run_path="${target}/${mode}"
+fi
 [[ -f "$override_file" ]] || fail "missing Compose override: ${override_file}"
 
-mkdir -p -- "${output_root}/${target}/${mode}"
+mkdir -p -- "${output_root}/${run_path}"
 output_root=$(realpath -- "$output_root")
 run_id=$(date '+%Y-%m-%d_%H-%M-%S')
-run_dir="${output_root}/${target}/${mode}/${run_id}"
+run_dir="${output_root}/${run_path}/${run_id}"
 [[ ! -e "$run_dir" ]] || fail "run directory already exists: ${run_dir}"
 mkdir -- "$run_dir"
 
@@ -76,12 +102,24 @@ metadata_file="${run_dir}/metadata.txt"
 {
     printf 'target=%s\n' "$target"
     printf 'mode=%s\n' "$mode"
+    [[ "$profile" != orfs ]] || printf 'technology=%s\n' "$tech"
     printf 'start_time=%s\n' "$(date --iso-8601=seconds)"
-    printf 'repo_root=%s\n' "$repo_root"
     printf 'tool_image=%s\n' "$tool_image"
     printf 'synthesis_config_sha256=%s\n' "$(sha256sum "$config_file" | awk '{print $1}')"
     if git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         printf 'repo_commit=%s\n' "$(git -C "$repo_root" rev-parse HEAD)"
+        if [[ "$profile" == orfs ]]; then
+            # Upstream commit under the ft-synthesis commits; the RTL must equal it.
+            upstream_sha=$(git -C "$repo_root" merge-base HEAD "${CVA6_UPSTREAM_REF:-origin/master}")
+            printf 'upstream_sha=%s\n' "$upstream_sha"
+            printf 'upstream_date=%s\n' "$(git -C "$repo_root" log -1 --format=%cI "$upstream_sha")"
+            printf 'upstream_title=%s\n' "$(git -C "$repo_root" log -1 --format=%s "$upstream_sha")"
+            if git -C "$repo_root" diff --quiet "$upstream_sha" -- core common vendor; then
+                printf 'rtl_match=yes\n'
+            else
+                printf 'rtl_match=no\n'
+            fi
+        fi
         if [[ -n "$(git -C "$repo_root" status --porcelain --untracked-files=no)" ]]; then
             printf 'repo_dirty=yes\n'
         else
@@ -90,6 +128,7 @@ metadata_file="${run_dir}/metadata.txt"
     fi
     if git -C "$synth_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         printf 'cva6_synthesis_commit=%s\n' "$(git -C "$synth_dir" rev-parse HEAD)"
+        printf 'flow_version=%s\n' "$(git -C "$synth_dir" describe --always --dirty --abbrev=7)"
     fi
     if git -C "$harness_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         printf 'docker_harness_commit=%s\n' "$(git -C "$harness_dir" rev-parse HEAD)"
@@ -120,7 +159,7 @@ compose_args=(
     -p "$project_name"
 )
 
-if "$force_build" || ! docker image inspect "$tool_image" >/dev/null 2>&1; then
+if [[ "$profile" != orfs ]] && { "$force_build" || ! docker image inspect "$tool_image" >/dev/null 2>&1; }; then
     printf 'Building %s ...\n' "$tool_image"
     docker compose "${compose_args[@]}" build tool
 fi
@@ -133,7 +172,7 @@ set +e
     --env-file "$env_file" \
     --project "$project_name" \
     --override "$override_file" \
-    -- "$target" --mode "$mode" 2>&1 | tee "${run_dir}/console.log"
+    -- "$target" --mode "$mode" ${tech:+--tech "$tech"} 2>&1 | tee "${run_dir}/console.log"
 status=${PIPESTATUS[0]}
 set -e
 
@@ -142,9 +181,9 @@ set -e
     printf 'exit_status=%s\n' "$status"
 } >>"$metadata_file"
 
-ln -sfn -- "$run_id" "${output_root}/${target}/${mode}/latest"
+ln -sfn -- "$run_id" "${output_root}/${run_path}/latest"
 if [[ "$status" -eq 0 ]]; then
-    ln -sfn -- "$run_id" "${output_root}/${target}/${mode}/latest-success"
+    ln -sfn -- "$run_id" "${output_root}/${run_path}/latest-success"
 fi
 
 exit "$status"
