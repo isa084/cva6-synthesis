@@ -129,7 +129,7 @@ def run(target_name: str, target: dict, config: dict, tech: str | None, mode: st
               "reports_url": ""}
     try:
         if meta["rtl_match"] != "yes":
-            fail("RTL differs from the upstream commit")
+            fail("RTL has uncommitted changes")
         config_mk = OUTPUT_DIR / "config/config.mk"
         write_config(target, tech, mode, sram, config_mk)
         subprocess.run(["make", "-C", str(ORFS_FLOW), f"DESIGN_CONFIG={config_mk}",

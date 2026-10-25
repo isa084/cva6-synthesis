@@ -109,12 +109,15 @@ metadata_file="${run_dir}/metadata.txt"
     if git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         printf 'repo_commit=%s\n' "$(git -C "$repo_root" rev-parse HEAD)"
         if [[ "$profile" == orfs ]]; then
-            # Upstream commit under the ft-synthesis commits; the RTL must equal it.
+            # Upstream commit under the ft-synthesis commits. The RTL must equal it
+            # except files changed by the tool-compatibility commits (BR-3) on top,
+            # so uncommitted RTL changes fail the run.
             upstream_sha=$(git -C "$repo_root" merge-base HEAD "${CVA6_UPSTREAM_REF:-origin/master}")
             printf 'upstream_sha=%s\n' "$upstream_sha"
             printf 'upstream_date=%s\n' "$(git -C "$repo_root" log -1 --format=%cI "$upstream_sha")"
             printf 'upstream_title=%s\n' "$(git -C "$repo_root" log -1 --format=%s "$upstream_sha")"
-            if git -C "$repo_root" diff --quiet "$upstream_sha" -- core common vendor; then
+            printf 'rtl_patched=%s\n' "$(git -C "$repo_root" diff --name-only "$upstream_sha" HEAD -- core common vendor | xargs)"
+            if git -C "$repo_root" diff --quiet HEAD -- core common vendor; then
                 printf 'rtl_match=yes\n'
             else
                 printf 'rtl_match=no\n'
