@@ -152,6 +152,7 @@ HOST_GID=$(id -g)
 TOOL_IMAGE=${tool_image}
 SYNTH_CONTEXT=${synth_dir}
 IIC_OSIC_TOOLS_IMAGE=${IIC_OSIC_TOOLS_IMAGE:-hpretl/iic-osic-tools:2026.07}
+CVA6_SYNTH_CPUS=${CVA6_SYNTH_CPUS:-}
 ENV
 
 compose_args=(

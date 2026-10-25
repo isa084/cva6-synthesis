@@ -109,7 +109,7 @@ jobs:
     timeout-minutes: 180
     continue-on-error: true
     strategy:
-      max-parallel: 1
+      max-parallel: ${{ fromJSON(vars.FLOW_PARALLEL || '1') }}
       fail-fast: false
       matrix:
         include: ${{ fromJSON(needs.sync.outputs.matrix) }}
@@ -119,6 +119,7 @@ jobs:
       TARGET: ${{ matrix.target }}
       TECH: ${{ matrix.tech }}
       DENYLIST: /etc/cva6-denylist
+      FLOW_PARALLEL: ${{ vars.FLOW_PARALLEL || '1' }}
       COMPOSE_VERSION: v5.6.0
       COMPOSE_SHA256: 40343e21ca777173e69cff5dbafeb37c6f81f3b0d57d9e597f036e95eb63e76a
     steps:
@@ -156,7 +157,10 @@ jobs:
           chmod +x "$plugins/docker-compose"
 
       - name: Run flow
-        run: CVA6_UPSTREAM_REF="$SHA" ./synthesis/run.sh --target "$TARGET" --tech "$TECH" --mode "$MODE"
+        # Half of the Docker CPUs, shared by the parallel runs.
+        run: |
+          export CVA6_SYNTH_CPUS=$(( $(docker info --format '{{.NCPU}}') / 2 / FLOW_PARALLEL ))
+          CVA6_UPSTREAM_REF="$SHA" ./synthesis/run.sh --target "$TARGET" --tech "$TECH" --mode "$MODE"
 
       - name: Anonymisation check
         id: anon

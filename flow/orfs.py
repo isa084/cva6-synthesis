@@ -74,7 +74,7 @@ def write_config(target: dict, tech: str, mode: str, sram: str, config_mk: Path)
     views = FLOW_ROOT / "sram/views" / tech
     lines = [f"export CVA6_FLOW_DIR = {FLOW_ROOT}",
              "export DESIGN_NICKNAME = cva6",
-             f"export NUM_CORES = {max(1, (os.cpu_count() or 2) // 2)}",
+             f"export NUM_CORES = {os.environ.get('CVA6_SYNTH_CPUS') or max(1, (os.cpu_count() or 2) // 2)}",
              "export VERILOG_FILES = " + " ".join(files),
              "export VERILOG_INCLUDE_DIRS = " + " ".join(incdirs),
              "export VERILOG_DEFINES = " + " ".join(f"-D {d}" for d in target.get("defines") or [])]

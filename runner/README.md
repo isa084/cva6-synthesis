@@ -15,23 +15,28 @@ You need these items:
   Desktop: Settings, Resources, File sharing)
 - a deny-list file
 
-To start the runner, run this command:
+To start the runners, run this command:
 
 ```bash
-REPO=owner/name ./runner/start.sh
+REPO=owner/name RUNNERS=3 ./runner/start.sh
 ```
 
 `start.sh` requests a registration token with `gh`. Then it runs
-`docker compose up -d`. The container mounts `/var/run/docker.sock`. Docker
-Desktop maps this socket to its engine socket. The runner has the name
-`cva6-synth-runner` and the label `cva6-synthesis`.
+`docker compose up -d` once for each runner. Each runner has the name
+`cva6-synth-runner-<n>` and the label `cva6-synthesis`. Each container mounts
+`/var/run/docker.sock`. Docker Desktop maps this socket to its engine socket.
+
+The workflow runs at most `FLOW_PARALLEL` flow jobs at the same time. Set this
+repository variable to the number of runners. Each flow job gets a core budget
+of half the Docker CPUs divided by `FLOW_PARALLEL`. The tool container uses this
+budget as its CPU limit and as the ORFS `NUM_CORES`.
 
 The commits contain nothing that is host-specific. The values for the
 repository, the token, and the CPU count are environment variables. You set them
 at start time.
 
-To stop the runner, run `docker rm -f cva6-synth-runner`. The runner then shows
-as offline until the next start.
+To stop the runners, run `docker rm -f cva6-synth-runner-1 cva6-synth-runner-2
+cva6-synth-runner-3`. The runners then show as offline until the next start.
 
 The deny-list is a text file with one string on each line (user name, host name,
 home path). The file stays outside any repository. The default file is
@@ -62,7 +67,7 @@ WantedBy=default.target
 ## Layout and limits
 
 - The container hostname and the runner name are generic. The runner home is
-  `/home/runner`. The work directory is `/srv/cva6-runner/_work`. The container
+  `/home/runner`. The work directory is `/srv/cva6-runner/<runner name>`. The container
   mounts it at the same path that the host uses. This lets the tool containers
   that start through the Docker socket mount the job files.
 - Jobs reach Docker through the mounted socket. This socket is root-equivalent

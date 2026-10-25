@@ -7,3 +7,7 @@ services:
     entrypoint:
       - /workspace/input/synthesis/container/orfs-entrypoint.sh
     working_dir: /workspace/output
+    # Optional per-run core budget (CVA6_SYNTH_CPUS); 0 means no limit.
+    cpus: ${CVA6_SYNTH_CPUS:-0}
+    environment:
+      CVA6_SYNTH_CPUS: ${CVA6_SYNTH_CPUS:-}
