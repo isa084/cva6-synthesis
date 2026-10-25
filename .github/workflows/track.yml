@@ -1,0 +1,239 @@
+name: track
+
+# Follow the upstream tracked branch: sync the fork, run the flow on the
+# self-hosted runner, publish results to the `data` branch and the dashboard.
+# No push or pull_request triggers: the runner only serves these two.
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Upstream SHA (empty = tracked branch head)
+        default: ''
+      targets:
+        description: Targets, space separated (empty = all in synthesis.yaml)
+        default: ''
+      techs:
+        description: Technologies, space separated
+        default: asap7 nangate45
+      mode:
+        description: Run mode
+        type: choice
+        options: [fast, opt]
+        default: fast
+      force:
+        description: Re-run even if data exists
+        type: boolean
+        default: false
+
+concurrency: track
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      FORK_KEY: ${{ secrets.FORK_DEPLOY_KEY }}
+      FORK: ${{ vars.FORK_REPO }}
+      UPSTREAM: ${{ vars.UPSTREAM_REPO }}
+      BRANCH: ${{ vars.TRACKED_BRANCH }}
+      IN_SHA: ${{ inputs.sha }}
+      IN_TARGETS: ${{ inputs.targets }}
+      IN_TECHS: ${{ inputs.techs || 'asap7 nangate45' }}
+      IN_MODE: ${{ inputs.mode || 'fast' }}
+      FORCE: ${{ inputs.force || false }}
+    outputs:
+      sha: ${{ steps.plan.outputs.sha }}
+      mode: ${{ steps.plan.outputs.mode }}
+      matrix: ${{ steps.plan.outputs.matrix }}
+      old: ${{ steps.plan.outputs.old }}
+      skip: ${{ steps.plan.outputs.skip }}
+    steps:
+      - name: Sync fork and rebase ft-synthesis
+        run: |
+          install -m 600 /dev/null "$RUNNER_TEMP/key"
+          printf '%s\n' "$FORK_KEY" > "$RUNNER_TEMP/key"
+          export GIT_SSH_COMMAND="ssh -i $RUNNER_TEMP/key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+          git clone -q "git@github.com:$FORK.git" fork
+          cd fork
+          git remote add upstream "https://github.com/$UPSTREAM.git"
+          git fetch -q upstream "$BRANCH"
+          # Fast-forward only: a non-fast-forward update is rejected and fails the job.
+          git push origin "refs/remotes/upstream/$BRANCH:refs/heads/$BRANCH"
+          git checkout -q -B ft-synthesis origin/ft-synthesis
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rebase "upstream/$BRANCH" || { git rebase --abort; exit 1; }
+          git push --force-with-lease=ft-synthesis:"$(git rev-parse origin/ft-synthesis)" origin ft-synthesis
+
+      - name: Plan
+        id: plan
+        working-directory: fork
+        run: |
+          head=$(git rev-parse "upstream/$BRANCH")
+          sha=$(git rev-parse --verify "${IN_SHA:-$head}^{commit}")
+          runs=$(gh api -H 'Accept: application/vnd.github.raw+json' \
+            "repos/$GITHUB_REPOSITORY/contents/runs.json?ref=data" 2>/dev/null) || runs='[]'
+          last=$(jq -r 'max_by(.upstream_date).upstream_sha // empty' <<<"$runs")
+          # Skip when RTL is unchanged since the newest published commit.
+          skip=false
+          if [ "$FORCE" != true ] && [ -n "$last" ] \
+              && git diff --quiet "$last" "$sha" -- core common vendor corev_apu 2>/dev/null; then
+            skip=true
+          fi
+          targets=${IN_TARGETS:-$(git show origin/ft-synthesis:synthesis.yaml | yq '.targets | keys | .[]')}
+          matrix=$(jq -nc --arg t "$targets" --arg x "$IN_TECHS" --arg m "$IN_MODE" --arg sha "$sha" \
+            --argjson runs "$runs" --argjson force "$FORCE" --argjson skip "$skip" '
+            [ ($t | scan("[^ \n]+")) as $a | ($x | scan("[^ ]+")) as $b
+              | select($skip | not)
+              | select($force or ($runs | any(.upstream_sha == $sha and .target == $a
+                  and .technology == $b and .mode == $m) | not))
+              | {target: $a, tech: $b} ]')
+          {
+            echo "sha=$sha"
+            echo "mode=$IN_MODE"
+            echo "matrix=$matrix"
+            echo "old=$([ "$sha" != "$head" ] && echo true || echo false)"
+            echo "skip=$skip"
+          } >> "$GITHUB_OUTPUT"
+          echo "Upstream ${sha:0:8}: $(jq length <<<"$matrix") run(s), skip=$skip" >> "$GITHUB_STEP_SUMMARY"
+
+  flow:
+    needs: sync
+    if: needs.sync.outputs.matrix != '[]'
+    runs-on: [self-hosted, cva6-synthesis]
+    timeout-minutes: 180
+    continue-on-error: true
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.sync.outputs.matrix) }}
+    env:
+      SHA: ${{ needs.sync.outputs.sha }}
+      MODE: ${{ needs.sync.outputs.mode }}
+      TARGET: ${{ matrix.target }}
+      TECH: ${{ matrix.tech }}
+      DENYLIST: /etc/cva6-denylist
+      COMPOSE_VERSION: v5.6.0
+      COMPOSE_SHA256: 40343e21ca777173e69cff5dbafeb37c6f81f3b0d57d9e597f036e95eb63e76a
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ vars.FORK_REPO }}
+          ref: ft-synthesis
+          ssh-key: ${{ secrets.FORK_DEPLOY_KEY }}
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check out the older upstream commit
+        if: needs.sync.outputs.old == 'true'
+        run: |
+          git checkout -q "$SHA"
+          git checkout ft-synthesis -- synthesis.yaml .gitmodules synthesis
+          git submodule update --init --recursive
+
+      - name: Install docker compose
+        run: |
+          plugins=~/.docker/cli-plugins
+          mkdir -p "$plugins"
+          curl -fsSL -o "$plugins/docker-compose" \
+            "https://github.com/docker/compose/releases/download/$COMPOSE_VERSION/docker-compose-linux-x86_64"
+          echo "$COMPOSE_SHA256  $plugins/docker-compose" | sha256sum -c -
+          chmod +x "$plugins/docker-compose"
+
+      - name: Run flow
+        run: CVA6_UPSTREAM_REF="$SHA" ./synthesis/run.sh --target "$TARGET" --tech "$TECH" --mode "$MODE"
+
+      - name: Anonymisation check
+        id: anon
+        if: always()
+        run: |
+          dir=$(readlink -f "synthesis/runs/$TARGET/$TECH/$MODE/latest")
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          if grep -rIlFf "$DENYLIST" "$dir"; then
+            echo "::error::deny-list match in the files listed above"
+            exit 1
+          fi
+
+      # A failed run still uploads its failed results.json.
+      - uses: actions/upload-artifact@v7
+        if: always() && steps.anon.outcome == 'success'
+        with:
+          name: run-${{ matrix.target }}-${{ matrix.tech }}
+          path: |
+            ${{ steps.anon.outputs.dir }}/results.json
+            ${{ steps.anon.outputs.dir }}/metrics.json
+            ${{ steps.anon.outputs.dir }}/metadata.txt
+          retention-days: 7
+
+      - name: Clean run directory
+        if: always()
+        run: rm -rf synthesis/runs
+
+  publish:
+    needs: [sync, flow]
+    if: always() && needs.sync.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      SHA: ${{ needs.sync.outputs.sha }}
+      SKIP: ${{ needs.sync.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: run-*
+          path: art
+
+      - name: Update data branch
+        run: |
+          if git fetch -q origin data; then
+            git worktree add -q -B data data FETCH_HEAD
+          else
+            git worktree add -q --orphan -b data data
+          fi
+          cd data
+          mkdir -p runs
+          for f in $(find ../art -name results.json); do
+            dest=runs/$(jq -r '[.upstream_sha, .target, .technology, .mode] | join("/")' "$f")
+            rm -rf "$dest"
+            mkdir -p "$dest"
+            cp "$(dirname "$f")"/* "$dest/"
+          done
+          if [ "$SKIP" = true ] && [ ! -e "runs/$SHA" ]; then
+            mkdir -p "runs/$SHA"
+            jq -n --arg s "$SHA" '{upstream_sha: $s, status: "skipped", reason: "no RTL change"}' > "runs/$SHA/skipped.json"
+          fi
+          jq -s . /dev/null $(find runs -name results.json | sort) > runs.json
+          git add -A
+          git diff --cached --quiet && { echo "Nothing to publish"; exit 0; }
+          git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -q -m "Results for ${SHA:0:8}"
+          git push -q origin data
+
+      - name: Build dashboard
+        run: python3 dashboard/generate.py data/runs.json site
+
+      - uses: actions/upload-pages-artifact@v5
+        if: vars.DEPLOY_PAGES == 'true'
+        with:
+          path: site
+
+  pages:
+    needs: publish
+    if: vars.DEPLOY_PAGES == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment: github-pages
+    steps:
+      - uses: actions/deploy-pages@v5
