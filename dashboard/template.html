@@ -57,18 +57,21 @@ footer{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--muted
 <div class="card bar">
 <div class="group" role="group" aria-label="Technology"><span>Technology</span><span id="techs" class="group"></span></div>
 <div class="group" role="group" aria-label="Configuration"><span>Configuration</span><span id="cfgs" class="group"></span></div>
+<div class="group" role="group" aria-label="SRAM model" id="sram-g"><span>SRAM model</span><span id="srams" class="group"></span></div>
 </div>
 <section class="card"><h2 id="latest-h"></h2><div class="body" id="latest"></div></section>
 <section class="card"><h2 id="area-h"></h2><div class="body" id="area"></div></section>
 <section class="card"><h2 id="timing-h"></h2><div class="body" id="timing"></div></section>
+<section class="card"><h2 id="gsim-h"></h2><div class="body" id="gsim"></div></section>
 <section class="card"><h2 id="trend-h"></h2><div class="body" id="trends"></div></section>
 <section class="card"><h2 id="hist-h"></h2><div class="body" id="hist"></div></section>
 <details class="card"><summary>Method</summary><ul>
 <li>Flow: OpenROAD-flow-scripts, synthesis to floorplan. No timing repair, so timing is pre-layout with an ideal clock.</li>
 <li>Constraints: one clock on <code>clk_i</code>; input and output delay as listed in the build parameters.</li>
-<li>SRAM: every cache memory is a FakeRAM2.0 macro. SRAM area is an SRAM estimate.</li>
+<li>SRAM models: <code>fakeram</code>, every cache memory is a FakeRAM2.0 macro and SRAM area is an SRAM estimate; <code>blackbox</code>, the same netlist with the SRAM area left out; <code>reference</code>, the upstream SRAM models, with the HPDcache memories as flip-flop arrays counted as macro area and the instruction cache memories absent.</li>
 <li>kGE: standard-cell area divided by the NAND2 area of the technology.</li>
 <li>Fmax: from the worst path of all path groups. Core fmax: 1 / (clock period − worst register-to-register slack).</li>
+<li>Gate-level simulation: Verilator, zero delay, on the floorplan netlist with standard-cell models made from the Liberty files and the FakeRAM behavioural models. The RTL runs the same programs. A program passes when it exits with status 0.</li>
 <li>Area breakdown: synthesis netlist with hierarchy. A module below the keep size is merged into its parent; "(local)" is the logic of the parent itself.</li>
 </ul></details>
 <footer><span id="ver"></span><a href="https://github.com/isa084/cva6-synthesis">Flow repository</a><a href="https://github.com/isa084/cva6-synthesis/blob/master/docs/RESULTS.md">Method and reproduction</a></footer>
@@ -76,26 +79,30 @@ footer{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--muted
 <script>
 const DATA = /*DATA*/null;
 const COMMIT = 'https://github.com/openhwfoundation/cva6/commit/';
+const RAW = 'https://github.com/isa084/cva6-synthesis/tree/data/runs/';
 const TL = {asap7: 'ASAP7', nangate45: 'Nangate45'};
 const R = DATA.records;
 const techs = [...new Set(R.map(r => r.technology))].sort();
-const cfgs = [...new Set(R.map(r => r.target))].sort();
-const S = {tech: techs[0], cfg: cfgs[0], root: 'r', hover: null};
+const cfgOf = r => r.config || r.target;
+const cfgs = [...new Set(R.map(cfgOf))].sort();
+const srams = [...new Set(R.map(r => r.sram_mode))].sort((a, b) => (b === 'fakeram') - (a === 'fakeram') || a.localeCompare(b));
+const S = {tech: techs[0], cfg: cfgs[0], sram: srams[0], root: 'r', hover: null};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 const num = (v, d) => v == null ? '—' : Number(v).toLocaleString('en-US', {minimumFractionDigits: d, maximumFractionDigits: d});
 const sgn = t => t.replace(/^-/, '−');
 const pct = (a, b) => { const p = 100 * a / b; return (p < 10 ? p.toFixed(1) : p.toFixed(0)) + '%'; };
 const ok = r => r.status === 'success' || r.status === 'ok';
-const arch = c => c.startsWith('cv32') ? 'RV32' : c.startsWith('cv64') ? 'RV64' : '';
 const nand2 = r => r.stdcell_area_um2 / r.stdcell_kgate / 1000;
 const coreF = r => r.paths && r.paths.reg2reg ? 1e6 / (r.clock_period_ps - r.paths.reg2reg.slack_ps) : null;
+const gsimText = r => r.gsim_run == null ? '—' : `${r.gsim_passed}/${r.gsim_run}` + ((r.gsim || []).some(x => x.rtl !== x.gate) ? ' ≠ RTL' : '');
+const gsimClass = r => r.gsim_run == null ? 'muted' : r.gsim_passed === r.gsim_run && !(r.gsim || []).some(x => x.rtl !== x.gate) ? 'good' : 'bad';
 const byDate = (a, b) => (Date.parse(a.upstream_date) - Date.parse(b.upstream_date)) || (Date.parse(a.run_started || 0) - Date.parse(b.run_started || 0));
 
 // One record per upstream commit, oldest first.
 function series(tech, cfg) {
   const m = new Map();
-  R.filter(r => r.technology === tech && r.target === cfg).sort(byDate).forEach(r => m.set(r.upstream_sha, r));
+  R.filter(r => r.technology === tech && cfgOf(r) === cfg && r.sram_mode === S.sram).sort(byDate).forEach(r => m.set(r.upstream_sha, r));
   return [...m.values()];
 }
 const latest = (tech, cfg) => series(tech, cfg).pop() || null;
@@ -122,6 +129,8 @@ function button(label, on, attrs) {
 function renderSelectors() {
   $('techs').innerHTML = techs.map(t => button(TL[t] || t, t === S.tech, `data-tech="${t}"`)).join('');
   $('cfgs').innerHTML = cfgs.map(c => button(c, c === S.cfg, `data-cfg="${c}"`)).join('');
+  $('srams').innerHTML = srams.map(m => button(m, m === S.sram, `data-sram="${m}"`)).join('');
+  $('sram-g').hidden = srams.length < 2;
 }
 
 function renderLatest() {
@@ -141,14 +150,18 @@ ${Object.keys(params).length ? `<div><b>Build parameters</b> <span class="muted"
 <div class="wrap"><table><tr>${Object.keys(params).map(k => `<th class="l">${esc(k)}</th>`).join('')}</tr>
 <tr>${Object.values(params).map(v => `<td class="l">${esc(v)}</td>`).join('')}</tr></table></div>` : ''}
 <div><b>Results</b></div>
-<div class="wrap"><table><tr><th class="l">Arch</th><th class="l">Config</th><th class="l">Commit</th><th class="l">Status</th>
-<th>Fmax (MHz)</th><th>Core fmax (MHz)</th><th>Worst slack (ps)</th><th>Std-cell (kGE)</th><th>Std-cell (µm²)</th><th>SRAM (µm²)</th><th>Total (µm²)</th><th>SRAM macros</th></tr>
-${rows.map(r => `<tr class="${r.target === S.cfg ? 'sel' : ''}"><td class="l muted">${arch(r.target)}</td><td class="l">${esc(r.target)}</td>
-<td class="l mono"><a href="${COMMIT}${esc(r.upstream_sha)}">${esc(r.upstream_sha.slice(0, 7))}</a></td>
+<div class="wrap"><table><tr><th class="l">Config</th><th class="l">Commit</th><th class="l">Status</th>
+<th>Fmax (MHz)</th><th>Core fmax (MHz)</th><th>Worst slack (ps)</th><th>Std-cell (kGE)</th><th>Std-cell (µm²)</th><th>SRAM (µm²)</th><th>Total (µm²)</th><th>Macros</th><th>Gate sim</th><th class="l">Data</th></tr>
+${rows.map(r => `<tr class="${cfgOf(r) === S.cfg ? 'sel' : ''}"><td class="l">${esc(cfgOf(r))}</td>
+<td class="l mono" style="white-space:nowrap"><a href="${COMMIT}${esc(r.upstream_sha)}">${esc(r.upstream_sha.slice(0, 7))}</a></td>
 <td class="l ${ok(r) ? 'good' : 'bad'}">${esc(r.status)}</td>
 <td>${num(r.fmax_mhz, 1)}</td><td>${num(coreF(r), 1)}</td><td class="${r.worst_slack_ps < 0 ? 'bad' : ''}">${sgn(num(r.worst_slack_ps, 1))}</td>
-<td>${num(r.stdcell_kgate, 1)}</td><td>${num(r.stdcell_area_um2, 0)}</td><td>${num(r.macro_area_um2, 0)}</td><td>${num(r.total_area_um2, 0)}</td><td>${num(r.sram_macros, 0)}</td></tr>`).join('')}
-</table></div>`;
+<td>${num(r.stdcell_kgate, 1)}</td><td>${num(r.stdcell_area_um2, 0)}</td><td>${num(r.macro_area_um2, 0)}</td><td>${num(r.total_area_um2, 0)}</td><td>${num(r.sram_macros, 0)}</td><td class="${gsimClass(r)}">${gsimText(r)}</td><td class="l"><a href="${RAW}${esc(r.upstream_sha)}/${esc(r.target)}/${esc(r.technology)}/${esc(r.mode)}">raw</a></td></tr>`).join('')}
+</table></div>
+${sel && sel.upstream_sha === head.upstream_sha ? `<div><b>Reproduce</b> <span class="muted">(${esc(sel.target)}, latest upstream commit)</span></div>
+<pre class="mono" style="margin:0;padding:8px;background:var(--head);border-radius:4px;overflow-x:auto">git clone --recursive -b ft-synthesis https://github.com/isa084/cva6.git
+cd cva6
+./synthesis/run.sh --target ${esc(sel.target)} --tech ${esc(sel.technology)} --mode ${esc(sel.mode)}</pre>` : ''}`;
 }
 
 // Area breakdown: sunburst of the selected level plus a table of two levels.
@@ -227,6 +240,15 @@ ${G.map(([k, name]) => { const p = P[k]; return `<tr class="${k === worst ? 'sel
 <td class="l mono">${esc(p.start)}</td><td class="l mono">${esc(p.end)}</td></tr>`; }).join('')}</table></div>`;
 }
 
+function renderGsim() {
+  const r = latest(S.tech, S.cfg);
+  $('gsim-h').textContent = `Gate-level simulation · ${S.cfg} · ${TL[S.tech] || S.tech}`;
+  if (!r || !r.gsim) { $('gsim').innerHTML = '<div class="muted">No gate-level simulation for this run.</div>'; return; }
+  const st = s => `<td class="l ${s === 'pass' ? 'good' : 'bad'}">${esc(s)}</td>`;
+  $('gsim').innerHTML = `<div class="wrap"><table><tr><th class="l">Program</th><th class="l">RTL</th><th class="l">Gate</th><th>Cycles (gate)</th></tr>
+${r.gsim.map(x => `<tr><td class="l mono">${esc(x.test)}</td>${st(x.rtl)}${st(x.gate)}<td>${num(x.cycles, 0)}</td></tr>`).join('')}</table></div>`;
+}
+
 // Line chart over upstream commits with labelled axes.
 function ticks(lo, hi, n) {
   const raw = (hi - lo) / n, e = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / e;
@@ -277,22 +299,23 @@ function renderTrends() {
   const dl = (a, b, d) => a == null || b == null ? '' : ` <span class="muted">(${a - b >= 0 ? '+' : '−'}${Math.abs(a - b).toFixed(d)})</span>`;
   const cell = (p, q, key, d, f) => { const r = p.r; if (!r) return '<td>—</td>'; const v = f ? f(num(r[key], d)) : num(r[key], d);
     return p.rtl ? `<td>${v}${q && q.r ? dl(r[key], q.r[key], d) : ''}</td>` : `<td class="muted">${v}</td>`; };
-  $('hist').innerHTML = `<div class="wrap"><table><tr><th class="l">Commit</th><th class="l">Date</th><th class="l">Title</th><th class="l">Status</th><th>Fmax (MHz)</th><th>Std-cell (kGE)</th><th>Total (µm²)</th><th>Worst slack (ps)</th></tr>
+  $('hist').innerHTML = `<div class="wrap"><table><tr><th class="l">Commit</th><th class="l">Date</th><th class="l">Title</th><th class="l">Status</th><th>Fmax (MHz)</th><th>Std-cell (kGE)</th><th>Total (µm²)</th><th>Worst slack (ps)</th><th>Gate sim</th></tr>
 ${rows.map((p, i) => { const q = rows[i + 1], r = p.r, st = !r ? 'not run' : !p.rtl ? 'no RTL change' : r.status;
   return `<tr><td class="l mono"><a href="${COMMIT}${esc(p.sha)}">${esc(p.sha.slice(0, 7))}</a></td><td class="l muted">${esc(p.date.slice(0, 10))}</td><td class="l">${esc(p.title)}</td>
-<td class="l ${!r || !p.rtl ? 'muted' : ok(r) ? 'good' : 'bad'}">${st}</td>${cell(p, q, 'fmax_mhz', 1)}${cell(p, q, 'stdcell_kgate', 1)}${cell(p, q, 'total_area_um2', 0)}${cell(p, q, 'worst_slack_ps', 1, sgn)}</tr>`; }).join('')}</table></div>`;
+<td class="l ${!r || !p.rtl ? 'muted' : ok(r) ? 'good' : 'bad'}">${st}</td>${cell(p, q, 'fmax_mhz', 1)}${cell(p, q, 'stdcell_kgate', 1)}${cell(p, q, 'total_area_um2', 0)}${cell(p, q, 'worst_slack_ps', 1, sgn)}<td class="${p.r ? gsimClass(p.r) : 'muted'}">${p.r ? gsimText(p.r) : '—'}</td></tr>`; }).join('')}</table></div>`;
 }
 
 function render() {
-  location.replace('#' + S.tech + '/' + S.cfg);
-  renderSelectors(); renderLatest(); renderArea(); renderTiming(); renderTrends();
+  location.replace('#' + S.tech + '/' + S.cfg + '/' + S.sram);
+  renderSelectors(); renderLatest(); renderArea(); renderTiming(); renderGsim(); renderTrends();
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tech],[data-cfg],[data-go]');
+  const t = e.target.closest('[data-tech],[data-cfg],[data-sram],[data-go]');
   if (!t) return;
   if (t.dataset.tech) S.tech = t.dataset.tech;
   if (t.dataset.cfg) S.cfg = t.dataset.cfg;
+  if (t.dataset.sram) S.sram = t.dataset.sram;
   S.root = t.dataset.go || 'r';
   S.hover = null;
   t.dataset.go ? renderArea() : render();
@@ -314,7 +337,8 @@ document.addEventListener('mouseover', e => {
   }
 });
 
-const [ht, hc] = decodeURIComponent(location.hash.slice(1)).split('/');
+const [ht, hc, hs] = decodeURIComponent(location.hash.slice(1)).split('/');
+if (srams.includes(hs)) S.sram = hs;
 if (techs.includes(ht)) S.tech = ht;
 if (cfgs.includes(hc)) S.cfg = hc;
 $('gen').textContent = `Generated ${DATA.generated} · flow ${DATA.flow_version}`;

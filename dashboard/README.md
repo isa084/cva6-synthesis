@@ -27,13 +27,16 @@ technology, mode, and flow_version.
 The page uses these fields: upstream_sha, upstream_date, upstream_title,
 target, technology, sram_mode, mode, flow_version, status, run_started,
 stdcell_area_um2, macro_area_um2, total_area_um2, stdcell_kgate, fmax_mhz,
-worst_slack_ps, sram_macros, clock_period_ps, image, and:
+worst_slack_ps, sram_macros, clock_period_ps, image, config (the CVA6
+configuration of the target), and:
 
 - `params`: the main flow settings, as label and value.
 - `paths`: the worst setup path per path group (`in2reg`, `reg2reg`,
   `reg2out`, `in2out`), with `slack_ps`, `start` and `end`.
 - `area_tree`: the floorplan area per instance (`name`, `module`, `area`,
   `sram`, `children`). It is null for a flat netlist.
+- `gsim_run`, `gsim_passed`, `gsim`: the gate-level simulation (per program:
+  `test`, `rtl`, `gate`, `cycles`).
 
 `commits.json` (beside `runs.json`, optional) lists the recent commits of the
 tracked upstream branch, newest first: `sha`, `date`, `title`, and `rtl`
@@ -41,5 +44,6 @@ tracked upstream branch, newest first: `sha`, `date`, `title`, and `rtl`
 show every listed commit from the first one with a result. A commit with
 `rtl` false shows the result of the commit before it, with a hollow marker.
 
-The page shows only the `fakeram` and `fast` records of the newest
-flow_version. Failed runs can have null metrics.
+The page shows the `fast` records of the newest flow_version. An SRAM model
+selector appears when the records have more than one `sram_mode`. Failed runs
+can have null metrics.

@@ -25,7 +25,7 @@ def main(runs_path, out_dir):
     # Upstream commits (newest first) from commits.json next to runs.json, if any.
     commits_file = (src if src.is_dir() else src.parent) / "commits.json"
     commits = json.loads(commits_file.read_text()) if commits_file.exists() else []
-    fast = [r for r in runs if r["sram_mode"] == "fakeram" and r.get("mode", "fast") == "fast"]
+    fast = [r for r in runs if r.get("mode", "fast") == "fast"]
     # The page shows one flow version: the one of the most recent run.
     started = lambda r: datetime.fromisoformat(r.get("run_started") or "1970-01-01T00:00:00+00:00")
     newest = max(fast, key=started) if fast else {}
