@@ -1,26 +1,27 @@
 # cva6-synthesis
 
-Generic containerized synthesis and raw timing-report flow for compatible CVA6
-checkouts.
+This repository contains a generic synthesis flow and a raw timing-report flow
+for compatible CVA6 checkouts. The flow runs in a container.
 
-The CVA6 repository supplies one fork-specific file at its root:
+The CVA6 repository supplies one file that is specific to the fork. The file is
+at the root of the CVA6 repository:
 
 ```text
 synthesis.yaml
 ```
 
-This repository is intended to be included as the submodule:
+Include this repository as the submodule:
 
 ```text
 <repo_home>/synthesis
 ```
 
-The container lifecycle is delegated to the nested `docker-harness` submodule.
-`cva6-synthesis` owns only CVA6 synthesis semantics.
+The nested `docker-harness` submodule controls the container lifecycle.
+`cva6-synthesis` owns only the CVA6 synthesis semantics.
 
 ## Five-minute quick start
 
-From the CVA6 repository root:
+Run these commands in the root directory of the CVA6 repository:
 
 ```bash
 git submodule update --init --recursive
@@ -33,10 +34,11 @@ CANDIDATE_TARGET=candidate_target_name
 ./synthesis/compare.sh --mode quick "$REFERENCE_TARGET" "$CANDIDATE_TARGET"
 ```
 
-Use target keys defined by the parent repository's `synthesis.yaml`. For mapped
-area and OpenSTA timing, replace `quick` with `full`. Results are written below
-`synthesis/runs/<target>/<mode>/latest-success/`; no persistent container is
-left running.
+Use the target keys that the `synthesis.yaml` file of the parent repository
+defines. To get the mapped area and the OpenSTA timing, replace `quick` with
+`full`. The flow writes the results below
+`synthesis/runs/<target>/<mode>/latest-success/`. No persistent container
+continues to run.
 
 ## Expected checkout
 
@@ -54,7 +56,8 @@ repo_home/
     └── docker-harness/     # nested submodule
 ```
 
-Generated data is kept in an ignored directory inside the synthesis submodule:
+The flow keeps the generated data in a directory that Git ignores. The
+directory is inside the synthesis submodule:
 
 ```text
 repo_home/synthesis/runs/<target>/<mode>/<timestamp>/
@@ -62,15 +65,16 @@ repo_home/synthesis/runs/<target>/<mode>/<timestamp>/
 
 ## Setup
 
-From the CVA6 repository root:
+Run this command in the root directory of the CVA6 repository:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-Requirements on the host are Docker Engine and Docker Compose v2.24 or newer.
-The first run builds the small CVA6-synthesis wrapper image automatically and
-pulls its prebuilt IIC-OSIC-TOOLS base image when needed.
+The host needs Docker Engine and Docker Compose v2.24 or newer. The first run
+builds the small CVA6-synthesis wrapper image automatically. When it is
+necessary, the first run also pulls the prebuilt IIC-OSIC-TOOLS base image of
+the wrapper image.
 
 ## Run
 
@@ -80,28 +84,29 @@ Run a target in quick structural mode without ABC or OpenSTA:
 ./synthesis/run.sh --build --mode quick --target TARGET
 ```
 
-Run a target in full mapped-area and pre-layout timing mode:
+Run a target in full mode to get the mapped area and the pre-layout timing:
 
 ```bash
 ./synthesis/run.sh --build --mode full --target TARGET
 ```
 
-`full` is the default mode when `--mode` is omitted. `--build` is needed after
-the synthesis image or flow changes; it is not needed for every target run.
+If you do not use `--mode`, the default mode is `full`. Use `--build` after the
+synthesis image or the flow changes. You do not need `--build` for every target
+run.
 
-Force a wrapper-image rebuild:
+Force a rebuild of the wrapper image:
 
 ```bash
 ./synthesis/run.sh --build --target TARGET
 ```
 
-The container receives the complete CVA6 checkout read-only at
-`/workspace/input` and one new result directory read-write at
-`/workspace/output`.
+The container gets the complete CVA6 checkout at `/workspace/input`. This path
+is read-only. The container also gets one new result directory at
+`/workspace/output`. This path is read-write.
 
 ## Raw results
 
-A successful run produces approximately:
+A successful run produces about these files:
 
 ```text
 synthesis/runs/<target>/<mode>/<timestamp>/
@@ -114,21 +119,21 @@ synthesis/runs/<target>/<mode>/<timestamp>/
 └── synthesized-netlist.v       # quick mode
 ```
 
-Full mode replaces `synthesized-netlist.v` with `mapped-netlist.v` and also
-produces `dfflibmap.rpt`, `abc.rpt`, and `timing-top10.rpt`.
+In full mode, `mapped-netlist.v` replaces `synthesized-netlist.v`. Full mode
+also produces `dfflibmap.rpt`, `abc.rpt`, and `timing-top10.rpt`.
 
-`latest` points to the newest attempt and `latest-success` to the newest
-successful attempt for that target.
+`latest` points to the newest attempt for that target. `latest-success` points
+to the newest successful attempt for that target.
 
-`ltp.rpt` is a structural longest-topological-path report. It is not a timing
-report. `timing-top10.rpt` is the raw pre-layout OpenSTA report after Nangate45
-technology mapping. The timing flow currently applies only the configured main
-clock; it does not claim sign-off or post-route frequency accuracy.
+`ltp.rpt` is a structural report of the longest topological path. It is not a
+timing report. `timing-top10.rpt` is the raw pre-layout OpenSTA report. The flow
+makes this report after it maps the design to the Nangate45 technology. At this
+time, the timing flow applies only the configured main clock. It does not claim
+sign-off accuracy or post-route frequency accuracy.
 
 ## Compare targets
 
-After both targets have completed successfully, compare runs made in the same
-mode:
+After both targets complete successfully, compare the runs in the same mode:
 
 ```bash
 ./synthesis/compare.sh --mode quick REFERENCE_TARGET CANDIDATE_TARGET
@@ -137,70 +142,86 @@ mode:
     REFERENCE_TARGET CANDIDATE_TARGET
 ```
 
-Quick mode compares generic Yosys cell counts and identifies the two structural
-longest-path reports. These are not technology area or timing results. Full
-mode additionally compares mapped cell area and worst OpenSTA slack, identifies
-the top-ten timing reports, and can search the candidate report using a
-caller-supplied instance-name regular expression. No match means only that the
-instance is absent from those ten paths.
+Quick mode compares the generic Yosys cell counts. It also identifies the two
+structural longest-path reports. These are not technology area results or
+timing results.
 
-The reported delta is `candidate - reference`. The command rejects runs made
-from different CVA6 commits, synthesis configurations, modes or flow commits.
-Commit or otherwise freeze RTL edits before running both targets for a clean
+Full mode also compares the mapped cell area and the worst OpenSTA slack. It
+identifies the top-ten timing reports. It can also search the candidate report
+with a regular expression for instance names that the caller supplies. No match
+means only that the instance is not in those ten paths.
+
+The reported delta is `candidate - reference`. The command rejects runs that use
+different CVA6 commits, synthesis configurations, modes, or flow commits. Commit
+or freeze the RTL edits before you run both targets. This gives a clean
 comparison.
 
 ## ORFS profile
 
-With `profile: orfs` in `synthesis.yaml`, `run.sh` runs the OpenROAD-flow-scripts
-flow from synthesis to floorplan in the pinned prebuilt `openroad/orfs` image
-(`container/compose.orfs.yaml`; no image build):
+If `synthesis.yaml` has `profile: orfs`, `run.sh` runs the OpenROAD-flow-scripts
+flow from synthesis to floorplan. The flow runs in the pinned prebuilt
+`openroad/orfs` image. The compose file for this image is
+`container/compose.orfs.yaml`. The flow does not build an image. The command is:
 
 ```bash
 ./synthesis/run.sh --target TARGET [--tech asap7|nangate45] [--mode fast|opt]
 ```
 
-`fast` (default) stops at the floorplan metrics step with the cheapest
-settings; `opt` uses the reference flow settings. Each target sets `sram:` to
-`fakeram` (default; FakeRAM macros for every cache memory) or `flatten`
-(memories as flip-flops). The run directory is
-`synthesis/runs/<target>/<tech>/<mode>/<timestamp>/` and contains
-`results.json` (area, kGate, fmax, worst slack, macro count and bits,
-provenance), the raw ORFS metrics (`metrics.json`) and the ORFS logs,
-reports and results. The RTL must equal the upstream commit
-(`CVA6_UPSTREAM_REF`, default `origin/master`) plus the tool-compatibility
-commits on `ft-synthesis` (listed as `rtl_patched` in `metadata.txt`);
-uncommitted RTL changes fail the run.
+The ORFS profile has two modes:
 
-The FakeRAM macro views in `sram/views` are generated by `sram/generate.sh`
-from `sram/<tech>.cfg`.
+- `fast` (default): stops at the floorplan metrics step with the cheapest
+  settings
+- `opt`: uses the reference flow settings
 
-## Adapting another CVA6 fork
+Each target sets `sram:` to one of these values:
 
-Do not edit the flow for ordinary fork differences. Change only the parent
-repository's `synthesis.yaml`:
+- `fakeram` (default): FakeRAM macros for every cache memory
+- `flatten`: the flow implements the memories as flip-flops
 
-- synthesis target name;
-- CVA6 configuration name;
-- top module;
-- file list;
-- preprocessor defines;
-- additional top-level source files;
-- optional elaboration assertions;
-- main clock port and analysis period.
+The run directory is `synthesis/runs/<target>/<tech>/<mode>/<timestamp>/`. It
+contains these items:
 
-The file list remains the primary RTL integration boundary.
+- `results.json` (area, kGate, fmax, worst slack, macro count, bit count,
+  provenance)
+- the raw ORFS metrics (`metrics.json`)
+- the ORFS logs, reports, and results
+
+The RTL must equal the upstream commit plus the tool-compatibility commits on
+`ft-synthesis`. The variable `CVA6_UPSTREAM_REF` names the upstream commit. Its
+default is `origin/master`. `metadata.txt` lists the tool-compatibility commits
+as `rtl_patched`. If the RTL has uncommitted changes, the run fails.
+
+`sram/generate.sh` generates the FakeRAM macro views in `sram/views` from
+`sram/<tech>.cfg`.
+
+## Adapt another CVA6 fork
+
+Do not edit the flow for ordinary fork differences. Change only these items in
+the `synthesis.yaml` file of the parent repository:
+
+- synthesis target name
+- CVA6 configuration name
+- top module
+- file list
+- preprocessor defines
+- additional top-level source files
+- optional elaboration assertions
+- main clock port and analysis period
+
+The file list is still the main boundary for RTL integration.
 
 ## Tool layer
 
-The wrapper image is based on pinned IIC-OSIC-TOOLS release `2026.07`, which
-provides Yosys, the slang Yosys plugin, OpenSTA and OpenROAD. The wrapper adds
-only the generic flow files and Nangate45 platform data needed here.
+The wrapper image uses the pinned IIC-OSIC-TOOLS release `2026.07` as its base.
+This release provides Yosys, the slang Yosys plugin, OpenSTA, and OpenROAD. The
+wrapper adds only the generic flow files and the Nangate45 platform data that
+this flow needs.
 
-`docker-harness` is intentionally left generic and unchanged.
+`docker-harness` stays generic and unchanged. This is on purpose.
 
 ## TODO: physical design
 
 A later phase can add an optional OpenROAD place-and-route path and post-route
-STA. Keep that separate from the current synthesis + pre-layout STA path. The
-current raw mapped netlist and configuration are intended to be a clean handoff
-point for that future work.
+STA. Keep this separate from the current synthesis and pre-layout STA path. The
+plan is to use the current raw mapped netlist and configuration as a clean
+handoff point for this future work.

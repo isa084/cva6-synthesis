@@ -1,71 +1,83 @@
 # Results: what the numbers mean
 
-Results come from the ORFS profile: OpenROAD-flow-scripts run on the CVA6
-`cva6` module (core only) through the floorplan stage. Every run writes
-`results.json` next to its raw ORFS metrics (`metrics.json`).
+The results come from the ORFS profile. This profile runs
+OpenROAD-flow-scripts on the CVA6 `cva6` module (core only) through the
+floorplan stage. Every run writes `results.json` next to its raw ORFS metrics
+(`metrics.json`).
 
 ## Metrics
 
 | Field | Meaning |
 |---|---|
-| `stdcell_area_um2` | Area of all standard cells after floorplan, excluding SRAM macros. |
-| `macro_area_um2` | Area of the SRAM macros (from the FakeRAM macro views). |
-| `total_area_um2` | Standard-cell area plus macro area. |
-| `stdcell_kgate` | Standard-cell area divided by the NAND2 area of the technology, in thousands (kGE). ASAP7: NAND2x1 RVT = 0.0874 µm²; Nangate45: NAND2_X1 area read from the Liberty file. |
-| `fmax_mhz` | Highest clock frequency the worst path allows, from OpenSTA after floorplan. |
-| `worst_slack_ps` | Worst setup slack at the configured clock period (negative = path too slow). |
-| `sram_macros`, `sram_bits` | Number of SRAM macro instances and total bits they hold. |
-| `clock_period_ps` | Constraint used: ASAP7 4000 ps; Nangate45 3000 ps. |
+| `stdcell_area_um2` | The area of all standard cells after floorplan. The area of the SRAM macros is not included. |
+| `macro_area_um2` | The area of the SRAM macros. The FakeRAM macro views give this area. |
+| `total_area_um2` | The standard-cell area plus the macro area. |
+| `stdcell_kgate` | The standard-cell area divided by the NAND2 area of the technology, in thousands (kGE). For ASAP7, NAND2x1 RVT = 0.0874 µm². For Nangate45, the flow reads the NAND2_X1 area from the Liberty file. |
+| `fmax_mhz` | The highest clock frequency that the worst path allows. OpenSTA gives this value after floorplan. |
+| `worst_slack_ps` | The worst setup slack at the configured clock period. A negative value means that the path is too slow. |
+| `sram_macros`, `sram_bits` | The number of SRAM macro instances and the total number of bits that they hold. |
+| `clock_period_ps` | The constraint that the flow uses. The value is 4000 ps for ASAP7 and 3000 ps for Nangate45. |
 
-Each record also carries provenance: upstream commit, flow version, image
-digest, technology, run mode and SRAM mode.
+Each record also has provenance data:
+
+- upstream commit
+- flow version
+- image digest
+- technology
+- run mode
+- SRAM mode
 
 ## What they do and do not represent
 
-- Pre-layout: no placement, clock tree or routing; wire delays are not
-  modelled. Timing is indicative and tracks trends between commits.
-- No timing repair: the netlist is not resized or buffered to meet timing, so
-  timing reflects the RTL rather than optimisation effort.
-- The RVFI verification port (`rvfi_probes_o`) is removed before synthesis;
-  logic that only drives it is not counted.
-- SRAM macros are FakeRAM models: plausible area and timing estimates, not
-  silicon memory compilers. ASAP7 is a predictive (non-manufacturable) PDK.
-- Byte-enabled memories are built from 8-bit lane macros, which slightly
-  enlarges the macro footprint compared with a write-mask SRAM.
-- A lane that only holds alignment padding (for example the upper bytes of
-  a 45-bit tag word that `sram.sv` stores in a 64-bit cut) is never read,
-  so synthesis removes it; `sram_macros` and `sram_bits` count the remaining
-  lanes.
+- Pre-layout: The flow has no placement, no clock tree, and no routing. It does
+  not model wire delays. The timing values give an indication. They show the
+  trends between commits.
+- No timing repair: The flow does not resize the netlist or add buffers to meet
+  the timing. Thus the timing shows the RTL and not the optimization effort.
+- The flow removes the RVFI verification port (`rvfi_probes_o`) before
+  synthesis. The flow does not count the logic that only drives this port.
+- The SRAM macros are FakeRAM models. They give plausible area and timing
+  estimates. They are not silicon memory compilers. ASAP7 is a predictive PDK.
+  It is not manufacturable.
+- The flow builds byte-enabled memories from 8-bit lane macros. This makes the
+  macro footprint slightly larger than the footprint of a write-mask SRAM.
+- Some lanes only hold alignment padding. One example is the upper bytes of a
+  45-bit tag word that `sram.sv` stores in a 64-bit cut. Nothing reads such a
+  lane, so synthesis removes it. `sram_macros` and `sram_bits` count the
+  remaining lanes.
 
 ## Run modes
 
 | Mode | Settings | Typical time per target |
 |---|---|---|
-| `fast` | Flat synthesis, area-oriented ABC script, no floorplan timing repair (`orfs/fast.mk`). | minutes |
-| `opt` | Reference settings: hierarchical synthesis, timing-oriented ABC, reference floorplan settings (`orfs/opt.mk`). | hours |
+| `fast` | Flat synthesis, an ABC script for area, and no timing repair at floorplan (`orfs/fast.mk`). | minutes |
+| `opt` | The reference settings: hierarchical synthesis, an ABC script for timing, and the reference floorplan settings (`orfs/opt.mk`). | hours |
 
-`fast` and `opt` results are never mixed in one series.
+The flow never mixes `fast` results and `opt` results in one series.
 
 ## SRAM modes
 
-Set per target with `sram:` in the consuming repository's `synthesis.yaml`.
+Set the mode for each target with `sram:` in the `synthesis.yaml` file of the
+repository that uses the flow.
 
 | Mode | Effect |
 |---|---|
-| `fakeram` | Cache memories become FakeRAM macros (default). |
-| `flatten` | Memories are synthesised as flip-flops inside the core; macro area is 0. |
+| `fakeram` | The cache memories become FakeRAM macros (default). |
+| `flatten` | The flow synthesizes the memories as flip-flops inside the core. The macro area is 0. |
 
 The flow replaces the SRAM wrapper modules (`tc_sram_wrapper`,
 `tc_sram_wrapper_cache_techno`, `hpdcache_sram_1rw`,
-`hpdcache_sram_wbyteenable_1rw`) with the versions in `sram/rtl/`; upstream
-files are not edited.
+`hpdcache_sram_wbyteenable_1rw`) with the versions in `sram/rtl/`. The flow does
+not edit the upstream files.
 
 ## Other macros
 
 To use different SRAM shapes or another macro generator:
 
-1. Add the shape to `sram/<tech>.cfg` and run `sram/generate.sh`, or place
-   your own `.lef`, `.lib` and `.v` views in `sram/views/<tech>/<macro>/`.
+1. Do one of these steps:
+   - Add the shape to `sram/<tech>.cfg`. Then run `sram/generate.sh`.
+   - Put your own `.lef`, `.lib`, and `.v` views in
+     `sram/views/<tech>/<macro>/`.
 2. Map the shape to the macro in `sram/rtl/cva6_sram_1rw_macro.sv`.
 
 ## Reproduce
@@ -76,4 +88,5 @@ cd cva6
 ./synthesis/run.sh --target cv32a65x --tech asap7 --mode fast
 ```
 
-Results are written to `synthesis/runs/<target>/<tech>/<mode>/latest-success/`.
+The flow writes the results to
+`synthesis/runs/<target>/<tech>/<mode>/latest-success/`.

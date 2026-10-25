@@ -22,50 +22,51 @@ isa084.github.io/cva6-synthesis/  ◄── linked from the isa084.github.io blo
 
 ## 1. Fork mirror and `ft-synthesis`
 
-`.github/workflows/track.yml`, job `sync`, on a GitHub-hosted runner.
+The job `sync` in `.github/workflows/track.yml` runs on a GitHub-hosted runner.
 
-- **Mirror:** `isa084/cva6` `master` is fast-forwarded to upstream `master`.
-  It never carries commits of its own, and a non-fast-forward update fails.
-  The tracked branch is the repository variable `TRACKED_BRANCH`.
-- **Rebase:** `ft-synthesis` is rebased onto it. That branch is upstream plus
-  two kinds of commits:
-  - tool-compatibility RTL edits, when an open-source tool mishandles a
-    construct; each is documented in `docs/DEVIATIONS.md`;
-  - one commit adding `synthesis.yaml` (targets, technology, SRAM mode) and
+- **Mirror:** The job fast-forwards `isa084/cva6` `master` to upstream `master`.
+  This branch never carries commits of its own. A non-fast-forward update fails.
+  The repository variable `TRACKED_BRANCH` sets the tracked branch.
+- **Rebase:** The job rebases `ft-synthesis` onto this mirror. That branch is
+  upstream plus two kinds of commits:
+  - Tool-compatibility RTL edits, when an open-source tool handles a construct
+    incorrectly. `docs/DEVIATIONS.md` documents each edit.
+  - One commit that adds `synthesis.yaml` (targets, technology, SRAM mode) and
     this repository as the `synthesis/` submodule.
-- **Push:** happens only if the rebase is clean. It uses an SSH deploy key
-  that can write to the fork and nothing else.
+- **Push:** The job pushes only if the rebase is clean. It uses an SSH deploy
+  key. This key can write to the fork and nothing else.
 
 ## 2. Plan
 
-Job `sync`, step `Plan`.
+The step `Plan` in the job `sync` does this part.
 
-- **Comparison:** the upstream commit is compared with the newest one in the
-  `data` branch. If no RTL changed (`core common vendor corev_apu`), it is
-  recorded as skipped and nothing runs.
-- **Matrix:** otherwise the job matrix is built (target × technology).
-- **Manual dispatch:** can name a specific commit, targets, technologies,
-  mode (`fast` or `opt`) and `force`.
+- **Comparison:** The step compares the upstream commit with the newest commit
+  in the `data` branch. If no RTL changed (`core common vendor corev_apu`), the
+  step records the commit as skipped. Then nothing runs.
+- **Matrix:** Otherwise, the step builds the job matrix (target × technology).
+- **Manual dispatch:** In a manual dispatch, you can name a specific commit,
+  targets, technologies, the mode (`fast` or `opt`), and `force`.
 
 ## 3. Flow run
 
-Job `flow`, on the self-hosted runner (`runner/`), one job at a time.
+The job `flow` runs on the self-hosted runner (`runner/`). The runner does one
+job at a time.
 
 | Step | What happens | Where |
 |---|---|---|
-| Checkout | `ft-synthesis` of the fork; for an older commit, that commit plus the synthesis files. | `track.yml` |
-| Start | Records provenance (upstream commit, flow version, RTL check) and starts a one-shot container: CVA6 mounted read-only, one output directory read-write. | `run.sh`, `docker-harness/`, `container/compose.orfs.yaml` |
-| Configure | Expands upstream `core/Flist.cva6`, swaps the SRAM wrappers for macro versions, writes an ORFS `config.mk`. | `flow/orfs.py`, `sram/rtl/` |
-| Settings | Shared design settings, per-technology clock and NAND2 area, per-mode synthesis effort. | `orfs/cva6.mk`, `orfs/<tech>.mk`, `orfs/<mode>.mk`, `orfs/constraints.sdc` |
-| Elaborate | Yosys with the built-in slang SystemVerilog reader; the RVFI verification port is removed. | ORFS, `orfs/canonicalize.tcl` |
-| Synthesise | Mapping to standard cells; SRAMs stay as FakeRAM macros. | ORFS, `sram/views/<tech>/` |
-| Floorplan | Die and core sizing, macro footprint, static timing (OpenSTA). | ORFS |
-| Results | Area, kGE, fmax, worst slack and macro counts from the ORFS metrics, plus provenance. | `flow/orfs.py` → `results.json` |
-| Check | The run directory is searched for workstation-identifying strings (a deny-list kept outside the repository). | `track.yml` |
+| Checkout | The job checks out `ft-synthesis` of the fork. For an older commit, it checks out that commit and the synthesis files. | `track.yml` |
+| Start | The flow records the provenance (upstream commit, flow version, RTL check). Then it starts a one-shot container. The container mounts CVA6 as read-only and one output directory as read-write. | `run.sh`, `docker-harness/`, `container/compose.orfs.yaml` |
+| Configure | The flow expands the upstream `core/Flist.cva6`. It replaces the SRAM wrappers with macro versions. It writes an ORFS `config.mk`. | `flow/orfs.py`, `sram/rtl/` |
+| Settings | The flow sets the shared design settings, the clock and NAND2 area for each technology, and the synthesis effort for each mode. | `orfs/cva6.mk`, `orfs/<tech>.mk`, `orfs/<mode>.mk`, `orfs/constraints.sdc` |
+| Elaborate | Yosys reads the design with the built-in slang SystemVerilog reader. The flow removes the RVFI verification port. | ORFS, `orfs/canonicalize.tcl` |
+| Synthesize | The flow maps the design to standard cells. The SRAMs stay as FakeRAM macros. | ORFS, `sram/views/<tech>/` |
+| Floorplan | The flow sizes the die and the core. It also sets the macro footprint and runs static timing with OpenSTA. | ORFS |
+| Results | The flow takes the area, kGE, fmax, worst slack, and macro counts from the ORFS metrics. It also adds the provenance. | `flow/orfs.py` → `results.json` |
+| Check | The job searches the run directory for strings that identify the workstation. A deny-list outside the repository gives these strings. | `track.yml` |
 
-The tools come from one pinned prebuilt image, `openroad/orfs`, referenced by
-digest; nothing is built. The same `run.sh` command reproduces any result
-locally:
+All tools come from one pinned prebuilt image, `openroad/orfs`. The flow
+references the image by digest. The flow builds nothing. The same `run.sh`
+command reproduces any result on a local machine:
 
 ```bash
 git clone --recursive -b ft-synthesis https://github.com/isa084/cva6.git
@@ -74,22 +75,23 @@ cd cva6 && ./synthesis/run.sh --target cv32a65x --tech asap7 --mode fast
 
 ## 4. Publish
 
-Jobs `publish` and `pages`, on a GitHub-hosted runner.
+The jobs `publish` and `pages` run on a GitHub-hosted runner.
 
-- **Data:** each run's `results.json`, `metrics.json` and `metadata.txt` are
-  stored on the `data` branch under `runs/<commit>/<target>/<tech>/<mode>/`,
-  and `runs.json` is rebuilt from them. Records are append-only.
+- **Data:** The job stores the `results.json`, `metrics.json`, and `metadata.txt`
+  of each run on the `data` branch under `runs/<commit>/<target>/<tech>/<mode>/`.
+  It rebuilds `runs.json` from these files. Records are append-only.
 - **Dashboard:** `dashboard/generate.py` writes one static page with the values
-  in it: a summary table per technology and a 10-commit history per target.
-- **Pages:** the page is deployed to GitHub Pages
+  in it. The page shows a summary table for each technology and a 10-commit
+  history for each target.
+- **Pages:** The job deploys the page to GitHub Pages
   (`isa084.github.io/cva6-synthesis/`).
 
-## Further reading
+## Further information
 
 | Topic | File |
 |---|---|
-| What each number means, run modes, SRAM modes | `docs/RESULTS.md` |
+| The meaning of each number, run modes, and SRAM modes | `docs/RESULTS.md` |
 | Differences from the upstream reference flow | `docs/DEVIATIONS.md` |
-| Running and securing the self-hosted runner | `runner/README.md` |
-| Command-line usage | `README.md` |
+| How to run and secure the self-hosted runner | `runner/README.md` |
+| How to use the command line | `README.md` |
 | ORFS stages and variables | ORFS `docs/tutorials/FlowTutorial.md`, `docs/user/FlowVariables.md` |
