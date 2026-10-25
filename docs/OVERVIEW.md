@@ -55,7 +55,7 @@ number of jobs that run at the same time.
 
 | Step | What happens | Where |
 |---|---|---|
-| Checkout | The job checks out `ft-synthesis` of the fork. For an older commit, it checks out that commit and the synthesis files. | `track.yml` |
+| Checkout | The job checks out `ft-synthesis` of the fork. For an older commit, it checks out that commit, applies the tool-compatibility commits, and adds the synthesis files. | `track.yml` |
 | Start | The flow records the provenance (upstream commit, flow version, RTL check). Then it starts a one-shot container. The container mounts CVA6 as read-only and one output directory as read-write. | [`run.sh`](../run.sh), [`docker-harness/`](../docker-harness/), [`container/compose.orfs.yaml`](../container/compose.orfs.yaml) |
 | Configure | The flow expands the upstream `core/Flist.cva6`. It replaces the SRAM wrappers with macro versions. It writes an ORFS `config.mk`. | [`flow/orfs.py`](../flow/orfs.py), [`sram/rtl/`](../sram/rtl/) |
 | Settings | The flow sets the shared design settings, the clock and NAND2 area for each technology, and the synthesis effort for each mode. | `orfs/cva6.mk`, `orfs/<tech>.mk`, `orfs/<mode>.mk`, `orfs/constraints.sdc` |

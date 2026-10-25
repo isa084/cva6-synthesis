@@ -147,10 +147,16 @@ jobs:
           ssh-key: ${{ secrets.FORK_DEPLOY_KEY }}
           fetch-depth: 0
 
+      # The tool-compatibility commits (ft-synthesis on top of the tracked branch,
+      # except its last commit) apply to the older commit too.
       - name: Check out the older upstream commit
         if: needs.sync.outputs.old == 'true'
+        env:
+          BRANCH: ${{ vars.TRACKED_BRANCH }}
         run: |
+          fixes=$(git rev-list --reverse "origin/$BRANCH..ft-synthesis~1")
           git checkout -q "$SHA"
+          [ -z "$fixes" ] || git -c user.name=ci -c user.email=ci@example.invalid cherry-pick $fixes
           git checkout ft-synthesis -- synthesis.yaml .gitmodules synthesis
 
       # The flow submodule is fetched from the repository running this workflow,
