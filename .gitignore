@@ -1,3 +1,4 @@
 /runs/
 *.env.local
 .tool.env
+__pycache__/

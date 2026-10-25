@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CVA6 area and timing</title>
+<style>
+:root{color-scheme:light;--plane:#f8f9fa;--surface:#fff;--head:#f1f3f5;--ink:#212529;--ink2:#495057;--muted:#646b72;--grid:#e9ecef;--axis:#adb5bd;--border:#dee2e6;--sel:#e7f1ff;--accent:#0d6efd;--accent-ink:#fff;--nav:#212529;--nav-ink:#f8f9fa;--line:#2a78d6;--s0:#b9b8b1;--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--pass:#198754;--fail:#b02a37;--good-ink:#146c43;--bad-ink:#b02a37;--link:#0a58ca}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--plane:#0d0d0d;--surface:#1a1a19;--head:#232322;--ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a29b;--grid:#2c2c2a;--axis:#5f5e5a;--border:#383835;--sel:#1d2a3d;--accent:#3987e5;--accent-ink:#0b0b0b;--nav:#000;--nav-ink:#f0efec;--line:#3987e5;--s0:#5f5e5a;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--good-ink:#3fbf7f;--bad-ink:#e66767;--link:#86b6ef}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--link)}a:hover{color:var(--ink)}
+nav{background:var(--nav);color:var(--nav-ink);padding:10px 20px;display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;justify-content:space-between}
+nav b{font-size:16px}nav span{font-size:12px;opacity:.85}
+main{max-width:1280px;margin:0 auto;padding:16px 20px 40px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:6px}
+.card>h2{margin:0;background:var(--head);border-bottom:1px solid var(--border);border-radius:6px 6px 0 0;padding:8px 14px;font-size:15px}
+.body{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.bar{padding:10px 14px;display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center}
+.group{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.group>span{font-weight:600;color:var(--ink2);margin-right:4px}
+.group button{font:inherit;font-size:12.5px;min-height:34px;padding:0 11px;border-radius:5px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer}
+.group button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.info{display:flex;flex-wrap:wrap;gap:4px 22px;color:var(--ink2)}.info b{color:var(--ink)}
+.badge{color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px;vertical-align:1px}
+.wrap{overflow-x:auto;border:1px solid var(--border);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:5px 8px;border-top:1px solid var(--grid);text-align:right;vertical-align:top}
+th{background:var(--head);color:var(--ink2);font-size:12px;font-weight:600;border-top:0;white-space:nowrap}
+th.l,td.l{text-align:left}tr.sel td{background:var(--sel);font-weight:650}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;overflow-wrap:anywhere}
+.muted{color:var(--muted)}.good{color:var(--good-ink)}.bad{color:var(--bad-ink)}
+.split{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.sun{flex:0 1 420px;min-width:0;margin:0 auto}.sun svg{width:100%;height:auto;display:block}
+.sun path{stroke:var(--surface);stroke-width:1.5px}
+.sun text{pointer-events:none;text-anchor:middle;dominant-baseline:central}
+.lbl{font:600 11px ui-monospace,Menlo,monospace;fill:var(--ink);paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.tree{flex:1 1 520px;min-width:0}.tree tr[data-key]{cursor:pointer}.tree tr.hov td{background:var(--sel)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.crumbs button{font:inherit;font-family:ui-monospace,Menlo,monospace;font-size:12px;border:0;background:none;color:var(--link);padding:2px;cursor:pointer}
+.crumbs button:last-child{color:var(--ink);font-weight:650}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:14px}
+.chart{border:1px solid var(--border);border-radius:4px;position:relative}
+.chart h3{margin:0;padding:6px 10px;border-bottom:1px solid var(--border);font-size:12.5px}
+.chart svg{width:100%;height:auto;display:block}
+.chart .t{font-size:11px;fill:var(--muted)}.chart .tt{font-size:11px;fill:var(--ink2)}
+.tip{position:absolute;background:var(--surface);border:1px solid var(--border);box-shadow:0 2px 10px rgba(0,0,0,.15);border-radius:4px;padding:6px 9px;font-size:12px;pointer-events:none;max-width:260px;transform:translate(-50%,calc(-100% - 10px));z-index:2}
+details summary{cursor:pointer;padding:8px 14px;background:var(--head);border-radius:6px;font-size:14px;font-weight:650}
+details ul{margin:0;padding:10px 14px 12px 32px;color:var(--ink2)}
+footer{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--muted)}
+@media (max-width:640px){main{padding:12px 12px 32px}.charts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav><b>CVA6 area and timing</b><span id="gen"></span></nav>
+<main>
+<div class="card bar">
+<div class="group" role="group" aria-label="Technology"><span>Technology</span><span id="techs" class="group"></span></div>
+<div class="group" role="group" aria-label="Configuration"><span>Configuration</span><span id="cfgs" class="group"></span></div>
+</div>
+<section class="card"><h2 id="latest-h"></h2><div class="body" id="latest"></div></section>
+<section class="card"><h2 id="area-h"></h2><div class="body" id="area"></div></section>
+<section class="card"><h2 id="timing-h"></h2><div class="body" id="timing"></div></section>
+<section class="card"><h2 id="trend-h"></h2><div class="body" id="trends"></div></section>
+<section class="card"><h2 id="hist-h"></h2><div class="body" id="hist"></div></section>
+<details class="card"><summary>Method</summary><ul>
+<li>Flow: OpenROAD-flow-scripts, synthesis to floorplan. No timing repair, so timing is pre-layout with an ideal clock.</li>
+<li>Constraints: one clock on <code>clk_i</code>; input and output delay as listed in the build parameters.</li>
+<li>SRAM: every cache memory is a FakeRAM2.0 macro. SRAM area is an SRAM estimate.</li>
+<li>kGE: standard-cell area divided by the NAND2 area of the technology.</li>
+<li>Fmax: from the worst path of all path groups. Core fmax: 1 / (clock period − worst register-to-register slack).</li>
+<li>Area breakdown: synthesis netlist with hierarchy. A module below the keep size is merged into its parent; "(local)" is the logic of the parent itself.</li>
+</ul></details>
+<footer><span id="ver"></span><a href="https://github.com/isa084/cva6-synthesis">Flow repository</a><a href="https://github.com/isa084/cva6-synthesis/blob/master/docs/RESULTS.md">Method and reproduction</a></footer>
+</main>
+<script>
+const DATA = /*DATA*/null;
+const COMMIT = 'https://github.com/openhwfoundation/cva6/commit/';
+const TL = {asap7: 'ASAP7', nangate45: 'Nangate45'};
+const R = DATA.records;
+const techs = [...new Set(R.map(r => r.technology))].sort();
+const cfgs = [...new Set(R.map(r => r.target))].sort();
+const S = {tech: techs[0], cfg: cfgs[0], root: 'r', hover: null};
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const num = (v, d) => v == null ? '—' : Number(v).toLocaleString('en-US', {minimumFractionDigits: d, maximumFractionDigits: d});
+const sgn = t => t.replace(/^-/, '−');
+const pct = (a, b) => { const p = 100 * a / b; return (p < 10 ? p.toFixed(1) : p.toFixed(0)) + '%'; };
+const ok = r => r.status === 'success' || r.status === 'ok';
+const arch = c => c.startsWith('cv32') ? 'RV32' : c.startsWith('cv64') ? 'RV64' : '';
+const nand2 = r => r.stdcell_area_um2 / r.stdcell_kgate / 1000;
+const coreF = r => r.paths && r.paths.reg2reg ? 1e6 / (r.clock_period_ps - r.paths.reg2reg.slack_ps) : null;
+const byDate = (a, b) => (Date.parse(a.upstream_date) - Date.parse(b.upstream_date)) || (Date.parse(a.run_started || 0) - Date.parse(b.run_started || 0));
+
+// One record per upstream commit, oldest first.
+function series(tech, cfg) {
+  const m = new Map();
+  R.filter(r => r.technology === tech && r.target === cfg).sort(byDate).forEach(r => m.set(r.upstream_sha, r));
+  return [...m.values()];
+}
+const latest = (tech, cfg) => series(tech, cfg).pop() || null;
+
+function button(label, on, attrs) {
+  return `<button type="button" aria-pressed="${on}" ${attrs}>${esc(label)}</button>`;
+}
+
+function renderSelectors() {
+  $('techs').innerHTML = techs.map(t => button(TL[t] || t, t === S.tech, `data-tech="${t}"`)).join('');
+  $('cfgs').innerHTML = cfgs.map(c => button(c, c === S.cfg, `data-cfg="${c}"`)).join('');
+}
+
+function renderLatest() {
+  const rows = cfgs.map(c => latest(S.tech, c)).filter(Boolean);
+  const head = rows.reduce((a, r) => (!a || byDate(a, r) < 0 ? r : a), null);
+  const pass = rows.filter(ok).length, fail = rows.length - pass;
+  $('latest-h').innerHTML = `Latest run · ${esc(TL[S.tech] || S.tech)}<span class="badge" style="background:var(${fail ? '--fail' : '--pass'})">${fail ? fail + ' FAILED' : 'PASS'}</span>`;
+  const sel = latest(S.tech, S.cfg);
+  const params = (sel && sel.params) || {};
+  $('latest').innerHTML = `
+<div class="info"><span>Branch: <b>master</b></span>
+<span>Commit: <a href="${COMMIT}${esc(head.upstream_sha)}">${esc(head.upstream_sha.slice(0, 7))}</a> ${esc(head.upstream_title)}</span>
+<span>Committed: ${esc(head.upstream_date.slice(0, 10))}</span>
+<span>Runs: ${pass} passed${fail ? ', ' + fail + ' failed' : ''}</span>
+<span>Flow: ${esc(head.flow_version)}, mode ${esc(head.mode)}</span></div>
+${Object.keys(params).length ? `<div><b>Build parameters</b> <span class="muted">(${esc(S.cfg)})</span></div>
+<div class="wrap"><table><tr>${Object.keys(params).map(k => `<th class="l">${esc(k)}</th>`).join('')}</tr>
+<tr>${Object.values(params).map(v => `<td class="l">${esc(v)}</td>`).join('')}</tr></table></div>` : ''}
+<div><b>Results</b></div>
+<div class="wrap"><table><tr><th class="l">Arch</th><th class="l">Config</th><th class="l">Commit</th><th class="l">Status</th>
+<th>Fmax (MHz)</th><th>Core fmax (MHz)</th><th>Worst slack (ps)</th><th>Std-cell (kGE)</th><th>Std-cell (µm²)</th><th>SRAM (µm²)</th><th>Total (µm²)</th><th>SRAM macros</th></tr>
+${rows.map(r => `<tr class="${r.target === S.cfg ? 'sel' : ''}"><td class="l muted">${arch(r.target)}</td><td class="l">${esc(r.target)}</td>
+<td class="l mono"><a href="${COMMIT}${esc(r.upstream_sha)}">${esc(r.upstream_sha.slice(0, 7))}</a></td>
+<td class="l ${ok(r) ? 'good' : 'bad'}">${esc(r.status)}</td>
+<td>${num(r.fmax_mhz, 1)}</td><td>${num(coreF(r), 1)}</td><td class="${r.worst_slack_ps < 0 ? 'bad' : ''}">${sgn(num(r.worst_slack_ps, 1))}</td>
+<td>${num(r.stdcell_kgate, 1)}</td><td>${num(r.stdcell_area_um2, 0)}</td><td>${num(r.macro_area_um2, 0)}</td><td>${num(r.total_area_um2, 0)}</td><td>${num(r.sram_macros, 0)}</td></tr>`).join('')}
+</table></div>`;
+}
+
+// Area breakdown: sunburst of the selected level plus a table of two levels.
+function arc(a0, a1, r0, r1) {
+  if (a1 - a0 > 2 * Math.PI - 1e-3) a1 = a0 + 2 * Math.PI - 1e-3;
+  const big = a1 - a0 > Math.PI ? 1 : 0;
+  const p = (r, a) => (230 + r * Math.cos(a)).toFixed(2) + ',' + (230 + r * Math.sin(a)).toFixed(2);
+  return `M${p(r1, a0)}A${r1},${r1} 0 ${big} 1 ${p(r1, a1)}L${p(r0, a1)}A${r0},${r0} 0 ${big} 0 ${p(r0, a0)}Z`;
+}
+
+function renderArea() {
+  const r = latest(S.tech, S.cfg);
+  $('area-h').textContent = `Area breakdown · ${S.cfg} · ${TL[S.tech] || S.tech}`;
+  const top = r && r.area_tree;
+  if (!top) { $('area').innerHTML = '<div class="muted">No area breakdown for this run (flat synthesis).</div>'; return; }
+  const idx = {};
+  (function walk(n, key, slot, depth) {
+    n.key = key; n.slot = slot; idx[key] = n;
+    let k = 0;
+    (n.children || []).forEach((c, i) => walk(c, key + '/' + i, depth ? slot : (c.name === '(local)' || k >= 7 ? 0 : ++k), depth + 1));
+  })(top, 'r', 0, 0);
+  if (!idx[S.root] || !idx[S.root].children) S.root = 'r';
+  const root = idx[S.root];
+  const go = n => n.children ? `data-go="${n.key}"` : '';
+  const g = nand2(r), OP = [1, .66, .86, .54, .94, .74, .6, .8];
+  const fill = n => `var(--s${n.slot})`;
+  const lit = n => !S.hover || n.key === S.hover || n.key.startsWith(S.hover + '/') || S.hover.startsWith(n.key + '/');
+  const opOf = (n, i, depth) => (depth === 1 && root === top ? 1 : OP[(i + depth - 1) % OP.length]) * (lit(n) ? 1 : .3);
+  let svg = '', a = -Math.PI / 2;
+  (root.children || []).forEach((c, i) => {
+    const span = c.area / root.area * 2 * Math.PI;
+    svg += `<path data-key="${c.key}" ${go(c)} d="${arc(a, a + span, 80, 156)}" style="fill:${fill(c)};fill-opacity:${opOf(c, i, 1)};cursor:${c.children ? 'pointer' : 'default'}"><title>${esc(c.name)}: ${num(c.area, 0)} µm²</title></path>`;
+    if (span > .42) {
+      const m = a + span / 2, x = 230 + 118 * Math.cos(m), y = 230 + 118 * Math.sin(m), nm = c.name.split('.').pop();
+      svg += `<text class="lbl" x="${x.toFixed(1)}" y="${(y - 7).toFixed(1)}">${esc(nm.length > 16 ? nm.slice(0, 15) + '…' : nm)}</text><text class="lbl" x="${x.toFixed(1)}" y="${(y + 7).toFixed(1)}">${pct(c.area, root.area)}</text>`;
+    }
+    let b = a;
+    (c.children || []).forEach((d, j) => {
+      const sp = d.area / c.area * span;
+      svg += `<path data-key="${d.key}" data-go="${d.children ? d.key : c.key}" d="${arc(b, b + sp, 160, 224)}" style="fill:${fill(d)};fill-opacity:${opOf(d, j, 2)};cursor:pointer"><title>${esc(d.name)}: ${num(d.area, 0)} µm²</title></path>`;
+      b += sp;
+    });
+    a += span;
+  });
+  const cn = (S.hover && idx[S.hover]) || root;
+  const up = root === top ? '' : `data-go="${root.key.replace(/\/\d+$/, '')}"`;
+  svg += `<circle cx="230" cy="230" r="76" ${up} style="fill:var(--surface);cursor:${up ? 'pointer' : 'default'}"></circle>
+<text x="230" y="200" class="mono" style="font-size:11px;fill:var(--ink2)">${esc(cn.name.split('.').pop())}</text>
+<text x="230" y="226" style="font-size:17px;font-weight:700;fill:var(--ink)">${num(cn.area, 0)} µm²</text>
+<text x="230" y="248" style="font-size:11px;fill:var(--ink2)">${num((cn.area - cn.sram) / g / 1000, 1)} kGE logic</text>
+<text x="230" y="265" style="font-size:11px;fill:var(--muted)">${pct(cn.area, top.area)} of ${esc(top.name)}</text>`;
+  const rows = [];
+  (root.children || []).forEach((c, i) => {
+    rows.push([c, 0, opOf(c, i, 1)]);
+    (c.children || []).forEach((d, j) => rows.push([d, 1, opOf(d, j, 2)]));
+  });
+  const crumbs = root.key.split('/').map((_, i, p) => idx[p.slice(0, i + 1).join('/')]);
+  $('area').innerHTML = `<div class="crumbs">${crumbs.map(n => `<button type="button" data-go="${n.key}">${esc(n.name)}</button>`).join(' / ')}</div>
+<div class="split"><div class="sun"><svg viewBox="0 0 460 460" role="img" aria-label="Area of ${esc(root.name)} by instance">${svg}</svg></div>
+<div class="tree wrap"><table><tr><th></th><th class="l">Instance</th><th class="l">Module</th><th>Area (µm²)</th><th>kGE</th><th>SRAM (µm²)</th><th>Share</th></tr>
+${rows.map(([n, depth, op]) => `<tr data-key="${n.key}" ${go(n)} class="${n.key === S.hover ? 'hov' : ''}"><td style="width:14px;padding-right:0"><span class="sw" style="background:${fill(n)};opacity:${op}"></span></td><td class="l mono" style="padding-left:${4 + depth * 16}px;font-weight:${depth ? 400 : 600}">${esc(n.name)}</td>
+<td class="l mono muted">${esc(n.module || '')}</td><td>${num(n.area, 0)}</td><td>${num((n.area - n.sram) / g / 1000, 1)}</td><td>${n.sram ? num(n.sram, 0) : '—'}</td><td>${pct(n.area, top.area)}</td></tr>`).join('')}
+</table></div></div>`;
+}
+
+function renderTiming() {
+  const r = latest(S.tech, S.cfg);
+  $('timing-h').textContent = `Timing paths · ${S.cfg} · ${TL[S.tech] || S.tech}`;
+  const P = (r && r.paths) || {};
+  const G = [['in2reg', 'Input → register'], ['reg2reg', 'Register → register'], ['reg2out', 'Register → output'], ['in2out', 'Input → output']].filter(x => P[x[0]]);
+  if (!G.length) { $('timing').innerHTML = '<div class="muted">No path report for this run.</div>'; return; }
+  const worst = G.reduce((w, x) => (!w || P[x[0]].slack_ps < P[w].slack_ps ? x[0] : w), null);
+  $('timing').innerHTML = `<div class="wrap"><table><tr><th class="l">Path group</th><th>Slack (ps)</th><th class="l">Status</th><th class="l">Startpoint</th><th class="l">Endpoint</th></tr>
+${G.map(([k, name]) => { const p = P[k]; return `<tr class="${k === worst ? 'sel' : ''}"><td class="l">${name}${k === worst ? ' <span class="muted">· sets fmax</span>' : ''}</td>
+<td class="${p.slack_ps < 0 ? 'bad' : 'good'}">${p.slack_ps < 0 ? '' : '+'}${sgn(num(p.slack_ps, 1))}</td><td class="l ${p.slack_ps < 0 ? 'bad' : 'good'}">${p.slack_ps < 0 ? 'violated' : 'met'}</td>
+<td class="l mono">${esc(p.start)}</td><td class="l mono">${esc(p.end)}</td></tr>`; }).join('')}</table></div>`;
+}
+
+// Line chart over upstream commits with labelled axes.
+function ticks(lo, hi, n) {
+  const raw = (hi - lo) / n, e = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / e;
+  const step = (m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10) * e, out = [];
+  for (let v = Math.floor(lo / step) * step; v <= hi + step * .999; v += step) out.push(+v.toPrecision(12));
+  return out;
+}
+
+function chart(id, title, unit, pts, d) {
+  const W = 520, H = 250, L = 66, Rm = 14, T = 12, B = 46, n = pts.length;
+  const vals = pts.map(p => p.v), lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = (hi - lo) * .3 || Math.abs(hi) * .01 || 1, tk = ticks(lo - pad, hi + pad, 4);
+  const y0 = tk[0], y1 = tk[tk.length - 1], step = n > 1 ? (W - L - Rm - 16) / (n - 1) : 0;
+  const x = i => n > 1 ? L + 8 + i * step : (L + W - Rm) / 2, y = v => T + (y1 - v) / (y1 - y0) * (H - T - B);
+  let s = tk.map(t => `<line x1="${L}" x2="${W - Rm}" y1="${y(t)}" y2="${y(t)}" style="stroke:var(--grid)"/><text class="t" x="${L - 6}" y="${y(t) + 4}" style="text-anchor:end">${sgn(num(t, d))}</text>`).join('');
+  s += `<line x1="${L}" x2="${L}" y1="${T}" y2="${H - B}" style="stroke:var(--axis)"/><line x1="${L}" x2="${W - Rm}" y1="${H - B}" y2="${H - B}" style="stroke:var(--axis)"/>`;
+  s += pts.map((p, i) => `<line x1="${x(i)}" x2="${x(i)}" y1="${H - B}" y2="${H - B + 4}" style="stroke:var(--axis)"/><text class="t mono" x="${x(i)}" y="${H - B + 16}" style="text-anchor:middle;font-size:10.5px">${esc(p.sha.slice(0, 7))}</text>`).join('');
+  s += `<text class="tt" x="12" y="${(T + H - B) / 2}" transform="rotate(-90 12 ${(T + H - B) / 2})" style="text-anchor:middle">${esc(unit)}</text><text class="tt" x="${(L + W - Rm) / 2}" y="${H - 6}" style="text-anchor:middle">Upstream commit (oldest → newest)</text>`;
+  s += `<path d="${pts.map((p, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(p.v).toFixed(1)).join('')}" style="fill:none;stroke:var(--line);stroke-width:2"/>`;
+  s += pts.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.v)}" r="3.5" style="fill:var(--line);stroke:var(--surface);stroke-width:1.5"/>`).join('');
+  s += pts.map((p, i) => `<rect data-chart="${id}" data-i="${i}" data-x="${(x(i) / W * 100).toFixed(2)}" data-y="${(y(p.v) / H * 100).toFixed(2)}" x="${x(i) - Math.max(step, 40) / 2}" y="0" width="${Math.max(step, 40)}" height="${H}" style="fill:transparent"/>`).join('');
+  return `<div class="chart" id="c-${id}"><h3>${esc(title)}</h3><div style="position:relative;margin:6px"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)} per upstream commit">${s}</svg></div></div>`;
+}
+
+let TREND = {};
+function renderTrends() {
+  const ser = series(S.tech, S.cfg).filter(ok);
+  const lab = `${S.cfg} · ${TL[S.tech] || S.tech}`;
+  $('trend-h').textContent = `Trends · ${lab}`;
+  $('hist-h').textContent = `Run history · ${lab}`;
+  TREND = {
+    f: {t: 'Fmax', u: 'MHz', d: 1, p: ser.map(r => ({sha: r.upstream_sha, r, v: r.fmax_mhz}))},
+    k: {t: 'Std-cell area', u: 'kGE', d: 1, p: ser.map(r => ({sha: r.upstream_sha, r, v: r.stdcell_kgate}))},
+    a: {t: 'Total area', u: 'µm²', d: 0, p: ser.map(r => ({sha: r.upstream_sha, r, v: r.total_area_um2}))},
+    w: {t: 'Worst slack', u: 'ps', d: 0, p: ser.map(r => ({sha: r.upstream_sha, r, v: r.worst_slack_ps}))}
+  };
+  $('trends').innerHTML = ser.length ? `<div class="charts">${Object.entries(TREND).map(([k, c]) => chart(k, c.t, c.u, c.p, c.d)).join('')}</div>` : '<div class="muted">No successful runs.</div>';
+  const all = series(S.tech, S.cfg).reverse();
+  const dl = (a, b, d) => a == null || b == null ? '' : `<span class="muted">(${a - b >= 0 ? '+' : '−'}${Math.abs(a - b).toFixed(d)})</span>`;
+  $('hist').innerHTML = `<div class="wrap"><table><tr><th class="l">Commit</th><th class="l">Date</th><th class="l">Title</th><th class="l">Status</th><th>Fmax (MHz)</th><th>Std-cell (kGE)</th><th>Total (µm²)</th><th>Worst slack (ps)</th></tr>
+${all.map((r, i) => { const p = all[i + 1]; return `<tr><td class="l mono"><a href="${COMMIT}${esc(r.upstream_sha)}">${esc(r.upstream_sha.slice(0, 7))}</a></td><td class="l muted">${esc(r.upstream_date.slice(0, 10))}</td><td class="l">${esc(r.upstream_title)}</td>
+<td class="l ${ok(r) ? 'good' : 'bad'}">${esc(r.status)}</td><td>${num(r.fmax_mhz, 1)} ${p ? dl(r.fmax_mhz, p.fmax_mhz, 1) : ''}</td><td>${num(r.stdcell_kgate, 1)} ${p ? dl(r.stdcell_kgate, p.stdcell_kgate, 1) : ''}</td>
+<td>${num(r.total_area_um2, 0)} ${p ? dl(r.total_area_um2, p.total_area_um2, 0) : ''}</td><td>${sgn(num(r.worst_slack_ps, 1))} ${p ? dl(r.worst_slack_ps, p.worst_slack_ps, 1) : ''}</td></tr>`; }).join('')}</table></div>`;
+}
+
+function render() {
+  location.replace('#' + S.tech + '/' + S.cfg);
+  renderSelectors(); renderLatest(); renderArea(); renderTiming(); renderTrends();
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tech],[data-cfg],[data-go]');
+  if (!t) return;
+  if (t.dataset.tech) S.tech = t.dataset.tech;
+  if (t.dataset.cfg) S.cfg = t.dataset.cfg;
+  S.root = t.dataset.go || 'r';
+  S.hover = null;
+  t.dataset.go ? renderArea() : render();
+});
+document.addEventListener('mouseover', e => {
+  const t = e.target.closest('path[data-key],tr[data-key]');
+  const key = t ? t.dataset.key : null;
+  if (key !== S.hover && (t || e.target.closest('#area'))) { S.hover = key; renderArea(); }
+  const h = e.target.closest('rect[data-chart]');
+  document.querySelectorAll('.tip').forEach(n => n.remove());
+  if (h) {
+    const c = TREND[h.dataset.chart], p = c.p[+h.dataset.i];
+    const tip = document.createElement('div');
+    tip.className = 'tip';
+    tip.style.left = Math.min(Math.max(+h.dataset.x, 18), 82) + '%';
+    tip.style.top = h.dataset.y + '%';
+    tip.innerHTML = `<div class="mono">${esc(p.sha.slice(0, 7))} · ${esc(p.r.upstream_date.slice(0, 10))}</div><div class="muted">${esc(p.r.upstream_title)}</div><b>${sgn(num(p.v, c.d))} ${esc(c.u)}</b>`;
+    h.closest('div').appendChild(tip);
+  }
+});
+
+const [ht, hc] = decodeURIComponent(location.hash.slice(1)).split('/');
+if (techs.includes(ht)) S.tech = ht;
+if (cfgs.includes(hc)) S.cfg = hc;
+$('gen').textContent = `Generated ${DATA.generated} · flow ${DATA.flow_version}`;
+$('ver').textContent = `Flow version ${DATA.flow_version} · image ${DATA.image}`;
+render();
+</script>
+</body>
+</html>

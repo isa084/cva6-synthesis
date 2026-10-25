@@ -96,12 +96,73 @@ def nand2_area(tech_mk: Path) -> float:
     return float(re.search(r"cell \(NAND2_X1\)\s*\{.*?area\s*:\s*([\d.]+)", liberty, re.S).group(1))
 
 
-def sram_masters(odb: Path) -> list[tuple[int, int, int]]:
+def read_odb(odb: Path) -> str:
+    return subprocess.run(["openroad", "-no_splash", "-exit", str(FLOW_ROOT / "flow/odb.tcl")],
+                          env={**os.environ, "ODB_FILE": str(odb)}, check=True,
+                          capture_output=True, text=True).stdout
+
+
+def sram_masters(odb_out: str) -> list[tuple[int, int, int]]:
     """(depth, width, instances) per SRAM macro master in the floorplan."""
-    out = subprocess.run(["openroad", "-no_splash", "-exit", str(FLOW_ROOT / "flow/macros.tcl")],
-                         env={**os.environ, "ODB_FILE": str(odb)}, check=True,
-                         capture_output=True, text=True).stdout
-    return [tuple(map(int, m)) for m in re.findall(r"^SRAM cva6_sram_(\d+)x(\d+) (\d+)$", out, re.M)]
+    return [tuple(map(int, m)) for m in re.findall(r"^SRAM cva6_sram_(\d+)x(\d+) (\d+)$", odb_out, re.M)]
+
+
+def area_tree(odb_out: str) -> dict | None:
+    """Area per instance of the floorplan as a tree; None for a flat netlist.
+
+    Instance paths split at "/" (kept modules) and "." (merged scopes), so the
+    tree follows the RTL names. A chain of merged scopes becomes one node.
+    """
+    root = {"name": "cva6", "module": "cva6", "own": (0.0, 0.0), "kids": {}}
+    for path, module, logic, sram in re.findall(r"^MOD (\S+) (\S+) (\S+) (\S+)$", odb_out, re.M):
+        node = root
+        if path != "-":
+            for part in re.split(r"[/.](?![^\[]*\])", path.replace("\\", "")):
+                node = node["kids"].setdefault(part, {"name": part, "module": "", "own": (0.0, 0.0), "kids": {}})
+            node["module"] = module.replace("\\", "").split("$")[0]
+        node["own"] = (float(logic), float(sram))
+    if not root["kids"]:
+        return None
+
+    def build(n):
+        kids = [build(k) for k in sorted(n["kids"].values(), key=lambda k: k["name"])]
+        logic, sram = n["own"]
+        if kids and logic + sram > 0:
+            kids.append({"name": "(local)", "module": "", "area": round(logic + sram, 1), "sram": round(sram, 1)})
+        if len(kids) == 1 and not n["module"] and kids[0]["name"] != "(local)":
+            return {**kids[0], "name": n["name"] + "." + kids[0]["name"]}
+        out = {"name": n["name"], "module": n["module"],
+               "area": round(sum(k["area"] for k in kids) if kids else logic + sram, 1),
+               "sram": round(sum(k["sram"] for k in kids) if kids else sram, 1)}
+        return {**out, "children": kids} if kids else out
+    return build(root)
+
+
+def report_paths(report: Path, unit_ps: int) -> dict:
+    """Worst setup path per path group from the floorplan report."""
+    text = report.read_text().split("report_checks -path_delay max", 1)[-1]
+    text = text.split("report_checks -unconstrained", 1)[0]
+    clean = lambda name: re.sub(r"\$_\w+_$", "", name)
+    paths = {}
+    for start, end, group, slack in re.findall(
+            r"^Startpoint: (\S+).*?^Endpoint: (\S+).*?^Path Group: (\S+).*?^\s*(-?[\d.]+)\s+slack", text, re.M | re.S):
+        paths[group] = {"slack_ps": round(float(slack) * unit_ps, 2), "start": clean(start), "end": clean(end)}
+    return paths
+
+
+def build_params(tech: str, mode: str, sram: str, period_ps: int) -> dict:
+    """Main flow settings of a run, as shown on the dashboard."""
+    mk = lambda name, var: mk_var(FLOW_ROOT / "orfs" / f"{name}.mk", var)
+    io = re.search(r"clk_period\}\*([\d.]+)", (FLOW_ROOT / "orfs/constraints.sdc").read_text())
+    repair = mk(mode, "SKIP_FLOORPLAN_REPAIR_TIMING") != "1" and float(mk(mode, "SETUP_SLACK_MARGIN") or 0) > -1000
+    return {"Clock period": f"{period_ps} ps",
+            "I/O delay": f"{float(io.group(1)) * 100:.0f}% of period",
+            "Core utilization": f"{mk('cva6', 'CORE_UTILIZATION')}%",
+            "Hierarchical synthesis": "yes" if mk(mode, "SYNTH_HIERARCHICAL") == "1" else "no",
+            "Keep size (NAND2)": mk(mode, "SYNTH_MINIMUM_KEEP_SIZE") or "—",
+            "ABC script": "area" if mk(mode, "ABC_AREA") == "1" else "speed",
+            "Floorplan timing repair": "on" if repair else "off",
+            "SRAM model": sram}
 
 
 def run(target_name: str, target: dict, config: dict, tech: str | None, mode: str | None) -> int:
@@ -127,7 +188,8 @@ def run(target_name: str, target: dict, config: dict, tech: str | None, mode: st
               "sram_macros": None, "sram_bits": None, "clock_period_ps": period_ps,
               "image": meta["tool_image"], "run_started": meta["start_time"],
               "gsim_run": None, "gsim_passed": None,
-              "reports_url": ""}
+              "reports_url": "", "params": build_params(tech, mode, sram, period_ps),
+              "paths": None, "area_tree": None}
     try:
         if meta["rtl_match"] != "yes":
             fail("RTL has uncommitted changes")
@@ -141,7 +203,11 @@ def run(target_name: str, target: dict, config: dict, tech: str | None, mode: st
         metrics = json.loads(metrics_file.read_text())
         (OUTPUT_DIR / "metrics.json").write_text(metrics_file.read_text())
         stdcell = metrics["floorplan__design__instance__area__stdcell"]
-        masters = sram_masters(OUTPUT_DIR / f"results/{base}/2_1_floorplan.odb")
+        odb_out = read_odb(OUTPUT_DIR / f"results/{base}/2_1_floorplan.odb")
+        masters = sram_masters(odb_out)
+        result.update(
+            paths=report_paths(OUTPUT_DIR / f"reports/{base}/2_floorplan_final.rpt", UNIT_PS[tech]),
+            area_tree=area_tree(odb_out))
         result.update(
             status="success", stdcell_area_um2=stdcell,
             macro_area_um2=metrics["floorplan__design__instance__area__macros"],

@@ -81,9 +81,13 @@ The jobs `publish` and `pages` run on a GitHub-hosted runner.
 - **Data:** The job stores the `results.json`, `metrics.json`, and `metadata.txt`
   of each run on the `data` branch under `runs/<commit>/<target>/<tech>/<mode>/`.
   It rebuilds `runs.json` from these files. Records are append-only.
-- **Dashboard:** [`dashboard/generate.py`](../dashboard/generate.py) writes one static page with the values
-  in it. The page shows a summary table for each technology and a 10-commit
-  history for each target.
+- **Dashboard:** [`dashboard/generate.py`](../dashboard/generate.py) puts the records into
+  [`dashboard/template.html`](../dashboard/template.html) and writes one static
+  page. For the selected technology and target, the page shows the results
+  table, the area breakdown, the timing paths, the trends and the history.
+  The workflow [`dashboard.yml`](../.github/workflows/dashboard.yml) rebuilds
+  the page from the `data` branch after a change to `dashboard/`, without a
+  flow run.
 - **Pages:** The job deploys the page to GitHub Pages
   (`isa084.github.io/cva6-synthesis/`).
 

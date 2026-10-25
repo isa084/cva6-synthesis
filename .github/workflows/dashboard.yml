@@ -1,0 +1,42 @@
+name: dashboard
+
+# Rebuild the dashboard page from the published data, without a flow run.
+# Runs on a GitHub-hosted runner only.
+on:
+  push:
+    branches: [master]
+    paths: ['dashboard/**']
+  workflow_dispatch:
+
+concurrency: dashboard
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build dashboard
+        run: |
+          git fetch -q origin data
+          git show FETCH_HEAD:runs.json > runs.json
+          python3 dashboard/generate.py runs.json site
+
+      - uses: actions/upload-pages-artifact@v5
+        if: vars.DEPLOY_PAGES == 'true'
+        with:
+          path: site
+
+  pages:
+    needs: build
+    if: vars.DEPLOY_PAGES == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment: github-pages
+    steps:
+      - uses: actions/deploy-pages@v5
