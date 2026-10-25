@@ -1,0 +1,35 @@
+# Self-hosted GitHub Actions runner in one container, registered to one repository.
+# Started by start.sh, which sets REPO, RUNNER_TOKEN, DOCKER_SOCK, DENYLIST and RUNNER_CPUS.
+name: cva6-runner
+
+services:
+  runner:
+    image: ghcr.io/actions/actions-runner@sha256:e275409999c37162649aa050ca573f03eab2eabcb3a1e7fcc47548de6b4f9690
+    container_name: cva6-synth-runner
+    hostname: cva6-synth-runner
+    init: true
+    restart: unless-stopped
+    cpus: ${RUNNER_CPUS:?}
+    environment:
+      REPO: ${REPO:?}
+      RUNNER_TOKEN: ${RUNNER_TOKEN:?}
+    volumes:
+      - ${DOCKER_SOCK:?}:/var/run/docker.sock
+      # Same path on the host and in the container, so tool containers started
+      # through the socket can mount the job's files.
+      - /srv/cva6-runner:/srv/cva6-runner
+      - ${DENYLIST:?}:/etc/cva6-denylist:ro
+    # Register once (a restart reuses .runner), then drop the token before jobs start.
+    # The socket is root:root 0660 in Docker Desktop: give it to the image's docker
+    # group. Do not use group_add 0: a mkdir with group 0 crashes Docker Desktop's
+    # virtiofs daemon for /srv/cva6-runner and hangs the engine.
+    command:
+      - bash
+      - -c
+      - |
+        sudo chgrp docker /var/run/docker.sock
+        [ -f .runner ] || ./config.sh --unattended --replace \
+          --url "https://github.com/$$REPO" --token "$$RUNNER_TOKEN" \
+          --name cva6-synth-runner --labels cva6-synthesis --work /srv/cva6-runner/_work
+        unset RUNNER_TOKEN
+        exec ./run.sh
