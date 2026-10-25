@@ -100,6 +100,21 @@ function series(tech, cfg) {
 }
 const latest = (tech, cfg) => series(tech, cfg).pop() || null;
 
+// Upstream commits, oldest first, from the first one with a result. A commit
+// that does not change the RTL (rtl false) shares the result of its RTL state.
+function timeline(tech, cfg) {
+  const runs = series(tech, cfg), C = (DATA.commits || []).slice().reverse();
+  const listed = new Set(C.map(c => c.sha)), bySha = new Map(runs.map(r => [r.upstream_sha, r]));
+  const pts = runs.filter(r => !listed.has(r.upstream_sha))
+    .map(r => ({sha: r.upstream_sha, date: r.upstream_date, title: r.upstream_title, rtl: true, r}));
+  let k = 0;
+  const state = C.map(c => (c.rtl ? ++k : k)), res = {};
+  C.forEach((c, i) => { if (bySha.has(c.sha)) res[state[i]] = bySha.get(c.sha); });
+  const start = state.findIndex(s => res[s]);
+  if (start >= 0) C.slice(start).forEach((c, i) => pts.push({sha: c.sha, date: c.date, title: c.title, rtl: c.rtl, r: res[state[start + i]] || null}));
+  return pts;
+}
+
 function button(label, on, attrs) {
   return `<button type="button" aria-pressed="${on}" ${attrs}>${esc(label)}</button>`;
 }
@@ -228,33 +243,44 @@ function chart(id, title, unit, pts, d) {
   const x = i => n > 1 ? L + 8 + i * step : (L + W - Rm) / 2, y = v => T + (y1 - v) / (y1 - y0) * (H - T - B);
   let s = tk.map(t => `<line x1="${L}" x2="${W - Rm}" y1="${y(t)}" y2="${y(t)}" style="stroke:var(--grid)"/><text class="t" x="${L - 6}" y="${y(t) + 4}" style="text-anchor:end">${sgn(num(t, d))}</text>`).join('');
   s += `<line x1="${L}" x2="${L}" y1="${T}" y2="${H - B}" style="stroke:var(--axis)"/><line x1="${L}" x2="${W - Rm}" y1="${H - B}" y2="${H - B}" style="stroke:var(--axis)"/>`;
-  s += pts.map((p, i) => `<line x1="${x(i)}" x2="${x(i)}" y1="${H - B}" y2="${H - B + 4}" style="stroke:var(--axis)"/><text class="t mono" x="${x(i)}" y="${H - B + 16}" style="text-anchor:middle;font-size:10.5px">${esc(p.sha.slice(0, 7))}</text>`).join('');
+  let lastX = -1e9;
+  s += pts.map((p, i) => {
+    const show = (p.rtl || i === n - 1) && x(i) - lastX >= 48;
+    if (show) lastX = x(i);
+    return `<line x1="${x(i)}" x2="${x(i)}" y1="${H - B}" y2="${H - B + 4}" style="stroke:var(--axis)"/>` +
+      (show ? `<text class="t mono" x="${x(i)}" y="${H - B + 16}" style="text-anchor:middle;font-size:10.5px">${esc(p.sha.slice(0, 7))}</text>` : '');
+  }).join('');
   s += `<text class="tt" x="12" y="${(T + H - B) / 2}" transform="rotate(-90 12 ${(T + H - B) / 2})" style="text-anchor:middle">${esc(unit)}</text><text class="tt" x="${(L + W - Rm) / 2}" y="${H - 6}" style="text-anchor:middle">Upstream commit (oldest → newest)</text>`;
   s += `<path d="${pts.map((p, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(p.v).toFixed(1)).join('')}" style="fill:none;stroke:var(--line);stroke-width:2"/>`;
-  s += pts.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.v)}" r="3.5" style="fill:var(--line);stroke:var(--surface);stroke-width:1.5"/>`).join('');
+  s += pts.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.v)}" r="3.5" style="${p.rtl ? 'fill:var(--line);stroke:var(--surface);stroke-width:1.5' : 'fill:var(--surface);stroke:var(--line);stroke-width:2'}"/>`).join('');
   s += pts.map((p, i) => `<rect data-chart="${id}" data-i="${i}" data-x="${(x(i) / W * 100).toFixed(2)}" data-y="${(y(p.v) / H * 100).toFixed(2)}" x="${x(i) - Math.max(step, 40) / 2}" y="0" width="${Math.max(step, 40)}" height="${H}" style="fill:transparent"/>`).join('');
   return `<div class="chart" id="c-${id}"><h3>${esc(title)}</h3><div style="position:relative;margin:6px"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)} per upstream commit">${s}</svg></div></div>`;
 }
 
 let TREND = {};
 function renderTrends() {
-  const ser = series(S.tech, S.cfg).filter(ok);
+  const tl = timeline(S.tech, S.cfg), pts = tl.filter(p => p.r && ok(p.r));
   const lab = `${S.cfg} · ${TL[S.tech] || S.tech}`;
   $('trend-h').textContent = `Trends · ${lab}`;
   $('hist-h').textContent = `Run history · ${lab}`;
+  const at = (key) => pts.map(p => ({...p, v: p.r[key]}));
   TREND = {
-    f: {t: 'Fmax', u: 'MHz', d: 1, p: ser.map(r => ({sha: r.upstream_sha, r, v: r.fmax_mhz}))},
-    k: {t: 'Std-cell area', u: 'kGE', d: 1, p: ser.map(r => ({sha: r.upstream_sha, r, v: r.stdcell_kgate}))},
-    a: {t: 'Total area', u: 'µm²', d: 0, p: ser.map(r => ({sha: r.upstream_sha, r, v: r.total_area_um2}))},
-    w: {t: 'Worst slack', u: 'ps', d: 0, p: ser.map(r => ({sha: r.upstream_sha, r, v: r.worst_slack_ps}))}
+    f: {t: 'Fmax', u: 'MHz', d: 1, p: at('fmax_mhz')},
+    k: {t: 'Std-cell area', u: 'kGE', d: 1, p: at('stdcell_kgate')},
+    a: {t: 'Total area', u: 'µm²', d: 0, p: at('total_area_um2')},
+    w: {t: 'Worst slack', u: 'ps', d: 0, p: at('worst_slack_ps')}
   };
-  $('trends').innerHTML = ser.length ? `<div class="charts">${Object.entries(TREND).map(([k, c]) => chart(k, c.t, c.u, c.p, c.d)).join('')}</div>` : '<div class="muted">No successful runs.</div>';
-  const all = series(S.tech, S.cfg).reverse();
-  const dl = (a, b, d) => a == null || b == null ? '' : `<span class="muted">(${a - b >= 0 ? '+' : '−'}${Math.abs(a - b).toFixed(d)})</span>`;
+  const dot = rtl => `<svg width="10" height="10" aria-hidden="true"><circle cx="5" cy="5" r="3.5" style="${rtl ? 'fill:var(--line)' : 'fill:var(--surface);stroke:var(--line);stroke-width:2'}"/></svg>`;
+  $('trends').innerHTML = pts.length ? `<div class="muted">${dot(true)} commit changes the RTL &nbsp; ${dot(false)} commit does not change the RTL (same result as the commit before)</div>
+<div class="charts">${Object.entries(TREND).map(([k, c]) => chart(k, c.t, c.u, c.p, c.d)).join('')}</div>` : '<div class="muted">No successful runs.</div>';
+  const rows = tl.slice().reverse();
+  const dl = (a, b, d) => a == null || b == null ? '' : ` <span class="muted">(${a - b >= 0 ? '+' : '−'}${Math.abs(a - b).toFixed(d)})</span>`;
+  const cell = (p, q, key, d, f) => { const r = p.r; if (!r) return '<td>—</td>'; const v = f ? f(num(r[key], d)) : num(r[key], d);
+    return p.rtl ? `<td>${v}${q && q.r ? dl(r[key], q.r[key], d) : ''}</td>` : `<td class="muted">${v}</td>`; };
   $('hist').innerHTML = `<div class="wrap"><table><tr><th class="l">Commit</th><th class="l">Date</th><th class="l">Title</th><th class="l">Status</th><th>Fmax (MHz)</th><th>Std-cell (kGE)</th><th>Total (µm²)</th><th>Worst slack (ps)</th></tr>
-${all.map((r, i) => { const p = all[i + 1]; return `<tr><td class="l mono"><a href="${COMMIT}${esc(r.upstream_sha)}">${esc(r.upstream_sha.slice(0, 7))}</a></td><td class="l muted">${esc(r.upstream_date.slice(0, 10))}</td><td class="l">${esc(r.upstream_title)}</td>
-<td class="l ${ok(r) ? 'good' : 'bad'}">${esc(r.status)}</td><td>${num(r.fmax_mhz, 1)} ${p ? dl(r.fmax_mhz, p.fmax_mhz, 1) : ''}</td><td>${num(r.stdcell_kgate, 1)} ${p ? dl(r.stdcell_kgate, p.stdcell_kgate, 1) : ''}</td>
-<td>${num(r.total_area_um2, 0)} ${p ? dl(r.total_area_um2, p.total_area_um2, 0) : ''}</td><td>${sgn(num(r.worst_slack_ps, 1))} ${p ? dl(r.worst_slack_ps, p.worst_slack_ps, 1) : ''}</td></tr>`; }).join('')}</table></div>`;
+${rows.map((p, i) => { const q = rows[i + 1], r = p.r, st = !r ? 'not run' : !p.rtl ? 'no RTL change' : r.status;
+  return `<tr><td class="l mono"><a href="${COMMIT}${esc(p.sha)}">${esc(p.sha.slice(0, 7))}</a></td><td class="l muted">${esc(p.date.slice(0, 10))}</td><td class="l">${esc(p.title)}</td>
+<td class="l ${!r || !p.rtl ? 'muted' : ok(r) ? 'good' : 'bad'}">${st}</td>${cell(p, q, 'fmax_mhz', 1)}${cell(p, q, 'stdcell_kgate', 1)}${cell(p, q, 'total_area_um2', 0)}${cell(p, q, 'worst_slack_ps', 1, sgn)}</tr>`; }).join('')}</table></div>`;
 }
 
 function render() {
@@ -283,7 +309,7 @@ document.addEventListener('mouseover', e => {
     tip.className = 'tip';
     tip.style.left = Math.min(Math.max(+h.dataset.x, 18), 82) + '%';
     tip.style.top = h.dataset.y + '%';
-    tip.innerHTML = `<div class="mono">${esc(p.sha.slice(0, 7))} · ${esc(p.r.upstream_date.slice(0, 10))}</div><div class="muted">${esc(p.r.upstream_title)}</div><b>${sgn(num(p.v, c.d))} ${esc(c.u)}</b>`;
+    tip.innerHTML = `<div class="mono">${esc(p.sha.slice(0, 7))} · ${esc(p.date.slice(0, 10))}</div><div class="muted">${esc(p.title)}</div><b>${sgn(num(p.v, c.d))} ${esc(c.u)}</b>${p.rtl ? '' : '<div class="muted">No RTL change</div>'}`;
     h.closest('div').appendChild(tip);
   }
 });

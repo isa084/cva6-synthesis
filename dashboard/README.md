@@ -10,7 +10,7 @@ This is a static HTML page of CVA6 area and timing results.
 ## Change the page without a flow run
 
 1. Get the published records:
-   `git fetch origin data && git show FETCH_HEAD:runs.json > runs.json`
+   `git fetch origin data && git show FETCH_HEAD:runs.json > runs.json && git show FETCH_HEAD:commits.json > commits.json`
 2. Edit `template.html`.
 3. Make the page and open it in a browser:
    `python3 dashboard/generate.py runs.json site && xdg-open site/index.html`
@@ -34,6 +34,12 @@ worst_slack_ps, sram_macros, clock_period_ps, image, and:
   `reg2out`, `in2out`), with `slack_ps`, `start` and `end`.
 - `area_tree`: the floorplan area per instance (`name`, `module`, `area`,
   `sram`, `children`). It is null for a flat netlist.
+
+`commits.json` (beside `runs.json`, optional) lists the recent commits of the
+tracked upstream branch, newest first: `sha`, `date`, `title`, and `rtl`
+(false when the commit does not change the RTL). The trends and the history
+show every listed commit from the first one with a result. A commit with
+`rtl` false shows the result of the commit before it, with a hollow marker.
 
 The page shows only the `fakeram` and `fast` records of the newest
 flow_version. Failed runs can have null metrics.

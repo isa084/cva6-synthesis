@@ -4,8 +4,9 @@
 Usage: python3 generate.py <runs.json | runs_dir> <out_dir>
 
 A runs directory is searched for */latest-success/results.json. The page is
-template.html with the records of the newest flow version filled in; all
-presentation lives in the template.
+template.html with the records of the newest flow version and the upstream
+commits (commits.json beside the input) filled in; all presentation lives in
+the template.
 """
 import json
 import sys
@@ -21,13 +22,17 @@ def main(runs_path, out_dir):
         runs = [json.loads(f.read_text()) for f in sorted(src.glob("**/latest-success/results.json"))]
     else:
         runs = json.loads(src.read_text())
+    # Upstream commits (newest first) from commits.json next to runs.json, if any.
+    commits_file = (src if src.is_dir() else src.parent) / "commits.json"
+    commits = json.loads(commits_file.read_text()) if commits_file.exists() else []
     fast = [r for r in runs if r["sram_mode"] == "fakeram" and r.get("mode", "fast") == "fast"]
     # The page shows one flow version: the one of the most recent run.
     started = lambda r: datetime.fromisoformat(r.get("run_started") or "1970-01-01T00:00:00+00:00")
     newest = max(fast, key=started) if fast else {}
     data = {"generated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
             "flow_version": newest.get("flow_version", ""), "image": newest.get("image", ""),
-            "records": [r for r in fast if r["flow_version"] == newest.get("flow_version")]}
+            "records": [r for r in fast if r["flow_version"] == newest.get("flow_version")],
+            "commits": commits}
     page = TEMPLATE.read_text().replace("/*DATA*/null", json.dumps(data).replace("</", "<\\/"))
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)

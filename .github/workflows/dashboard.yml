@@ -23,6 +23,7 @@ jobs:
         run: |
           git fetch -q origin data
           git show FETCH_HEAD:runs.json > runs.json
+          git show FETCH_HEAD:commits.json > commits.json || true
           python3 dashboard/generate.py runs.json site
 
       - uses: actions/upload-pages-artifact@v5

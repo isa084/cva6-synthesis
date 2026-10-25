@@ -102,6 +102,23 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           echo "Upstream ${sha:0:8}: $(jq length <<<"$matrix") run(s), skip=$skip" >> "$GITHUB_STEP_SUMMARY"
 
+      # Recent commits of the tracked branch, newest first. "rtl" is false when
+      # the commit does not change the RTL, so it shares the results of its parent.
+      - name: List upstream commits
+        working-directory: fork
+        run: |
+          for c in $(git rev-list --first-parent -n 100 "upstream/$BRANCH"); do
+            rtl=true
+            git diff --quiet "$c^" "$c" -- core common vendor corev_apu 2>/dev/null && rtl=false
+            git log -1 --format='%H%x09%cI%x09%s' "$c" \
+              | jq -R --argjson rtl "$rtl" 'split("\t") | {sha: .[0], date: .[1], title: .[2], rtl: $rtl}'
+          done | jq -s . > ../commits.json
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: commits
+          path: commits.json
+
   flow:
     needs: sync
     if: needs.sync.outputs.matrix != '[]'
@@ -205,6 +222,11 @@ jobs:
           pattern: run-*
           path: art
 
+      - uses: actions/download-artifact@v8
+        with:
+          name: commits
+          path: art-commits
+
       - name: Update data branch
         run: |
           if git fetch -q origin data; then
@@ -225,6 +247,7 @@ jobs:
             jq -n --arg s "$SHA" '{upstream_sha: $s, status: "skipped", reason: "no RTL change"}' > "runs/$SHA/skipped.json"
           fi
           jq -s . /dev/null $(find runs -name results.json | sort) > runs.json
+          cp ../art-commits/commits.json commits.json
           git add -A
           git diff --cached --quiet && { echo "Nothing to publish"; exit 0; }
           git -c user.name='github-actions[bot]' \
