@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       sha:
-        description: Upstream SHA (empty = tracked branch head)
+        description: Upstream SHAs, space separated (empty = tracked branch head)
         default: ''
       targets:
         description: Targets, space separated (empty = all in synthesis.yaml)
@@ -47,11 +47,9 @@ jobs:
       IN_MODE: ${{ inputs.mode || 'fast' }}
       FORCE: ${{ inputs.force || false }}
     outputs:
-      sha: ${{ steps.plan.outputs.sha }}
       mode: ${{ steps.plan.outputs.mode }}
       matrix: ${{ steps.plan.outputs.matrix }}
-      old: ${{ steps.plan.outputs.old }}
-      skip: ${{ steps.plan.outputs.skip }}
+      skipped: ${{ steps.plan.outputs.skipped }}
     steps:
       - name: Sync fork and rebase ft-synthesis
         run: |
@@ -75,32 +73,34 @@ jobs:
         working-directory: fork
         run: |
           head=$(git rev-parse "upstream/$BRANCH")
-          sha=$(git rev-parse --verify "${IN_SHA:-$head}^{commit}")
           runs=$(gh api -H 'Accept: application/vnd.github.raw+json' \
             "repos/$GITHUB_REPOSITORY/contents/runs.json?ref=data" 2>/dev/null) || runs='[]'
           last=$(jq -r 'max_by(.upstream_date).upstream_sha // empty' <<<"$runs")
-          # Skip when RTL is unchanged since the newest published commit.
-          skip=false
-          if [ "$FORCE" != true ] && [ -n "$last" ] \
-              && git diff --quiet "$last" "$sha" -- core common vendor corev_apu 2>/dev/null; then
-            skip=true
-          fi
           targets=${IN_TARGETS:-$(git show origin/ft-synthesis:synthesis.yaml | yq '.targets | keys | .[]')}
-          matrix=$(jq -nc --arg t "$targets" --arg x "$IN_TECHS" --arg m "$IN_MODE" --arg sha "$sha" \
-            --argjson runs "$runs" --argjson force "$FORCE" --argjson skip "$skip" '
-            [ ($t | scan("[^ \n]+")) as $a | ($x | scan("[^ ]+")) as $b
-              | select($skip | not)
-              | select($force or ($runs | any(.upstream_sha == $sha and .target == $a
-                  and .technology == $b and .mode == $m) | not))
-              | {target: $a, tech: $b} ]')
+          matrix='[]'
+          skipped=''
+          for in_sha in ${IN_SHA:-$head}; do
+            sha=$(git rev-parse --verify "$in_sha^{commit}")
+            # Skip a commit whose RTL equals that of the newest published commit.
+            if [ "$FORCE" != true ] && [ -n "$last" ] \
+                && git diff --quiet "$last" "$sha" -- core common vendor corev_apu 2>/dev/null; then
+              skipped="$skipped $sha"
+              continue
+            fi
+            matrix=$(jq -c --arg t "$targets" --arg x "$IN_TECHS" --arg m "$IN_MODE" --arg sha "$sha" \
+              --argjson old "$([ "$sha" != "$head" ] && echo true || echo false)" \
+              --argjson runs "$runs" --argjson force "$FORCE" '
+              . + [ ($t | scan("[^ \n]+")) as $a | ($x | scan("[^ ]+")) as $b
+                | select($force or ($runs | any(.upstream_sha == $sha and .target == $a
+                    and .technology == $b and .mode == $m) | not))
+                | {sha: $sha, old: $old, target: $a, tech: $b} ]' <<<"$matrix")
+          done
           {
-            echo "sha=$sha"
             echo "mode=$IN_MODE"
             echo "matrix=$matrix"
-            echo "old=$([ "$sha" != "$head" ] && echo true || echo false)"
-            echo "skip=$skip"
+            echo "skipped=${skipped# }"
           } >> "$GITHUB_OUTPUT"
-          echo "Upstream ${sha:0:8}: $(jq length <<<"$matrix") run(s), skip=$skip" >> "$GITHUB_STEP_SUMMARY"
+          echo "$(jq length <<<"$matrix") run(s); skipped (no RTL change):${skipped:- none}" >> "$GITHUB_STEP_SUMMARY"
 
       # Recent commits of the tracked branch, newest first. "rtl" is false when
       # the commit does not change the RTL, so it shares the results of its parent.
@@ -131,7 +131,7 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.sync.outputs.matrix) }}
     env:
-      SHA: ${{ needs.sync.outputs.sha }}
+      SHA: ${{ matrix.sha }}
       MODE: ${{ needs.sync.outputs.mode }}
       TARGET: ${{ matrix.target }}
       TECH: ${{ matrix.tech }}
@@ -150,7 +150,7 @@ jobs:
       # The tool-compatibility commits (ft-synthesis on top of the tracked branch,
       # except its last commit) apply to the older commit too.
       - name: Check out the older upstream commit
-        if: needs.sync.outputs.old == 'true'
+        if: matrix.old
         env:
           BRANCH: ${{ vars.TRACKED_BRANCH }}
         run: |
@@ -179,10 +179,20 @@ jobs:
           echo "$COMPOSE_SHA256  $plugins/docker-compose" | sha256sum -c -
           chmod +x "$plugins/docker-compose"
 
+      # Each runner has its own Compose project: remove the tool containers that
+      # a cancelled job of this runner left running.
+      - name: Remove stale tool containers
+        run: |
+          docker ps -aq --filter "label=com.docker.compose.project=cva6-synthesis-$RUNNER_NAME" \
+            | xargs -r docker rm -f
+
       - name: Run flow
         # Half of the Docker CPUs, shared by the parallel runs.
         run: |
           export CVA6_SYNTH_CPUS=$(( $(docker info --format '{{.NCPU}}') / 2 / FLOW_PARALLEL ))
+          export CVA6_SYNTH_PROJECT="cva6-synthesis-$RUNNER_NAME"
+          # On the work mount that all runners share: one simulation at a time.
+          export CVA6_SYNTH_GSIM_LOCK=/srv/cva6-runner/gsim.lock
           CVA6_UPSTREAM_REF="$SHA" ./synthesis/run.sh --target "$TARGET" --tech "$TECH" --mode "$MODE"
 
       - name: Anonymisation check
@@ -198,13 +208,34 @@ jobs:
 
       # A failed run still uploads its failed results.json.
       - uses: actions/upload-artifact@v7
+        id: upload
         if: always() && steps.anon.outcome == 'success'
+        continue-on-error: true
         with:
-          name: run-${{ matrix.target }}-${{ matrix.tech }}
+          name: run-${{ matrix.sha }}-${{ matrix.target }}-${{ matrix.tech }}
           path: |
             ${{ steps.anon.outputs.dir }}/results.json
             ${{ steps.anon.outputs.dir }}/metrics.json
             ${{ steps.anon.outputs.dir }}/metadata.txt
+            ${{ steps.anon.outputs.dir }}/gsim.log
+          retention-days: 7
+
+      # One retry after a pause: name resolution on the runner fails at times.
+      - name: Retry the upload
+        id: retry
+        if: always() && steps.upload.outcome == 'failure'
+        run: sleep 60
+
+      - uses: actions/upload-artifact@v7
+        if: always() && steps.retry.outcome == 'success'
+        with:
+          name: run-${{ matrix.sha }}-${{ matrix.target }}-${{ matrix.tech }}
+          overwrite: true
+          path: |
+            ${{ steps.anon.outputs.dir }}/results.json
+            ${{ steps.anon.outputs.dir }}/metrics.json
+            ${{ steps.anon.outputs.dir }}/metadata.txt
+            ${{ steps.anon.outputs.dir }}/gsim.log
           retention-days: 7
 
       - name: Clean run directory
@@ -218,8 +249,7 @@ jobs:
     permissions:
       contents: write
     env:
-      SHA: ${{ needs.sync.outputs.sha }}
-      SKIP: ${{ needs.sync.outputs.skip }}
+      SKIPPED: ${{ needs.sync.outputs.skipped }}
     steps:
       - uses: actions/checkout@v7
 
@@ -248,17 +278,18 @@ jobs:
             mkdir -p "$dest"
             cp "$(dirname "$f")"/* "$dest/"
           done
-          if [ "$SKIP" = true ] && [ ! -e "runs/$SHA" ]; then
-            mkdir -p "runs/$SHA"
-            jq -n --arg s "$SHA" '{upstream_sha: $s, status: "skipped", reason: "no RTL change"}' > "runs/$SHA/skipped.json"
-          fi
+          for sha in $SKIPPED; do
+            [ -e "runs/$sha" ] && continue
+            mkdir -p "runs/$sha"
+            jq -n --arg s "$sha" '{upstream_sha: $s, status: "skipped", reason: "no RTL change"}' > "runs/$sha/skipped.json"
+          done
           jq -s . /dev/null $(find runs -name results.json | sort) > runs.json
           cp ../art-commits/commits.json commits.json
           git add -A
           git diff --cached --quiet && { echo "Nothing to publish"; exit 0; }
           git -c user.name='github-actions[bot]' \
               -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
-              commit -q -m "Results for ${SHA:0:8}"
+              commit -q -m "Results: $(find ../art -name results.json | wc -l) run(s)"
           git push -q origin data
 
       - name: Build dashboard
