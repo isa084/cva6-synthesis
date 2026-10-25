@@ -14,10 +14,11 @@ rights on the repository, `/srv/cva6-runner` writable and shared with Docker
 REPO=owner/name ./runner/start.sh
 ```
 
-`start.sh` requests a registration token with `gh`, resolves the Docker socket
-from the active Docker context, and runs `docker compose up -d`. The runner is
+`start.sh` requests a registration token with `gh` and runs
+`docker compose up -d`. The container mounts `/var/run/docker.sock`, which
+Docker Desktop maps to its engine socket. The runner is
 named `cva6-synth-runner` with label `cva6-synthesis`. Nothing host-specific is
-committed: repository, socket path, token and CPU count are environment
+committed: repository, token and CPU count are environment
 variables set at start time. Stop with `docker compose -f runner/compose.yaml down`
 (the runner then shows as offline until the next start).
 

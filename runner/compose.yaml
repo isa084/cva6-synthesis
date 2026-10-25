@@ -1,5 +1,5 @@
 # Self-hosted GitHub Actions runner in one container, registered to one repository.
-# Started by start.sh, which sets REPO, RUNNER_TOKEN, DOCKER_SOCK, DENYLIST and RUNNER_CPUS.
+# Started by start.sh, which sets REPO, RUNNER_TOKEN, DENYLIST and RUNNER_CPUS.
 name: cva6-runner
 
 services:
@@ -14,7 +14,8 @@ services:
       REPO: ${REPO:?}
       RUNNER_TOKEN: ${RUNNER_TOKEN:?}
     volumes:
-      - ${DOCKER_SOCK:?}:/var/run/docker.sock
+      # Docker Desktop maps this path to its engine socket (no file sharing involved).
+      - /var/run/docker.sock:/var/run/docker.sock
       # Same path on the host and in the container, so tool containers started
       # through the socket can mount the job's files.
       - /srv/cva6-runner:/srv/cva6-runner
