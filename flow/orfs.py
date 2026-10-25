@@ -29,7 +29,12 @@ SRAM_MODES = {
                 [Path(p).name for p in TC_WRAPPERS + HPD_SRAMS] + ["cva6_sram_1rw_macro.sv"]),
     "flatten": (TC_WRAPPERS,
                 [Path(p).name for p in TC_WRAPPERS] + ["cva6_sram_1rw_ff.sv"]),
+    # The upstream SRAM models: HPDcache memories as flip-flop arrays, reported
+    # as macro area; tc_sram memories absent (translate_off).
+    "reference": ([], []),
 }
+SRAM_MODES["blackbox"] = SRAM_MODES["fakeram"]  # same netlist; SRAM area left out of the area
+REFERENCE_MACROS = ["hpdcache_sram_1rw", "hpdcache_sram_wbyteenable_1rw"]
 
 
 def fail(message: str):
@@ -57,7 +62,8 @@ def read_meta() -> dict[str, str]:
     return dict(line.split("=", 1) for line in lines if "=" in line)
 
 
-def write_config(target: dict, tech: str, mode: str, sram: str, config_mk: Path) -> None:
+def write_config(target: dict, tech: str, mode: str, sram: str, config_mk: Path) -> tuple[list[str], list[str]]:
+    """Writes config.mk; returns the RTL files and include directories."""
     # Flist variables, as the core manifests expect them.
     os.environ.update(CVA6_REPO_DIR=INPUT_DIR.as_posix(), TARGET_CFG=target["config"],
                       HPDCACHE_DIR=(INPUT_DIR / "core/cache_subsystem/hpdcache").as_posix())
@@ -78,7 +84,9 @@ def write_config(target: dict, tech: str, mode: str, sram: str, config_mk: Path)
              "export VERILOG_FILES = " + " ".join(files),
              "export VERILOG_INCLUDE_DIRS = " + " ".join(incdirs),
              "export VERILOG_DEFINES = " + " ".join(f"-D {d}" for d in target.get("defines") or [])]
-    if sram == "fakeram":
+    if sram == "reference":
+        lines.append("export SYNTH_KEEP_MODULES = " + " ".join(REFERENCE_MACROS))
+    if sram in ("fakeram", "blackbox"):
         macros = sorted(views.glob("*/*"))
         lines += ["export ADDITIONAL_LEFS = " + " ".join(str(m) for m in macros if m.suffix == ".lef"),
                   "export ADDITIONAL_LIBS = " + " ".join(str(m) for m in macros if m.suffix == ".lib"),
@@ -86,6 +94,32 @@ def write_config(target: dict, tech: str, mode: str, sram: str, config_mk: Path)
     lines += [f"include $(CVA6_FLOW_DIR)/orfs/{name}.mk" for name in ("cva6", tech, mode)]
     config_mk.parent.mkdir(parents=True, exist_ok=True)
     config_mk.write_text("\n".join(lines) + "\n")
+    return files, incdirs
+
+
+def write_gsim(target: dict, tech: str, files: list[str], incdirs: list[str], config_mk: Path) -> None:
+    """Inputs of the gate-level simulation (gsim/run.py): file lists for the RTL
+    and for the netlist, the programs, and standard-cell models made from the
+    Liberty files of the run. odb.tcl writes the netlist itself."""
+    gsim = OUTPUT_DIR / "gsim"
+    gsim.mkdir(exist_ok=True)
+    defines = (target.get("defines") or []) + re.findall(
+        r"-D\s*(\S+)", " ".join(re.findall(r"^export VERILOG_DEFINES \+= (.*)$",
+                                           (FLOW_ROOT / "orfs/cva6.mk").read_text(), re.M)))
+    head = [f"+incdir+{d}" for d in incdirs] + [f"+define+{d}" for d in defines]
+    # Behavioural macro models instead of the black boxes used in synthesis.
+    models = [str(m) for m in sorted((FLOW_ROOT / "sram/views" / tech).glob("*/*.v"))]
+    rtl = [f for f in files if not re.search(r"/cva6_sram_\d+x\d+\.sv$", f)] + models
+    packages = {"config_pkg.sv", f"{target['config']}_config_pkg.sv", "build_config_pkg.sv", "axi_pkg.sv"}
+    gate = [f for f in files if Path(f).name in packages] + models + [str(gsim / "cells.v"), str(gsim / "netlist.v")]
+    (gsim / "rtl.f").write_text("\n".join(head + rtl) + "\n")
+    (gsim / "gate.f").write_text("\n".join(head + gate) + "\n")
+    (gsim / "tests.txt").write_text("\n".join(target["tests"]) + "\n")
+    libs = subprocess.run(["make", "-s", "-C", str(ORFS_FLOW), f"DESIGN_CONFIG={config_mk}",
+                           f"WORK_HOME={OUTPUT_DIR}", "print-LIB_FILES"],
+                          check=True, capture_output=True, text=True).stdout.split(":", 1)[1].split()
+    reads = " ".join(f"read_liberty -ignore_miss_func {lib};" for lib in libs if "cva6_sram_" not in lib)
+    subprocess.run(["yosys", "-q", "-p", f"{reads} write_verilog -noattr {gsim / 'cells.v'}"], check=True)
 
 
 def nand2_area(tech_mk: Path) -> float:
@@ -96,10 +130,11 @@ def nand2_area(tech_mk: Path) -> float:
     return float(re.search(r"cell \(NAND2_X1\)\s*\{.*?area\s*:\s*([\d.]+)", liberty, re.S).group(1))
 
 
-def read_odb(odb: Path) -> str:
+def read_odb(odb: Path, netlist: Path | None) -> str:
+    """Output of flow/odb.tcl; it also writes the netlist when one is given."""
+    env = {**os.environ, "ODB_FILE": str(odb), **({"NETLIST_FILE": str(netlist)} if netlist else {})}
     return subprocess.run(["openroad", "-no_splash", "-exit", str(FLOW_ROOT / "flow/odb.tcl")],
-                          env={**os.environ, "ODB_FILE": str(odb)}, check=True,
-                          capture_output=True, text=True).stdout
+                          env=env, check=True, capture_output=True, text=True).stdout
 
 
 def sram_masters(odb_out: str) -> list[tuple[int, int, int]]:
@@ -136,6 +171,27 @@ def area_tree(odb_out: str) -> dict | None:
                "sram": round(sum(k["sram"] for k in kids) if kids else sram, 1)}
         return {**out, "children": kids} if kids else out
     return build(root)
+
+
+def mark_macros(tree: dict, modules: list[str], stdcell: float) -> tuple[float, float]:
+    """Counts the instances of the given modules as macros (reference SRAM mode):
+    their area moves from the standard cells to the macros. Returns both areas."""
+    def walk(n: dict) -> float:
+        if n["module"] in modules:
+            n["sram"] = n["area"]
+        elif "children" in n:
+            n["sram"] = round(sum(walk(c) for c in n["children"]), 1)
+        return n["sram"]
+    macro = walk(tree)
+    return stdcell - macro, macro
+
+
+def drop_sram(n: dict) -> dict:
+    """The area tree without the SRAM macro area (blackbox SRAM mode)."""
+    kids = [drop_sram(c) for c in n.get("children", []) if c["area"] > c["sram"]]
+    out = {k: v for k, v in n.items() if k != "children"}
+    out.update(area=round(n["area"] - n["sram"], 1), sram=0.0)
+    return {**out, "children": kids} if kids else out
 
 
 def report_paths(report: Path, unit_ps: int) -> dict:
@@ -180,21 +236,23 @@ def run(target_name: str, target: dict, config: dict, tech: str | None, mode: st
     tech_mk = FLOW_ROOT / "orfs" / f"{tech}.mk"
     period_ps = round(float(mk_var(tech_mk, "CLOCK_PERIOD")) * UNIT_PS[tech])
     result = {"upstream_sha": meta["upstream_sha"], "upstream_date": meta["upstream_date"],
-              "upstream_title": meta["upstream_title"], "target": target_name,
+              "upstream_title": meta["upstream_title"], "target": target_name, "config": target["config"],
               "technology": tech, "sram_mode": sram, "mode": mode,
-              "flow_version": meta["flow_version"], "status": "failed",
+              "flow_version": meta["flow_version"], "repo_commit": meta.get("repo_commit"), "status": "failed",
               "stdcell_area_um2": None, "macro_area_um2": None, "total_area_um2": None,
               "stdcell_kgate": None, "fmax_mhz": None, "worst_slack_ps": None,
               "sram_macros": None, "sram_bits": None, "clock_period_ps": period_ps,
               "image": meta["tool_image"], "run_started": meta["start_time"],
-              "gsim_run": None, "gsim_passed": None,
+              "gsim_run": None, "gsim_passed": None, "gsim": None,
               "reports_url": "", "params": build_params(tech, mode, sram, period_ps),
               "paths": None, "area_tree": None}
+    # No gate-level simulation without the instruction cache memories.
+    gsim = bool(target.get("tests")) and sram != "reference"
     try:
         if meta["rtl_match"] != "yes":
             fail("RTL has uncommitted changes")
         config_mk = OUTPUT_DIR / "config/config.mk"
-        write_config(target, tech, mode, sram, config_mk)
+        files, incdirs = write_config(target, tech, mode, sram, config_mk)
         subprocess.run(["make", "-C", str(ORFS_FLOW), f"DESIGN_CONFIG={config_mk}",
                         f"WORK_HOME={OUTPUT_DIR}", MAKE_TARGET[mode]], check=True)
 
@@ -202,21 +260,29 @@ def run(target_name: str, target: dict, config: dict, tech: str | None, mode: st
         metrics_file = OUTPUT_DIR / f"logs/{base}/2_1_floorplan.json"
         metrics = json.loads(metrics_file.read_text())
         (OUTPUT_DIR / "metrics.json").write_text(metrics_file.read_text())
-        stdcell = metrics["floorplan__design__instance__area__stdcell"]
-        odb_out = read_odb(OUTPUT_DIR / f"results/{base}/2_1_floorplan.odb")
+        if gsim:
+            write_gsim(target, tech, files, incdirs, config_mk)
+        odb_out = read_odb(OUTPUT_DIR / f"results/{base}/2_1_floorplan.odb",
+                           OUTPUT_DIR / "gsim/netlist.v" if gsim else None)
         masters = sram_masters(odb_out)
+        tree = area_tree(odb_out)
+        stdcell = metrics["floorplan__design__instance__area__stdcell"]
+        macro = metrics["floorplan__design__instance__area__macros"]
+        if sram == "reference" and tree:
+            stdcell, macro = mark_macros(tree, REFERENCE_MACROS, stdcell)
+        if sram == "blackbox":
+            macro = 0.0
+            tree = tree and drop_sram(tree)
         result.update(
-            paths=report_paths(OUTPUT_DIR / f"reports/{base}/2_floorplan_final.rpt", UNIT_PS[tech]),
-            area_tree=area_tree(odb_out))
-        result.update(
-            status="success", stdcell_area_um2=stdcell,
-            macro_area_um2=metrics["floorplan__design__instance__area__macros"],
-            total_area_um2=metrics["floorplan__design__instance__area"],
+            status="success", stdcell_area_um2=stdcell, macro_area_um2=macro,
+            total_area_um2=stdcell + macro,
             stdcell_kgate=stdcell / nand2_area(tech_mk) / 1000,
             fmax_mhz=metrics["floorplan__timing__fmax"] / 1e6,
             worst_slack_ps=metrics["floorplan__timing__setup__ws"] * UNIT_PS[tech],
             sram_macros=sum(n for _, _, n in masters),
-            sram_bits=sum(d * w * n for d, w, n in masters))
+            sram_bits=sum(d * w * n for d, w, n in masters),
+            paths=report_paths(OUTPUT_DIR / f"reports/{base}/2_floorplan_final.rpt", UNIT_PS[tech]),
+            area_tree=tree)
     finally:
         (OUTPUT_DIR / "results.json").write_text(json.dumps(result, indent=2) + "\n")
     return 0

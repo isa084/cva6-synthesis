@@ -81,6 +81,7 @@ if [[ "$profile" == orfs ]]; then
     [[ "$tech" == asap7 || "$tech" == nangate45 ]] || fail "--tech must be 'asap7' or 'nangate45'"
     override_file="${synth_dir}/container/compose.orfs.yaml"
     tool_image=$(sed -n 's/^ *image: *//p' "$override_file")
+    gsim_override="${synth_dir}/container/compose.gsim.yaml"
     run_path="${target}/${tech}/${mode}"
 else
     mode=${mode:-full}
@@ -105,6 +106,7 @@ metadata_file="${run_dir}/metadata.txt"
     [[ "$profile" != orfs ]] || printf 'technology=%s\n' "$tech"
     printf 'start_time=%s\n' "$(date --iso-8601=seconds)"
     printf 'tool_image=%s\n' "$tool_image"
+    [[ -z "${gsim_override:-}" ]] || printf 'gsim_image=%s\n' "$(sed -n 's/^ *image: *//p' "$gsim_override")"
     printf 'synthesis_config_sha256=%s\n' "$(sha256sum "$config_file" | awk '{print $1}')"
     if git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         printf 'repo_commit=%s\n' "$(git -C "$repo_root" rev-parse HEAD)"
@@ -178,6 +180,23 @@ set +e
     --override "$override_file" \
     -- "$target" --mode "$mode" ${tech:+--tech "$tech"} 2>&1 | tee "${run_dir}/console.log"
 status=${PIPESTATUS[0]}
+
+# Gate-level simulation of the same run, when the flow wrote its inputs. Its
+# results go into results.json; a simulation problem does not fail the run.
+if [[ "$status" -eq 0 && -s "${run_dir}/gsim/tests.txt" ]]; then
+    # Optional lock file shared by parallel runs: the netlist build needs much
+    # memory, so only one simulation runs at a time.
+    if [[ -n "${CVA6_SYNTH_GSIM_LOCK:-}" ]]; then
+        exec {gsim_lock}>"$CVA6_SYNTH_GSIM_LOCK"
+        printf 'Waiting for the gate-level simulation lock\n'
+        flock "$gsim_lock"
+    fi
+    printf 'Gate-level simulation\n'
+    "${harness_dir}/run-tool.sh" \
+        --env-file "$env_file" \
+        --project "$project_name" \
+        --override "$gsim_override" -- 2>&1 | tee -a "${run_dir}/console.log"
+fi
 set -e
 
 {

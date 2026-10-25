@@ -1,0 +1,13 @@
+# Overrides the docker-harness tool service with the pinned prebuilt Verilator
+# image, for the gate-level simulation of a finished run (gsim/run.py).
+services:
+  tool:
+    image: verilator/verilator:v5.052@sha256:a5b73e2fce0b2c483396f3800940f33b6faa802331a061c21694dd27b7352120
+    build: !reset null
+    entrypoint:
+      - /workspace/input/synthesis/container/gsim-entrypoint.sh
+    working_dir: /workspace/output
+    # Optional per-run core budget (CVA6_SYNTH_CPUS); 0 means no limit.
+    cpus: ${CVA6_SYNTH_CPUS:-0}
+    environment:
+      CVA6_SYNTH_CPUS: ${CVA6_SYNTH_CPUS:-}

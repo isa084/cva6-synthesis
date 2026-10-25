@@ -17,6 +17,9 @@ floorplan stage. Every run writes `results.json` next to its raw ORFS metrics
 | `worst_slack_ps` | The worst setup slack at the configured clock period. A negative value means that the path is too slow. |
 | `sram_macros`, `sram_bits` | The number of SRAM macro instances and the total number of bits that they hold. |
 | `clock_period_ps` | The constraint that the flow uses. The value is 4000 ps for ASAP7 and 3000 ps for Nangate45. |
+| `paths` | The worst setup path of each path group (`in2reg`, `reg2reg`, `reg2out`, `in2out`): slack, startpoint and endpoint. "Core fmax" on the dashboard is 1 / (clock period − `reg2reg` slack). |
+| `area_tree` | The floorplan area of each instance of the hierarchical netlist, with its SRAM part. A module below the keep size is part of its parent. Null for a flat netlist. |
+| `gsim_run`, `gsim_passed`, `gsim` | The gate-level simulation: the number of programs, the number that pass on the netlist, and the RTL and gate-level result of each program. See `docs/GATESIM.md`. |
 
 Each record also has provenance data:
 
@@ -64,8 +67,10 @@ repository that uses the flow.
 |---|---|
 | `fakeram` | The cache memories become FakeRAM macros (default). |
 | `flatten` | The flow synthesizes the memories as flip-flops inside the core. The macro area is 0. |
+| `blackbox` | The netlist of `fakeram`. The reported area leaves out the SRAM macros. |
+| `reference` | The upstream SRAM models. The HPDcache memories are flip-flop arrays. The flow keeps them as separate modules (`SYNTH_KEEP_MODULES`) and reports their area as macro area. The memories behind `tc_sram` are absent, because the upstream model is under `translate_off`. |
 
-The flow replaces the SRAM wrapper modules (`tc_sram_wrapper`,
+In `fakeram`, `blackbox` and `flatten`, the flow replaces the SRAM wrapper modules (`tc_sram_wrapper`,
 `tc_sram_wrapper_cache_techno`, `hpdcache_sram_1rw`,
 `hpdcache_sram_wbyteenable_1rw`) with the versions in `sram/rtl/`. The flow does
 not edit the upstream files.

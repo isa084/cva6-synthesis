@@ -14,6 +14,7 @@ openhwfoundation/cva6 master
         ▼
 [3] flow (self-hosted runner, one job per target × technology)
         │   run.sh ─► ORFS container ─► synthesis ─► floorplan ─► results.json
+        │          ─► Verilator container ─► gate-level simulation ─► results.json
         ▼
 [4] publish ─────► data branch (results)  ─► dashboard page ─► GitHub Pages
         ▼
@@ -44,8 +45,12 @@ The step `Plan` in the job `sync` does this part.
   in the `data` branch. If no RTL changed (`core common vendor corev_apu`), the
   step records the commit as skipped. Then nothing runs.
 - **Matrix:** Otherwise, the step builds the job matrix (target × technology).
-- **Manual dispatch:** In a manual dispatch, you can name a specific commit,
-  targets, technologies, the mode (`fast` or `opt`), and `force`.
+- **Manual dispatch:** In a manual dispatch, you can name one or more commits,
+  targets, technologies, the mode (`fast` or `opt`), and `force`. All the
+  commits run in one workflow run, so all the runners share the jobs.
+- **Commit list:** The job also lists the last 100 commits of the tracked branch
+  and marks the commits that do not change the RTL. The dashboard shows these
+  commits with the result of the commit before them.
 
 ## 3. Flow run
 
@@ -63,10 +68,13 @@ number of jobs that run at the same time.
 | Synthesize | The flow maps the design to standard cells. The SRAMs stay as FakeRAM macros. | ORFS, `sram/views/<tech>/` |
 | Floorplan | The flow sizes the die and the core. It also sets the macro footprint and runs static timing with OpenSTA. | ORFS |
 | Results | The flow takes the area, kGE, fmax, worst slack, and macro counts from the ORFS metrics. It also adds the provenance. | [`flow/orfs.py`](../flow/orfs.py) → `results.json` |
+| Simulate | When the target has `tests:`, a second container simulates the measured netlist and the RTL with the same programs (Verilator). | [`gsim/run.py`](../gsim/run.py), [`docs/GATESIM.md`](GATESIM.md) |
 | Check | The job searches the run directory for strings that identify the workstation. A deny-list outside the repository gives these strings. | `track.yml` |
 
-All tools come from one pinned prebuilt image, `openroad/orfs`. The flow
-references the image by digest. The flow builds nothing. The same `run.sh`
+All tools come from two pinned prebuilt images, `openroad/orfs` and
+`verilator/verilator`. The flow references them by digest. The flow builds
+nothing. Each runner has its own Compose project; a job first removes the tool
+containers that a cancelled job of its runner left running. The same `run.sh`
 command reproduces any result on a local machine:
 
 ```bash
@@ -78,13 +86,17 @@ cd cva6 && ./synthesis/run.sh --target cv32a65x --tech asap7 --mode fast
 
 The jobs `publish` and `pages` run on a GitHub-hosted runner.
 
-- **Data:** The job stores the `results.json`, `metrics.json`, and `metadata.txt`
-  of each run on the `data` branch under `runs/<commit>/<target>/<tech>/<mode>/`.
-  It rebuilds `runs.json` from these files. Records are append-only.
+- **Data:** The job stores the `results.json`, `metrics.json`, `metadata.txt`
+  and `gsim.log` of each run on the `data` branch under
+  `runs/<commit>/<target>/<tech>/<mode>/`. It rebuilds `runs.json` from these
+  files and stores the commit list as `commits.json`. A forced run replaces the
+  record of the same commit, target, technology and mode; the branch history
+  keeps the old record.
 - **Dashboard:** [`dashboard/generate.py`](../dashboard/generate.py) puts the records into
   [`dashboard/template.html`](../dashboard/template.html) and writes one static
-  page. For the selected technology and target, the page shows the results
-  table, the area breakdown, the timing paths, the trends and the history.
+  page. For the selected technology, target and SRAM model, the page shows
+  the results table, the area breakdown, the timing paths, the gate-level
+  simulation, the trends and the history.
   The workflow [`dashboard.yml`](../.github/workflows/dashboard.yml) rebuilds
   the page from the `data` branch after a change to `dashboard/`, without a
   flow run.

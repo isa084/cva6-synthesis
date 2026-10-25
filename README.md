@@ -169,20 +169,29 @@ flow from synthesis to floorplan. The flow runs in the pinned prebuilt
 
 The ORFS profile has two modes:
 
-- `fast` (default): stops at the floorplan metrics step with the cheapest
-  settings
-- `opt`: uses the reference flow settings
+- `fast` (default): hierarchical synthesis, then only the floorplan metrics
+  step
+- `opt`: the same synthesis, then the full floorplan step with the reference
+  floorplan settings
 
 Each target sets `sram:` to one of these values:
 
 - `fakeram` (default): FakeRAM macros for every cache memory
 - `flatten`: the flow implements the memories as flip-flops
+- `blackbox`: the netlist of `fakeram`; the reported area leaves out the SRAM
+- `reference`: the upstream SRAM models; the HPDcache memories are flip-flop
+  arrays, counted as macro area; the instruction cache memories are absent
+
+When a target lists programs in `tests:`, the run continues with a gate-level
+simulation of its netlist in the pinned Verilator image
+(`container/compose.gsim.yaml`). See `docs/GATESIM.md`.
 
 The run directory is `synthesis/runs/<target>/<tech>/<mode>/<timestamp>/`. It
 contains these items:
 
 - `results.json` (area, kGate, fmax, worst slack, macro count, bit count,
-  provenance)
+  timing paths, area per instance, gate-level simulation results, provenance)
+- `gsim.log` (gate-level simulation, when the target has `tests:`)
 - the raw ORFS metrics (`metrics.json`)
 - the ORFS logs, reports, and results
 

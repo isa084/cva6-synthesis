@@ -1,7 +1,8 @@
 # Reads ODB_FILE (a floorplan) and prints:
 #   "SRAM <master> <instances>" for every cva6_sram_* macro master;
 #   "MOD <path> <module> <logic> <sram>" for the top module ("-") and every
-#   module instance, with the cell area (um^2) of that module only.
+#   module instance, with the cell area (um^2) of that module only;
+# and writes the netlist to NETLIST_FILE when it is set.
 read_db $::env(ODB_FILE)
 set block [ord::get_db_block]
 set dbu [$block getDbUnitsPerMicron]
@@ -35,4 +36,9 @@ set top [$block getTopModule]
 puts "MOD - [$top getName] [own $top]"
 foreach mi [$block getModInsts] {
   puts "MOD [$mi getHierarchicalName] [[$mi getMaster] getName] [own [$mi getMaster]]"
+}
+
+# The measured netlist, for the gate-level simulation.
+if {[info exists ::env(NETLIST_FILE)]} {
+  write_verilog $::env(NETLIST_FILE)
 }
