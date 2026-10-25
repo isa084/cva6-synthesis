@@ -127,7 +127,6 @@ jobs:
           repository: ${{ vars.FORK_REPO }}
           ref: ft-synthesis
           ssh-key: ${{ secrets.FORK_DEPLOY_KEY }}
-          submodules: recursive
           fetch-depth: 0
 
       - name: Check out the older upstream commit
@@ -135,7 +134,17 @@ jobs:
         run: |
           git checkout -q "$SHA"
           git checkout ft-synthesis -- synthesis.yaml .gitmodules synthesis
-          git submodule update --init --recursive
+
+      # The flow submodule is fetched from the repository running this workflow,
+      # so staging tests its own commits. .gitmodules is left untouched.
+      - name: Check out the flow
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          git config submodule.synthesis.url "https://github.com/${{ github.repository }}.git"
+          auth=$(printf 'x-access-token:%s' "$TOKEN" | base64 -w0)
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" \
+            submodule update --init --recursive
 
       - name: Install docker compose
         run: |
