@@ -50,7 +50,7 @@ Each record also has provenance data:
 
 | Mode | Settings | Typical time per target |
 |---|---|---|
-| `fast` | Flat synthesis, an ABC script for area, and no timing repair at floorplan (`orfs/fast.mk`). | minutes |
+| `fast` | The synthesis of `opt` (hierarchical; modules above 10,000 NAND2 equivalents stay separate; an ABC script for timing). The run stops after the floorplan metrics step, with no timing repair (`orfs/fast.mk`). | minutes |
 | `opt` | The reference settings: hierarchical synthesis, an ABC script for timing, and the reference floorplan settings (`orfs/opt.mk`). | hours |
 
 The flow never mixes `fast` results and `opt` results in one series.
