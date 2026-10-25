@@ -32,6 +32,10 @@ digest, technology, run mode and SRAM mode.
   silicon memory compilers. ASAP7 is a predictive (non-manufacturable) PDK.
 - Byte-enabled memories are built from 8-bit lane macros, which slightly
   enlarges the macro footprint compared with a write-mask SRAM.
+- A lane that only holds alignment padding (for example the upper bytes of
+  a 45-bit tag word that `sram.sv` stores in a 64-bit cut) is never read,
+  so synthesis removes it; `sram_macros` and `sram_bits` count the remaining
+  lanes.
 
 ## Run modes
 
