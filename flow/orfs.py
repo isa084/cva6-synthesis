@@ -125,7 +125,8 @@ def run(target_name: str, target: dict, config: dict, tech: str | None, mode: st
               "stdcell_area_um2": None, "macro_area_um2": None, "total_area_um2": None,
               "stdcell_kgate": None, "fmax_mhz": None, "worst_slack_ps": None,
               "sram_macros": None, "sram_bits": None, "clock_period_ps": period_ps,
-              "image": meta["tool_image"], "gsim_run": None, "gsim_passed": None,
+              "image": meta["tool_image"], "run_started": meta["start_time"],
+              "gsim_run": None, "gsim_passed": None,
               "reports_url": ""}
     try:
         if meta["rtl_match"] != "yes":

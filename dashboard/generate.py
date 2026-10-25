@@ -90,7 +90,9 @@ def main(runs_path, out_dir):
     else:
         runs = json.loads(src.read_text())
     fake = [r for r in runs if r["sram_mode"] == "fakeram" and r.get("mode", "fast") == "fast"]
-    version = max((r["flow_version"] for r in fake), default="")
+    # The flow version shown is the one of the most recent run.
+    started = lambda r: datetime.fromisoformat(r.get("run_started") or "1970-01-01T00:00:00+00:00")
+    version = max(fake, key=started)["flow_version"] if fake else ""
     shown = [r for r in fake if r["flow_version"] == version]
     images = ", ".join(sorted({r["image"] for r in shown if r.get("image")})) or "—"
     sections = [tech_section(t, [r for r in shown if r["technology"] == t])
