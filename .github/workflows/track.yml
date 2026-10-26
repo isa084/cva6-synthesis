@@ -82,7 +82,8 @@ jobs:
           for in_sha in ${IN_SHA:-$head}; do
             sha=$(git rev-parse --verify "$in_sha^{commit}")
             # Skip a commit whose RTL equals that of the newest published commit.
-            if [ "$FORCE" != true ] && [ -n "$last" ] \
+            # The newest published commit itself gets its missing targets.
+            if [ "$FORCE" != true ] && [ -n "$last" ] && [ "$sha" != "$last" ] \
                 && git diff --quiet "$last" "$sha" -- core common vendor corev_apu 2>/dev/null; then
               skipped="$skipped $sha"
               continue
