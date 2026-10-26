@@ -125,6 +125,7 @@ module gsim_tb;
   logic [63:0] mem[MemWords];
   logic [63:0] tohost, fromhost;
   longint unsigned cycles, max_cycles;
+  bit trace;  // +trace: print each bus transaction
 
   function automatic logic is_dram(logic [63:0] addr);
     return addr >= DramBase && addr < DramBase + 8 * MemWords;
@@ -184,6 +185,9 @@ module gsim_tb;
       tohost    <= '0;
       fromhost  <= '0;
     end else begin
+      if (trace && req.aw_valid && resp.aw_ready) $display("%0d AW %h len %0d size %0d", cycles, req.aw.addr, req.aw.len, req.aw.size);
+      if (trace && req.w_valid && resp.w_ready) $display("%0d W  %h strb %h", cycles, req.w.data, req.w.strb);
+      if (trace && req.ar_valid && resp.ar_ready) $display("%0d AR %h len %0d size %0d", cycles, req.ar.addr, req.ar.len, req.ar.size);
       if (req.aw_valid && resp.aw_ready) begin
         if (req.aw.atop != '0) begin
           $display("\nGSIM FAIL unsupported AXI atomic operation");
@@ -232,7 +236,8 @@ module gsim_tb;
   always_ff @(posedge clk) begin
     cycles <= cycles + 1;
     if (cycles >= max_cycles) begin
-      $display("\nGSIM TIMEOUT after %0d cycles", cycles);
+      $display("\nGSIM TIMEOUT after %0d cycles (aw_valid %b w_valid %b b_pending %b ar_valid %b r_busy %b)",
+               cycles, req.aw_valid, req.w_valid, b_pending, req.ar_valid, r_busy);
       $finish;
     end
   end
@@ -241,6 +246,7 @@ module gsim_tb;
     string hex;
     if (!$value$plusargs("hex=%s", hex)) $fatal(1, "missing +hex=<program>");
     if (!$value$plusargs("max_cycles=%d", max_cycles)) max_cycles = 2_000_000;
+    trace = $test$plusargs("trace");
     cycles = 0;
     for (int i = 0; i < MemWords; i++) mem[i] = '0;
     $readmemh(hex, mem);

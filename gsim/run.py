@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 
 OUTPUT_DIR = Path("/workspace/output")
@@ -29,6 +30,8 @@ def build(kind: str, flist: Path, defines: list[str]) -> Path | None:
            "--x-assign", "fast", "--x-initial", "fast",
            # Short programs: compile time matters more than simulation speed.
            "-MAKEFLAGS", "OPT_FAST=-O1 OPT_SLOW=-O0 OPT_GLOBAL=-O1",
+           # One compiler process per generated file: grouping files needs too much memory.
+           "--output-groups", "0",
            *defines, "-f", str(flist), str(TB), "--Mdir", str(obj), "-o", "sim"]
     with open(GSIM / f"build_{kind}.log", "w") as log:
         built = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT).returncode == 0
@@ -56,6 +59,9 @@ def main() -> int:
         rtl, _ = simulate(sims["rtl"], program)
         gate, cycles = simulate(sims["gate"], program)
         tests.append({"test": program, "rtl": rtl, "gate": gate, "cycles": cycles})
+    # The builds are large (up to a few GB of generated C++); the logs stay.
+    for kind in sims:
+        shutil.rmtree(GSIM / f"obj_{kind}", ignore_errors=True)
 
     lines = [f"{'test':<20} {'rtl':<8} {'gate':<8} cycles"]
     lines += [f"{t['test']:<20} {t['rtl']:<8} {t['gate']:<8} {t['cycles'] or '-'}" for t in tests]

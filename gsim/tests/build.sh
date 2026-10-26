@@ -11,6 +11,8 @@ out=$here/hex
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$out"
+# C flags of the riscv-tests benchmarks: no loop-to-memset rewrite inside memset.
+cflags=(-O2 -std=gnu99 -fno-common -fno-builtin-printf -fno-tree-loop-distribute-patterns)
 flags=(-Wl,--no-warn-rwx-segments -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -T "$here/link.ld")
 
 hex() {  # <elf> <name>
@@ -35,7 +37,7 @@ for xlen in 32 64; do
     "$src/riscv-tests/isa/rv${xlen}um/mul.S" -o "$tmp/$name"
   hex "$tmp/$name" "$name"
   name=hello_world-rv$xlen
-  "${PREFIX}gcc" -march=rv${xlen}imc_zicsr_zifencei -mabi=$abi -O2 "${flags[@]}" \
+  "${PREFIX}gcc" -march=rv${xlen}imc_zicsr_zifencei -mabi=$abi "${cflags[@]}" "${flags[@]}" \
     -I "$src/custom/common" -I "$src/custom/env" "$src/custom/common/crt.S" "$src/custom/common/syscalls.c" \
     "$src/custom/hello_world/hello_world.c" -lgcc -o "$tmp/$name"
   hex "$tmp/$name" "$name"

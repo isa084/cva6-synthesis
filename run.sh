@@ -192,6 +192,10 @@ if [[ "$status" -eq 0 && -s "${run_dir}/gsim/tests.txt" ]]; then
         flock "$gsim_lock"
     fi
     printf 'Gate-level simulation\n'
+    # Optional core budget for the simulation (default: the same as the flow).
+    if [[ -n "${CVA6_SYNTH_GSIM_CPUS:-}" ]]; then
+        sed -i "s/^CVA6_SYNTH_CPUS=.*/CVA6_SYNTH_CPUS=${CVA6_SYNTH_GSIM_CPUS}/" "$env_file"
+    fi
     "${harness_dir}/run-tool.sh" \
         --env-file "$env_file" \
         --project "$project_name" \

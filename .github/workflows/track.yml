@@ -191,8 +191,10 @@ jobs:
         run: |
           export CVA6_SYNTH_CPUS=$(( $(docker info --format '{{.NCPU}}') / 2 / FLOW_PARALLEL ))
           export CVA6_SYNTH_PROJECT="cva6-synthesis-$RUNNER_NAME"
-          # On the work mount that all runners share: one simulation at a time.
+          # On the work mount that all runners share: one simulation at a time,
+          # so it can use a quarter of the CPUs.
           export CVA6_SYNTH_GSIM_LOCK=/srv/cva6-runner/gsim.lock
+          export CVA6_SYNTH_GSIM_CPUS=$(( $(docker info --format '{{.NCPU}}') / 4 ))
           CVA6_UPSTREAM_REF="$SHA" ./synthesis/run.sh --target "$TARGET" --tech "$TECH" --mode "$MODE"
 
       - name: Anonymisation check
