@@ -65,6 +65,7 @@ footer{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--muted
 <section class="card"><h2 id="gsim-h"></h2><div class="body" id="gsim"></div></section>
 <section class="card"><h2 id="trend-h"></h2><div class="body" id="trends"></div></section>
 <section class="card"><h2 id="hist-h"></h2><div class="body" id="hist"></div></section>
+<section class="card"><h2>CI jobs</h2><div class="body" id="jobs"><div class="muted">Loading from GitHub…</div></div></section>
 <details class="card"><summary>Method</summary><ul>
 <li>Flow: OpenROAD-flow-scripts, synthesis to floorplan. No timing repair, so timing is pre-layout with an ideal clock.</li>
 <li>Constraints: one clock on <code>clk_i</code>; input and output delay as listed in the build parameters.</li>
@@ -80,6 +81,7 @@ footer{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--muted
 const DATA = /*DATA*/null;
 const COMMIT = 'https://github.com/openhwfoundation/cva6/commit/';
 const RAW = 'https://github.com/isa084/cva6-synthesis/tree/data/runs/';
+const API = 'https://api.github.com/repos/isa084/cva6-synthesis/actions';
 const TL = {asap7: 'ASAP7', nangate45: 'Nangate45'};
 const R = DATA.records;
 const techs = [...new Set(R.map(r => r.technology))].sort();
@@ -305,6 +307,34 @@ ${rows.map((p, i) => { const q = rows[i + 1], r = p.r, st = !r ? 'not run' : !p.
 <td class="l ${!r || !p.rtl ? 'muted' : ok(r) ? 'good' : 'bad'}">${st}</td>${cell(p, q, 'fmax_mhz', 1)}${cell(p, q, 'stdcell_kgate', 1)}${cell(p, q, 'total_area_um2', 0)}${cell(p, q, 'worst_slack_ps', 1, sgn)}<td class="${p.r ? gsimClass(p.r) : 'muted'}">${p.r ? gsimText(p.r) : '—'}</td></tr>`; }).join('')}</table></div>`;
 }
 
+// Live state of the CI jobs, from the public GitHub API (no token, loaded once).
+async function renderJobs() {
+  const get = async u => { const r = await fetch(u); if (!r.ok) throw new Error(r.status); return r.json(); };
+  const when = s => s ? new Date(s).toISOString().replace('T', ' ').slice(0, 16) + ' UTC' : '—';
+  const dur = (a, b) => a ? Math.round(((b ? Date.parse(b) : Date.now()) - Date.parse(a)) / 60000) + ' min' : '—';
+  const state = x => x.status === 'completed' ? x.conclusion : x.status.replace('_', ' ');
+  const cls = s => s === 'success' ? 'good' : ['failure', 'cancelled', 'timed_out'].includes(s) ? 'bad' : 'muted';
+  const next = new Date(); next.setUTCHours(3, 17, 0, 0);
+  if (next < new Date()) next.setUTCDate(next.getUTCDate() + 1);
+  try {
+    const runs = (await get(`${API}/workflows/track.yml/runs?per_page=6`)).workflow_runs;
+    const run = runs.find(r => r.status !== 'completed') || runs[0];
+    const jobs = run ? (await get(`${API}/runs/${run.id}/jobs?per_page=100`)).jobs.filter(j => j.name.startsWith('flow ')) : [];
+    const count = s => jobs.filter(j => state(j) === s).length;
+    $('jobs').innerHTML = `<div class="info"><span>Next scheduled check: <b>${when(next.toISOString())}</b></span>
+<span>Run ${run ? `<a href="${esc(run.html_url)}">${run.run_number}</a> (${esc(run.event)}, ${esc(state(run))})` : '—'}:
+${['success', 'in progress', 'queued', 'failure'].map(s => `${count(s)} ${s}`).join(' · ')}</span></div>
+<div class="wrap"><table><tr><th class="l">Job</th><th class="l">State</th><th class="l">Started</th><th>Duration</th></tr>
+${jobs.map(j => `<tr><td class="l mono"><a href="${esc(j.html_url)}">${esc(j.name.slice(5))}</a></td><td class="l ${cls(state(j))}">${esc(state(j))}</td>
+<td class="l muted">${when(j.started_at)}</td><td>${j.status === 'queued' ? '—' : dur(j.started_at, j.completed_at)}</td></tr>`).join('')}</table></div>
+<div class="wrap"><table><tr><th class="l">Recent runs</th><th class="l">Trigger</th><th class="l">State</th><th class="l">Started</th></tr>
+${runs.map(r => `<tr><td class="l"><a href="${esc(r.html_url)}">${r.run_number}</a></td><td class="l">${esc(r.event)}</td>
+<td class="l ${cls(state(r))}">${esc(state(r))}</td><td class="l muted">${when(r.run_started_at)}</td></tr>`).join('')}</table></div>`;
+  } catch (e) {
+    $('jobs').innerHTML = `<div class="muted">Live job state is not available (GitHub API: ${esc(e.message)}). See the <a href="https://github.com/isa084/cva6-synthesis/actions">Actions tab</a>.</div>`;
+  }
+}
+
 function render() {
   location.replace('#' + S.tech + '/' + S.cfg + '/' + S.sram);
   renderSelectors(); renderLatest(); renderArea(); renderTiming(); renderGsim(); renderTrends();
@@ -344,6 +374,7 @@ if (cfgs.includes(hc)) S.cfg = hc;
 $('gen').textContent = `Generated ${DATA.generated} · flow ${DATA.flow_version}`;
 $('ver').textContent = `Flow version ${DATA.flow_version} · image ${DATA.image}`;
 render();
+renderJobs();
 </script>
 </body>
 </html>

@@ -7,6 +7,13 @@ This is a static HTML page of CVA6 area and timing results.
 - `generate.py` puts the run records into the template and writes
   `<out_dir>/index.html`. It holds no presentation.
 
+## CI jobs card
+
+The "CI jobs" card shows the next scheduled check, the state of each flow job
+of the active or latest `track` run, and the recent runs. The browser reads
+this data live from the public GitHub API. The card needs no token and no page
+rebuild.
+
 ## Change the page without a flow run
 
 1. Get the published records:
