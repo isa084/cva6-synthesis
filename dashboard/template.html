@@ -336,6 +336,12 @@ ${runs.map(r => `<tr><td class="l"><a href="${esc(r.html_url)}">${r.run_number}<
 }
 
 function render() {
+  if (!R.length) {
+    $('latest-h').textContent = 'Results';
+    $('latest').innerHTML = '<div class="muted">No results yet. Runs in progress show under CI jobs.</div>';
+    document.querySelectorAll('main > .card').forEach(n => { if (!n.querySelector('#latest,#jobs')) n.style.display = 'none'; });
+    return;
+  }
   location.replace('#' + S.tech + '/' + S.cfg + '/' + S.sram);
   renderSelectors(); renderLatest(); renderArea(); renderTiming(); renderGsim(); renderTrends();
 }
@@ -371,8 +377,8 @@ const [ht, hc, hs] = decodeURIComponent(location.hash.slice(1)).split('/');
 if (srams.includes(hs)) S.sram = hs;
 if (techs.includes(ht)) S.tech = ht;
 if (cfgs.includes(hc)) S.cfg = hc;
-$('gen').textContent = `Generated ${DATA.generated} · flow ${DATA.flow_version}`;
-$('ver').textContent = `Flow version ${DATA.flow_version} · image ${DATA.image}`;
+$('gen').textContent = `Generated ${DATA.generated}` + (DATA.flow_version ? ` · flow ${DATA.flow_version}` : '');
+$('ver').textContent = DATA.flow_version ? `Flow version ${DATA.flow_version} · image ${DATA.image}` : '';
 render();
 renderJobs();
 </script>

@@ -175,7 +175,7 @@ jobs:
         run: |
           plugins=~/.docker/cli-plugins
           mkdir -p "$plugins"
-          curl -fsSL -o "$plugins/docker-compose" \
+          curl -fsSL --retry 5 --retry-all-errors -o "$plugins/docker-compose" \
             "https://github.com/docker/compose/releases/download/$COMPOSE_VERSION/docker-compose-linux-x86_64"
           echo "$COMPOSE_SHA256  $plugins/docker-compose" | sha256sum -c -
           chmod +x "$plugins/docker-compose"
