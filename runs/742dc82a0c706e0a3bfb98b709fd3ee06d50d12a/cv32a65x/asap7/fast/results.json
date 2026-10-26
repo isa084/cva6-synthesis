@@ -7,7 +7,7 @@
   "technology": "asap7",
   "sram_mode": "fakeram",
   "mode": "fast",
-  "flow_version": "5e959e8",
+  "flow_version": "v1.0",
   "repo_commit": "29f12d2479c651445759fb56809f5bea6c1d11a3",
   "status": "success",
   "stdcell_area_um2": 12850.4,
@@ -20,7 +20,7 @@
   "sram_bits": 55936,
   "clock_period_ps": 4000,
   "image": "openroad/orfs:26Q4-221-gef324e555@sha256:ca289d6df8401711a4ed310a83b5bd14fd42534d64b9b790bf5cbb02cc496278",
-  "run_started": "2026-10-26T08:26:35+00:00",
+  "run_started": "2026-10-26T08:44:19+00:00",
   "gsim_run": 8,
   "gsim_passed": 8,
   "gsim": [
