@@ -69,7 +69,10 @@ number of jobs that run at the same time.
 | Floorplan | The flow sizes the die and the core. It also sets the macro footprint and runs static timing with OpenSTA. | ORFS |
 | Results | The flow takes the area, kGE, fmax, worst slack, and macro counts from the ORFS metrics. It also adds the provenance. | [`flow/orfs.py`](../flow/orfs.py) → `results.json` |
 | Simulate | When the target has `tests:`, a second container simulates the measured netlist and the RTL with the same programs (Verilator). | [`gsim/run.py`](../gsim/run.py), [`docs/GATESIM.md`](GATESIM.md) |
+| Archive | `run.sh` calls `archive.sh` at the end of the run. The script adds the text outputs of the run to a log archive. In CI, the archive is `/srv/cva6-runner/archive` on the workstation. The flow does not publish the archive. | [`archive.sh`](../archive.sh), `track.yml` |
 | Check | The job searches the run directory for strings that identify the workstation. A deny-list outside the repository gives these strings. | `track.yml` |
+
+For now, CI simulates only the tracked head. Older commits skip the simulation.
 
 All tools come from two pinned prebuilt images, `openroad/orfs` and
 `verilator/verilator`. The flow references them by digest. The flow builds
@@ -100,6 +103,9 @@ The jobs `publish` and `pages` run on a GitHub-hosted runner.
   The workflow [`dashboard.yml`](../.github/workflows/dashboard.yml) rebuilds
   the page from the `data` branch after a change to `dashboard/`, without a
   flow run.
+- **CI jobs:** The dashboard has a "CI jobs" card. The browser fills it from the
+  public GitHub API. It shows the next scheduled check, the state of each flow
+  job, and the recent runs.
 - **Pages:** The job deploys the page to GitHub Pages
   (`isa084.github.io/cva6-synthesis/`).
 

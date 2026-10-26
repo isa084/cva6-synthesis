@@ -85,3 +85,33 @@ WantedBy=default.target
 - CPU: The runner container can use only half of the cores. The flow itself runs
   ORFS with half of the cores (`NUM_CORES` in `flow/orfs.py`). No cgroup limits
   the tool containers.
+
+## Log archive
+
+Each run adds its text outputs to the log archive. The archive folder is
+`/srv/cva6-runner/archive`. All runner containers share it. The archive is not
+published.
+
+Each run makes one file in the folder:
+`<start UTC>_cva6-<upstream sha7>_flow-<flow version>_<target>_<tech>_<mode>.tar.gz`.
+The file `index.jsonl` has one JSON line for each run. To list the runs of one
+target, run this command:
+
+```bash
+jq -r 'select(.target=="cv32a65x") | [.start,.flow_version,.upstream_sha[0:7],.technology,.status] | @tsv' /srv/cva6-runner/archive/index.jsonl
+```
+
+To add a run by hand, run `archive.sh <run directory> <archive directory>`.
+
+## Job status
+
+To see the recent `track` runs and the flow jobs of the active run, run this
+command:
+
+```bash
+REPO=owner/name ./runner/jobs.sh
+```
+
+If no run is active, the command shows the latest run. It also shows the number
+of archived runs and the last three archive files. The "CI jobs" card of the
+dashboard shows the same job states.

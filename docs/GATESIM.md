@@ -41,6 +41,9 @@ agree with the RTL result.
 - `results.json`: `gsim_run`, `gsim_passed` (gate level), and `gsim` (the
   result per program).
 
+For now, CI runs the simulation for the tracked head only. `CVA6_SYNTH_GSIM=0`
+skips the simulation.
+
 A simulation problem does not fail the run. It shows in the results.
 
 ## Run it

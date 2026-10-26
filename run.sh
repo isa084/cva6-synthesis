@@ -181,9 +181,10 @@ set +e
     -- "$target" --mode "$mode" ${tech:+--tech "$tech"} 2>&1 | tee "${run_dir}/console.log"
 status=${PIPESTATUS[0]}
 
-# Gate-level simulation of the same run, when the flow wrote its inputs. Its
-# results go into results.json; a simulation problem does not fail the run.
-if [[ "$status" -eq 0 && -s "${run_dir}/gsim/tests.txt" ]]; then
+# Gate-level simulation of the same run, when the flow wrote its inputs and
+# CVA6_SYNTH_GSIM is not 0. Its results go into results.json; a simulation
+# problem does not fail the run.
+if [[ "${CVA6_SYNTH_GSIM:-1}" != 0 && "$status" -eq 0 && -s "${run_dir}/gsim/tests.txt" ]]; then
     # Optional lock file shared by parallel runs: the netlist build needs much
     # memory, so only one simulation runs at a time.
     if [[ -n "${CVA6_SYNTH_GSIM_LOCK:-}" ]]; then
@@ -211,6 +212,11 @@ set -e
 ln -sfn -- "$run_id" "${output_root}/${run_path}/latest"
 if [[ "$status" -eq 0 ]]; then
     ln -sfn -- "$run_id" "${output_root}/${run_path}/latest-success"
+fi
+
+# Optional log archive: one folder for the logs of all runs (archive.sh).
+if [[ -n "${CVA6_SYNTH_ARCHIVE:-}" ]]; then
+    "${synth_dir}/archive.sh" "$run_dir" "$CVA6_SYNTH_ARCHIVE" || printf 'Warning: archiving failed\n' >&2
 fi
 
 exit "$status"

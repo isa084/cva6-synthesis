@@ -200,6 +200,21 @@ The RTL must equal the upstream commit plus the tool-compatibility commits on
 default is `origin/master`. `metadata.txt` lists the tool-compatibility commits
 as `rtl_patched`. If the RTL has uncommitted changes, the run fails.
 
+These environment variables change the behavior of `run.sh`:
+
+- `CVA6_SYNTH_ARCHIVE`: the log archive folder.
+- `CVA6_SYNTH_GSIM=0`: skip the gate-level simulation.
+- `CVA6_SYNTH_GSIM_CPUS`: the core budget of the simulation.
+- `CVA6_SYNTH_GSIM_LOCK`: a lock file. Parallel runs then simulate one at a time.
+- `CVA6_SYNTH_PROJECT`: the Compose project name.
+- `CVA6_SYNTH_CPUS`: the core budget of the flow.
+
+When `CVA6_SYNTH_ARCHIVE` is set, `run.sh` calls `archive.sh` at the end of
+every run. The archive folder holds one file
+`<start UTC>_cva6-<upstream sha7>_flow-<flow version>_<target>_<tech>_<mode>.tar.gz`
+for each run, and the file `index.jsonl` with one JSON line for each run.
+See `archive.sh`.
+
 `sram/generate.sh` generates the FakeRAM macro views in `sram/views` from
 `sram/<tech>.cfg`.
 

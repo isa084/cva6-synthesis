@@ -93,7 +93,7 @@ jobs:
               . + [ ($t | scan("[^ \n]+")) as $a | ($x | scan("[^ ]+")) as $b
                 | select($force or ($runs | any(.upstream_sha == $sha and .target == $a
                     and .technology == $b and .mode == $m) | not))
-                | {sha: $sha, old: $old, target: $a, tech: $b} ]' <<<"$matrix")
+                | {sha: $sha, short: $sha[0:7], old: $old, target: $a, tech: $b} ]' <<<"$matrix")
           done
           {
             echo "mode=$IN_MODE"
@@ -120,6 +120,7 @@ jobs:
           path: commits.json
 
   flow:
+    name: flow ${{ matrix.target }} ${{ matrix.tech }} ${{ matrix.short }}
     needs: sync
     if: needs.sync.outputs.matrix != '[]'
     runs-on: [self-hosted, cva6-synthesis]
@@ -195,6 +196,10 @@ jobs:
           # so it can use a quarter of the CPUs.
           export CVA6_SYNTH_GSIM_LOCK=/srv/cva6-runner/gsim.lock
           export CVA6_SYNTH_GSIM_CPUS=$(( $(docker info --format '{{.NCPU}}') / 4 ))
+          # Gate-level simulation for the tracked head only, for now.
+          export CVA6_SYNTH_GSIM=${{ matrix.old && '0' || '1' }}
+          # The logs of every run, in one folder on the workstation (archive.sh).
+          export CVA6_SYNTH_ARCHIVE=/srv/cva6-runner/archive
           CVA6_UPSTREAM_REF="$SHA" ./synthesis/run.sh --target "$TARGET" --tech "$TECH" --mode "$MODE"
 
       - name: Anonymisation check
