@@ -10,6 +10,9 @@ services:
     init: true
     restart: unless-stopped
     cpus: ${RUNNER_CPUS:?}
+    # Docker Desktop's DNS forwarding can drop lookups, and the runner then loses
+    # jobs to GitHub. Resolve through public servers instead.
+    dns: [1.1.1.1, 8.8.8.8]
     environment:
       REPO: ${REPO:?}
       RUNNER_NAME: ${RUNNER_NAME:?}
