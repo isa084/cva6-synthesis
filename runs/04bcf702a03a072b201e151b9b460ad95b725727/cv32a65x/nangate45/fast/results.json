@@ -1,0 +1,240 @@
+{
+  "upstream_sha": "04bcf702a03a072b201e151b9b460ad95b725727",
+  "upstream_date": "2026-09-15T23:40:20+02:00",
+  "upstream_title": "Mask htval and mtval2 WARL writes (#3542)",
+  "target": "cv32a65x",
+  "config": "cv32a65x",
+  "technology": "nangate45",
+  "sram_mode": "fakeram",
+  "mode": "fast",
+  "flow_version": "v1.0",
+  "repo_commit": "2c413b7bad9c28c4ef7c14c4847894862c71ef6b",
+  "status": "success",
+  "stdcell_area_um2": 153865,
+  "macro_area_um2": 58049.7,
+  "total_area_um2": 211914.7,
+  "stdcell_kgate": 192.81328320802004,
+  "fmax_mhz": 266.333,
+  "worst_slack_ps": -754.697,
+  "sram_macros": 22,
+  "sram_bits": 55936,
+  "clock_period_ps": 3000,
+  "image": "openroad/orfs:26Q4-221-gef324e555@sha256:ca289d6df8401711a4ed310a83b5bd14fd42534d64b9b790bf5cbb02cc496278",
+  "run_started": "2026-10-27T10:56:49+00:00",
+  "gsim_run": null,
+  "gsim_passed": null,
+  "gsim": null,
+  "reports_url": "",
+  "params": {
+    "Clock period": "3000 ps",
+    "I/O delay": "30% of period",
+    "Core utilization": "55%",
+    "Hierarchical synthesis": "yes",
+    "Keep size (NAND2)": "10000",
+    "ABC script": "speed",
+    "Floorplan timing repair": "off",
+    "SRAM model": "fakeram"
+  },
+  "paths": {
+    "in2out": {
+      "slack_ps": 520.0,
+      "start": "cvxif_resp_i[39]",
+      "end": "cvxif_req_o[85]"
+    },
+    "in2reg": {
+      "slack_ps": 570.0,
+      "start": "cvxif_resp_i[39]",
+      "end": "issue_stage_i.i_scoreboard/fwd_o[1032]"
+    },
+    "reg2out": {
+      "slack_ps": -750.0,
+      "start": "issue_stage_i.i_issue_read_operands/csr_valid_o[0]",
+      "end": "cvxif_req_o[103]"
+    },
+    "reg2reg": {
+      "slack_ps": -170.0,
+      "start": "issue_stage_i.i_issue_read_operands/alu_valid_o[1]",
+      "end": "issue_stage_i.i_scoreboard/fwd_o[1032]"
+    }
+  },
+  "area_tree": {
+    "name": "cva6",
+    "module": "cva6",
+    "area": 211914.7,
+    "sram": 58049.8,
+    "children": [
+      {
+        "name": "csr_regfile_i",
+        "module": "csr_regfile",
+        "area": 7015.2,
+        "sram": 0.0
+      },
+      {
+        "name": "ex_stage_i",
+        "module": "ex_stage",
+        "area": 41773.6,
+        "sram": 0.0,
+        "children": [
+          {
+            "name": "i_mult.i_multiplier",
+            "module": "multiplier",
+            "area": 9728.7,
+            "sram": 0.0
+          },
+          {
+            "name": "lsu_i",
+            "module": "load_store_unit",
+            "area": 16892.2,
+            "sram": 0.0,
+            "children": [
+              {
+                "name": "i_pmp_data_if",
+                "module": "",
+                "area": 7366.8,
+                "sram": 0.0,
+                "children": [
+                  {
+                    "name": "i_pmp_data",
+                    "module": "pmp",
+                    "area": 3695.5,
+                    "sram": 0.0
+                  },
+                  {
+                    "name": "i_pmp_if",
+                    "module": "pmp",
+                    "area": 3671.3,
+                    "sram": 0.0
+                  }
+                ]
+              },
+              {
+                "name": "i_store_unit.store_buffer_i",
+                "module": "store_buffer",
+                "area": 5525.6,
+                "sram": 0.0
+              },
+              {
+                "name": "(local)",
+                "module": "",
+                "area": 3999.8,
+                "sram": 0.0
+              }
+            ]
+          },
+          {
+            "name": "(local)",
+            "module": "",
+            "area": 15152.7,
+            "sram": 0.0
+          }
+        ]
+      },
+      {
+        "name": "gen_cache_hpd.i_cache_subsystem",
+        "module": "",
+        "area": 96984.2,
+        "sram": 58049.8,
+        "children": [
+          {
+            "name": "i_cva6_icache",
+            "module": "cva6_icache",
+            "area": 49064.3,
+            "sram": 46956.0,
+            "children": [
+              {
+                "name": "gen_sram[0].data_sram.gen_techno_cut.genblk1.i_tc_sram_wrapper.i_sram",
+                "module": "cva6_sram_1rw",
+                "area": 22663.5,
+                "sram": 22595.4
+              },
+              {
+                "name": "gen_sram[1].data_sram.gen_techno_cut.genblk1.i_tc_sram_wrapper.i_sram",
+                "module": "cva6_sram_1rw",
+                "area": 22663.5,
+                "sram": 22595.4
+              },
+              {
+                "name": "(local)",
+                "module": "",
+                "area": 3737.3,
+                "sram": 1765.2
+              }
+            ]
+          },
+          {
+            "name": "i_dcache",
+            "module": "",
+            "area": 47919.9,
+            "sram": 11093.8,
+            "children": [
+              {
+                "name": "i_hpdcache",
+                "module": "hpdcache",
+                "area": 40245.0,
+                "sram": 11093.8,
+                "children": [
+                  {
+                    "name": "gen_wbuf.hpdcache_wbuf_i",
+                    "module": "hpdcache_wbuf",
+                    "area": 11658.2,
+                    "sram": 0.0
+                  },
+                  {
+                    "name": "hpdcache_ctrl_i.hpdcache_memctrl_i",
+                    "module": "hpdcache_memctrl",
+                    "area": 12241.1,
+                    "sram": 11093.8
+                  },
+                  {
+                    "name": "(local)",
+                    "module": "",
+                    "area": 16345.7,
+                    "sram": 0.0
+                  }
+                ]
+              },
+              {
+                "name": "i_hwpf_stride_wrapper",
+                "module": "hwpf_stride_wrapper",
+                "area": 7674.9,
+                "sram": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "i_frontend.i_instr_queue",
+        "module": "instr_queue",
+        "area": 8844.2,
+        "sram": 0.0
+      },
+      {
+        "name": "issue_stage_i",
+        "module": "",
+        "area": 41669.7,
+        "sram": 0.0,
+        "children": [
+          {
+            "name": "i_issue_read_operands",
+            "module": "issue_read_operands",
+            "area": 24728.2,
+            "sram": 0.0
+          },
+          {
+            "name": "i_scoreboard",
+            "module": "scoreboard",
+            "area": 16941.5,
+            "sram": 0.0
+          }
+        ]
+      },
+      {
+        "name": "(local)",
+        "module": "",
+        "area": 15627.8,
+        "sram": 0.0
+      }
+    ]
+  }
+}
