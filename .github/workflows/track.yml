@@ -73,9 +73,12 @@ jobs:
         working-directory: fork
         run: |
           head=$(git rev-parse "upstream/$BRANCH")
-          runs=$(gh api -H 'Accept: application/vnd.github.raw+json' \
-            "repos/$GITHUB_REPOSITORY/contents/runs.json?ref=data" 2>/dev/null) || runs='[]'
-          last=$(jq -r 'max_by(.upstream_date).upstream_sha // empty' <<<"$runs")
+          # A file, not a variable: runs.json is too large for a jq argument.
+          runs=$RUNNER_TEMP/runs.json
+          gh api -H 'Accept: application/vnd.github.raw+json' \
+            "repos/$GITHUB_REPOSITORY/contents/runs.json?ref=data" > "$runs" 2>/dev/null \
+            || echo '[]' > "$runs"
+          last=$(jq -r 'max_by(.upstream_date).upstream_sha // empty' "$runs")
           targets=${IN_TARGETS:-$(git show origin/ft-synthesis:synthesis.yaml | yq '.targets | keys | .[]')}
           matrix='[]'
           skipped=''
@@ -90,9 +93,9 @@ jobs:
             fi
             matrix=$(jq -c --arg t "$targets" --arg x "$IN_TECHS" --arg m "$IN_MODE" --arg sha "$sha" \
               --argjson old "$([ "$sha" != "$head" ] && echo true || echo false)" \
-              --argjson runs "$runs" --argjson force "$FORCE" '
+              --slurpfile runs "$runs" --argjson force "$FORCE" '
               . + [ ($t | scan("[^ \n]+")) as $a | ($x | scan("[^ ]+")) as $b
-                | select($force or ($runs | any(.upstream_sha == $sha and .target == $a
+                | select($force or ($runs[0] | any(.upstream_sha == $sha and .target == $a
                     and .technology == $b and .mode == $m) | not))
                 | {sha: $sha, short: $sha[0:7], old: $old, target: $a, tech: $b} ]' <<<"$matrix")
           done
