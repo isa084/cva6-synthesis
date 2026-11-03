@@ -1,0 +1,602 @@
+[
+  {
+    "sha": "c913e9c51261ad2dd8772aa68d75500b7360131d",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Give the example compiler.yml an entry for every toolchain cook.py asks for",
+    "rtl": false
+  },
+  {
+    "sha": "7bfd2a0c7661d5f0f5404b527f175d426ab01fb0",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Summarise the CVA6 targets in the README and drop the old quick setup",
+    "rtl": false
+  },
+  {
+    "sha": "f46f6636ee3015ac5b550c705793d4ab88738f51",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Update the reference of the target files in config/README.md",
+    "rtl": false
+  },
+  {
+    "sha": "535ed5cc03f387acaccb9061b52ec3a489cd1fe2",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Replace the targets by official configurations, FPGA configurations, RISC-V profiles and option crosses",
+    "rtl": true
+  },
+  {
+    "sha": "ccbabcd7ec23f711b4208e71df0e70451e8f1734",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Keep the commands of the tests of a testlist in the pipeline report",
+    "rtl": false
+  },
+  {
+    "sha": "de04bc51038ea95b63f654fc5ce689883c5f3ba4",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Build and boot the RV64 Linux image on the Genesys 2 board in the regression",
+    "rtl": false
+  },
+  {
+    "sha": "b18e16602bd1096cb9a7b7050adaf52fe4161230",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Sort the targets of the dashboard by the category of their doc.yml and show the extensions their profile lacks",
+    "rtl": false
+  },
+  {
+    "sha": "7df36cf2eaec1e231b5e727b69a668df2be47ea7",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Run the PMP TOR grain test only on the targets with S-mode",
+    "rtl": false
+  },
+  {
+    "sha": "cc98749e7e6d7104627573162c0c6389b14f2065",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Run the PMP tests that check mtval only on the targets that write it",
+    "rtl": false
+  },
+  {
+    "sha": "be426131153b0dc18fcaf745b2060702609c8b18",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Run the virtual memory riscv-tests only on the targets that write stval",
+    "rtl": false
+  },
+  {
+    "sha": "65c6b8124a95c3c5ac5d0abff0508a49999ed4ab",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Run the VS-mode cycle counter test only on the targets with Zicntr",
+    "rtl": false
+  },
+  {
+    "sha": "baadac2532a98456bc2fa6851f98a129f51e0894",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Run the xRET MPRV test only on the targets with S-mode",
+    "rtl": false
+  },
+  {
+    "sha": "36be2edb2f9dfa9520c89b4a92342fc7178ef900",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Run the HFENCE.GVMA counter test only on the targets with performance counters",
+    "rtl": false
+  },
+  {
+    "sha": "9aa397e7a00c30d8cc3a4c9572b02d0fd4df9b94",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Run the hypervisor PMP tests only on the targets with PMP entries",
+    "rtl": false
+  },
+  {
+    "sha": "409ad08d520d0cbaba0382991a09136e97c5a18c",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Run the etrigger test on the targets without an MMU",
+    "rtl": false
+  },
+  {
+    "sha": "4fc69c7b54b914437c36c61c2446c247d5e7b0a1",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Return to M-mode from the etrigger handler after its nested entry",
+    "rtl": false
+  },
+  {
+    "sha": "cc88fea149d8450c6d47ef40b61968ad05564eef",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Give the Zcmp tests the integer ABI of their own march",
+    "rtl": false
+  },
+  {
+    "sha": "a18720d6e624ca29d206caf5cba6d38f8d6fcc1a",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Run the three Zcmt tests that install their own trap handler in M-mode",
+    "rtl": false
+  },
+  {
+    "sha": "197d9fb02903ef4ec1d8357d1dfade386664d21d",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Build the CSR WFI unit test from the configuration package of its target",
+    "rtl": false
+  },
+  {
+    "sha": "c923112220bc18d012c154aa6e1e844bc8950da2",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Give Spike a core name from the register width of the target",
+    "rtl": false
+  },
+  {
+    "sha": "39b9bcdf3e4892efeeffb3860e0bd7d3efea19f0",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Pass the value of the UVM verbosity enum to the simulators",
+    "rtl": false
+  },
+  {
+    "sha": "aa2ff137a6fdf4d6b0aebc4959f2d5448f7033ff",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Write the synchronous FPGA RAMs from always so that their initial value is legal",
+    "rtl": true
+  },
+  {
+    "sha": "612b65414dd9fa1d6cde7437b20ec02d2110470d",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Keep the ISA string of the Spike configuration file in the tandem",
+    "rtl": false
+  },
+  {
+    "sha": "8ab37658b1fea4e9681c1c4a094c5674ef5b8f16",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Take no trap as delegated in the scoreboard without S-mode",
+    "rtl": false
+  },
+  {
+    "sha": "1dcee26367420c30eb685f1340b5476ec47078b1",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Release a load that faults during its translation from the LSU bypass FIFO",
+    "rtl": true
+  },
+  {
+    "sha": "3e080c3b7806878e36a090aaa3f362d1518b6b3d",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Drop a cancelled Zcmp micro-op whose last micro-op was never issued",
+    "rtl": true
+  },
+  {
+    "sha": "72b1cd39eae16766b506c0e0374440af2995ee9c",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Restart the Zcmp expansion from IDLE after a flush",
+    "rtl": true
+  },
+  {
+    "sha": "cd53eeee1f9ddd1a0b557903bf771552f21ebb5b",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Keep the first Zcmp move micro-op valid when both write back in the same cycle",
+    "rtl": true
+  },
+  {
+    "sha": "03a9cd39feb6e518fd22c557e27083702120a045",
+    "date": "2026-10-27T21:26:59+01:00",
+    "title": "Take the RVFI store data from the store access, not from its result port",
+    "rtl": true
+  },
+  {
+    "sha": "ddb26b316ab77985ef9d49f3c314f1d1d12866e8",
+    "date": "2026-10-27T05:45:53+01:00",
+    "title": "Minor fixes for LSU assertions and tracer logs (#3671)",
+    "rtl": true
+  },
+  {
+    "sha": "fbeefd0e8e891e159b91a28071a1ebddc1edb152",
+    "date": "2026-10-23T18:33:57+02:00",
+    "title": "fix(bender): change package name from 'ariane' to 'cva6' (#3667)",
+    "rtl": false
+  },
+  {
+    "sha": "8fe2449f25d36448d4b24fc96e39811a83be921e",
+    "date": "2026-10-23T17:30:48+02:00",
+    "title": "Fix for the consecutive pop req after a push n pop at status cnt = 1 (#3603)",
+    "rtl": true
+  },
+  {
+    "sha": "306db18c437ee387fd3d27dd1680c6a9bc7da34c",
+    "date": "2026-10-23T17:29:36+02:00",
+    "title": "Remove the accelerator dispatcher and its unused ports (#3666)",
+    "rtl": true
+  },
+  {
+    "sha": "e6dce57c7768e13705182b2c42d7c19c8c87791b",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Document the Zephyr recipes",
+    "rtl": false
+  },
+  {
+    "sha": "52d3bc4b2cc30869fbed523a02174b4c473cc9c9",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Run the Hello world of Zephyr in the full regression",
+    "rtl": false
+  },
+  {
+    "sha": "2eedf52696ac1798d9377b88b76a34ce771a8122",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Build a Zephyr application for a target with the zephyr-build recipe",
+    "rtl": false
+  },
+  {
+    "sha": "d0e99b03a86d0b4d3fad165b18fdac35bc519dfb",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Require Python 3.12, with a virtual environment uv creates whatever the system Python",
+    "rtl": false
+  },
+  {
+    "sha": "88ee6d43e7995b4db8927799b1c85fb4ca7c69f3",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Format the Python files with the Black version of the CI constraints",
+    "rtl": false
+  },
+  {
+    "sha": "9da4894afc3e873109de6901538c4c781019577a",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Describe the OpenPiton support through the L1.5 adapter of the HPDcache",
+    "rtl": false
+  },
+  {
+    "sha": "94d186f606187c66c4c9fd1ee27b9576d370fff7",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Describe the proxy kernel flow of cook.py in the simulation tutorial",
+    "rtl": false
+  },
+  {
+    "sha": "7f89c64b40fb4cbf9c3e0891b244433cb8d8321d",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Document the proxy kernel recipes",
+    "rtl": false
+  },
+  {
+    "sha": "dc8e9c752c1add157c07f6667d4f81ea2cdd2ddf",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Run Hello world under the proxy kernel in the full regression",
+    "rtl": false
+  },
+  {
+    "sha": "163ce41370f06e7d45dba1721921736974384694",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Run a test built for the proxy kernel under pk on the Verilator and VCS TestHarness",
+    "rtl": false
+  },
+  {
+    "sha": "9bc594ea402dac3dbe2e8bf88e67ed97621f4866",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Build the Hello world program to run under the proxy kernel with the pk-hello-world pattern",
+    "rtl": false
+  },
+  {
+    "sha": "296d600568d2eb163b91f64c7ef785588b6a2424",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Build the RISC-V proxy kernel for a target with the pk-build recipe",
+    "rtl": false
+  },
+  {
+    "sha": "35018fd4a12e207f523ba27488d61b4633a1d9c8",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "port: Take the Tristan documentation of master, with the TRL5 changes and the case study (#3187, #3194)",
+    "rtl": false
+  },
+  {
+    "sha": "cadeeb53c81bee7e2e5c3f353806ac059a922de7",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "port: Add the PMP verification plan (#2648)",
+    "rtl": false
+  },
+  {
+    "sha": "89aaa1f426fdb21d1d946d7da5386112d48894bd",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "port: Move the simulation, ASIC and FPGA guides to tutorials/ and document Zephyr on FPGA (#2954, #2949, #3150)",
+    "rtl": false
+  },
+  {
+    "sha": "44a673786b46dc3622c5a186e449da526a24309e",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "Set the parameters of the performance model from the command line",
+    "rtl": false
+  },
+  {
+    "sha": "7f5974be48bcf34a9a345105f8f83984b5487967",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "port: Add the performance model and read the cycle-prefixed RVFI trace (#2880, #3008, #3198, #3217, #3304)",
+    "rtl": false
+  },
+  {
+    "sha": "ad7324d73373ed1c7b9c36980432afda62f0021a",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "port: Add the two-level BHT figure of the design docs (#2814)",
+    "rtl": false
+  },
+  {
+    "sha": "465d600dc56b852ca27f2d9416e531595b5da497",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "port: Check the store page fault on a non-canonical Sv39 address (#3255)",
+    "rtl": false
+  },
+  {
+    "sha": "a045ac6d3171d11fc4105e0c091ccc26cb3de49d",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "port: Read the ALU operands through local operand_a and operand_b signals (#3214)",
+    "rtl": true
+  },
+  {
+    "sha": "88bf6f0d79894bd455f78431ade5cfa24dd2410f",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "port: Fix the typos left in the files the first typo port skipped (#3029)",
+    "rtl": true
+  },
+  {
+    "sha": "a6be8ca80ecba9cf0b7a391f7dd238c6011adeef",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "port: Add the XLEN misuse check of util/sanitize, its Verible workflow step commented out (#3333)",
+    "rtl": false
+  },
+  {
+    "sha": "ee680e782b818d44e44729bfee89ad581e3e62b6",
+    "date": "2026-10-23T15:59:40+02:00",
+    "title": "port: Remove a duplicate arch test and reorder the load/store tests (#3402)",
+    "rtl": false
+  },
+  {
+    "sha": "d11865bb36912eb9d368ed4c065fcb8c8874cc23",
+    "date": "2026-10-22T16:57:22+02:00",
+    "title": "Clean up ci.yml and verible.yml by removing commented jobs (#3661)",
+    "rtl": false
+  },
+  {
+    "sha": "e4e1b6d0b580d700753acea8bddbabaa26ebd7f7",
+    "date": "2026-10-22T15:06:39+02:00",
+    "title": "ci: initialize Cook dependencies before TestHarness smoke (#3660)",
+    "rtl": false
+  },
+  {
+    "sha": "5a672c5eeb6842d62bb816f7173ef6d03fc0db8e",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: Run one unmeasured CoreMark iteration before the measured one (#3240)",
+    "rtl": false
+  },
+  {
+    "sha": "460a2c4d10dcf1f1c450c79d4e651712133f3297",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "Place strcmp and strcpy first in syscalls.c to pin their Dhrystone address",
+    "rtl": false
+  },
+  {
+    "sha": "666e6f16a409d4738404b7980d549f090e1d8149",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: Read the tp register with inline assembly in syscalls.c (#2791)",
+    "rtl": false
+  },
+  {
+    "sha": "f22eb8ed645804930304f3e82a0cc1dd5fbfd791",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "Pass irq_delay to the UVM run recipes called from uvm-run-testlist",
+    "rtl": false
+  },
+  {
+    "sha": "332da25994ff01e96ac5cf5a25fcccc59d3c4593",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "Fail the Verible recipe when a file was not formatted",
+    "rtl": false
+  },
+  {
+    "sha": "673e15b4d710cae18c843b3761e6a226533d0477",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "Align the reset assignments of the load buffer for Verible",
+    "rtl": true
+  },
+  {
+    "sha": "c8a3d1a1ea1526ec183d61c86f89f56632e1ff41",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: Remove a trademark from the documentation (#3218)",
+    "rtl": false
+  },
+  {
+    "sha": "052f10fb743a3f70ca046b735073a713f600d087",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: Refresh the requirements specification (#3160)",
+    "rtl": false
+  },
+  {
+    "sha": "91b08338ee13fb3996dd5ad49a7de3b5ece05eb3",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "Point the Verible section of the contributing guide at cook.py",
+    "rtl": false
+  },
+  {
+    "sha": "0e1a8bef3eed51a3099a2a7b1038c0e3c522560e",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: Point the Contributing link of the user manual at openhwgroup/cva6 (#3506)",
+    "rtl": false
+  },
+  {
+    "sha": "9a8bc1f886a3f2b2a52d25c30a07dba63d1a6ae9",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: Update the code owners (#2829, #2869)",
+    "rtl": false
+  },
+  {
+    "sha": "72df9fedcd19c799921b1319ad35b8930e0177e0",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: Take the issue and pull request templates of master (#3281, #3282, #3348, #3406)",
+    "rtl": false
+  },
+  {
+    "sha": "0f2ff16ba0c9ee08522f4c416779c7e9ae6013a3",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: Add the security policy (#3327)",
+    "rtl": false
+  },
+  {
+    "sha": "133e1054514c8e50d9f6ec09995c58231634ae46",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: List the scalar crypto extensions in the programmer's view and add Zbkc (#3213)",
+    "rtl": false
+  },
+  {
+    "sha": "696eca88262f59688ee6bcf797ad2a42f89c8aaa",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: Add a GCC patch adding -mtune=cva6 to the toolchain builder (#3142)",
+    "rtl": false
+  },
+  {
+    "sha": "3add20c37a5348ba88ee21e34c33a0cb6852d434",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: Clone riscv-tests from riscv-software-src (#3514)",
+    "rtl": false
+  },
+  {
+    "sha": "d462fcfa0214b6d5737f2f7b60aa3bc28c8a15b3",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "port: Guard the read_elf DPI imports of the UVM testbench wrapper (#2958)",
+    "rtl": false
+  },
+  {
+    "sha": "200f5e90703f65234241cd75b063ef47da862a99",
+    "date": "2026-10-19T22:12:37+02:00",
+    "title": "Point the PMP testlists at defined_matches_test.S",
+    "rtl": false
+  },
+  {
+    "sha": "0c0bc62c85dc10a7edf5a6523332c5da2b5d2bba",
+    "date": "2026-10-19T16:07:09+02:00",
+    "title": "Fix TRAP_WL package scope (#3639)",
+    "rtl": false
+  },
+  {
+    "sha": "37ed13a8fba179609822fd2645c2d61c2b48bec5",
+    "date": "2026-10-16T11:02:12+02:00",
+    "title": "Added \"Use of AI\" to CONTRIBUTING.md (#3634)",
+    "rtl": false
+  },
+  {
+    "sha": "fb095566d6ce3a2a89d0a24d3c147863f058cfdb",
+    "date": "2026-10-14T18:27:55+02:00",
+    "title": "Run git-dependencies in the quick start of the README",
+    "rtl": false
+  },
+  {
+    "sha": "e1d76d1bd9e2fa4f4a095ec04908a5706bcdd89d",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Show a three-pill signature of a target in the matrix and its configuration on three lines in its detail",
+    "rtl": false
+  },
+  {
+    "sha": "219a8fdc76a3d4825c026d82d009b12bc9ed7483",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Add RV32 superscalar targets with atomics and with single precision",
+    "rtl": true
+  },
+  {
+    "sha": "2906b90a33b6b24ebad00ddd1d68e08a0fcd8198",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Run seven RV64 targets in superscalar mode",
+    "rtl": true
+  },
+  {
+    "sha": "92bc14477fba39f8ffa5cae912a09348c3c532fd",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Re-measure the benchmarks of cv32a65x_noc",
+    "rtl": false
+  },
+  {
+    "sha": "0e244613f99c079079b83570839b061b05e8afd8",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Hold a second-phase load exception that meets a load response",
+    "rtl": true
+  },
+  {
+    "sha": "a63189e03d53ce2fc025e6afa891275510b81fc4",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Release a faulting two-phase load once from the LSU bypass FIFO",
+    "rtl": true
+  },
+  {
+    "sha": "f684f3a6098fc0bd539cdb6d9760d9d9734d7d46",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Update the branch predictor slot of a 4-byte instruction without C",
+    "rtl": true
+  },
+  {
+    "sha": "eb8c5493811756fd1e6a67fade3e17d2d3e4b93c",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Show the hardware options of each target next to its name in the dashboard",
+    "rtl": false
+  },
+  {
+    "sha": "8e769459603800432a7ee6b0d61868dcc558da71",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Drop the superscalar restrictions that no longer hold from the docs",
+    "rtl": false
+  },
+  {
+    "sha": "9c9ead3df6aa741b256da318bdbf7845e8607551",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Add targets for C, Zcmp and Zcmt on RV32 and RV64",
+    "rtl": true
+  },
+  {
+    "sha": "24d88a75d4408fad899fa10eba80fdc507e902fd",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Run the misaligned fetch test on every target built with GCC",
+    "rtl": false
+  },
+  {
+    "sha": "47eaa200541aefd41146bf96db334b5576d2399d",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Test the misaligned instruction fetch with and without C",
+    "rtl": false
+  },
+  {
+    "sha": "04186d6f6894a1ef96dbf9c61418786a2946ca61",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Read the Zcmt jump table in XLEN-bit entries on RV64",
+    "rtl": true
+  },
+  {
+    "sha": "3241e38845821b8109429e56b6be8fe122cda3aa",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Stop cook.py when a patch of a Git submodule is not applied",
+    "rtl": false
+  },
+  {
+    "sha": "a59f104892de4eab985032d12286a4a72132f4ae",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Report the recipe warnings as WARN lines of the summary",
+    "rtl": false
+  },
+  {
+    "sha": "e75d5f27cee6070269cd46b83908c8bac6a050d0",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Drop the Zcmt table read of a flushed instruction",
+    "rtl": true
+  },
+  {
+    "sha": "12685d2b5e9a03208859b7c66b3e487731590c18",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Tolerate a 5% deviation on the synthesis counts",
+    "rtl": false
+  },
+  {
+    "sha": "8e91e66f4b5c5d4c5b718bdac031ff7739ca57f2",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Chart the Yosys synthesis of a target in the dashboard first",
+    "rtl": false
+  },
+  {
+    "sha": "7a820d6f37bcec25efbc67f857c315969d032439",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Lower the RTL lint baselines to the configuration checks moved to elaboration",
+    "rtl": false
+  },
+  {
+    "sha": "cbb22eab7917c4d4480a358d73e6882f03701214",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Check the configuration at elaboration in cva6",
+    "rtl": true
+  },
+  {
+    "sha": "6f08b38cacc1b1eda0ed0e5225aa50fb89bc033c",
+    "date": "2026-10-14T17:40:23+02:00",
+    "title": "Run on every target the testlists its configuration supports",
+    "rtl": false
+  }
+]

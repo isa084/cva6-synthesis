@@ -1,0 +1,602 @@
+[
+  {
+    "sha": "742dc82a0c706e0a3bfb98b709fd3ee06d50d12a",
+    "date": "2026-10-23T15:18:02+02:00",
+    "title": "Note: master made read-only. (#3664)",
+    "rtl": false
+  },
+  {
+    "sha": "81245a47fad8fe1a5d562d953ef2662e099def76",
+    "date": "2026-09-15T23:49:20+02:00",
+    "title": "Fix hgatp unsupported mode writes (#3552)",
+    "rtl": true
+  },
+  {
+    "sha": "2e51c4901adc5897f6003922bed1125b2aff754a",
+    "date": "2026-09-15T23:42:36+02:00",
+    "title": "build(deps): bump core/cache_subsystem/hpdcache (#3555)",
+    "rtl": true
+  },
+  {
+    "sha": "04bcf702a03a072b201e151b9b460ad95b725727",
+    "date": "2026-09-15T23:40:20+02:00",
+    "title": "Mask htval and mtval2 WARL writes (#3542)",
+    "rtl": true
+  },
+  {
+    "sha": "9ada1f383c93f70df6462bc40d874c321b411a13",
+    "date": "2026-09-15T23:39:18+02:00",
+    "title": "Fix G-stage host PPN truncation (#3541)",
+    "rtl": true
+  },
+  {
+    "sha": "3d540ac85337b161a75e97883baff14304a398da",
+    "date": "2026-09-15T23:37:39+02:00",
+    "title": "Fix PMP LSU response metadata alignment (#3479)",
+    "rtl": true
+  },
+  {
+    "sha": "07228a6ff285737045037c7278a67969206239e6",
+    "date": "2026-09-13T22:22:57+02:00",
+    "title": "pmp: require execute permission for HLVX accesses (#3413)",
+    "rtl": true
+  },
+  {
+    "sha": "49b5fa9e2f5a803cd52f8430d8e8818089e68865",
+    "date": "2026-09-11T16:43:55+02:00",
+    "title": "Fix NAPOT trigger matching (#3488)",
+    "rtl": true
+  },
+  {
+    "sha": "d199e000c865af27dae92d22c4714409c44a6a6a",
+    "date": "2026-09-11T16:39:40+02:00",
+    "title": "Enforce dmode trigger write rules (#3487)",
+    "rtl": true
+  },
+  {
+    "sha": "44c3898fdfa0c9005e32f9e3ff55cf07191150f9",
+    "date": "2026-09-11T14:29:18+02:00",
+    "title": "Gate Zcmp IDLE transitions on issue ack (#3543)",
+    "rtl": true
+  },
+  {
+    "sha": "6fa7219dfd4c54ad80634ffe5308b6ea436e09e9",
+    "date": "2026-09-11T14:25:30+02:00",
+    "title": "Retain LoadAddr trigger action (#3491)",
+    "rtl": true
+  },
+  {
+    "sha": "44db92478ebc39213e2669ec18771173af16f386",
+    "date": "2026-09-11T11:56:04+02:00",
+    "title": "Add valid bit to branch prediction structure (#3550)",
+    "rtl": true
+  },
+  {
+    "sha": "d2fdf99a3837e12d615dc32f5e3aea03ee62e4ca",
+    "date": "2026-09-11T10:08:23+02:00",
+    "title": "Fix xRET MPRV handling without RVH (#3551)",
+    "rtl": true
+  },
+  {
+    "sha": "9f3a2992e2c39206eaa54513d78d021af3f83c04",
+    "date": "2026-09-11T10:07:06+02:00",
+    "title": "Fix single-step WFI stall (#3525)",
+    "rtl": true
+  },
+  {
+    "sha": "862aa810d2556120eaed6c0e2c5f6d4463dc9318",
+    "date": "2026-09-10T21:06:45+02:00",
+    "title": "Block TLB updates after PTW faults (#3486)",
+    "rtl": true
+  },
+  {
+    "sha": "f7c04c3721693b1c9045ae8a8da0ed6ac1f68cf8",
+    "date": "2026-09-10T13:31:08+02:00",
+    "title": "cva6_ptw: reject A/D/U in non-leaf PTEs (#3422)",
+    "rtl": true
+  },
+  {
+    "sha": "5bff66ca9128574564f715a029fb5a195a2704ec",
+    "date": "2026-09-10T13:22:30+02:00",
+    "title": "Fix Zicbom guest permission checks (#3544)",
+    "rtl": true
+  },
+  {
+    "sha": "194d39faceaa1e30cad31b391b77758b6ac00265",
+    "date": "2026-09-10T06:17:49+02:00",
+    "title": "csr_regfile: zero mtval/stval on interrupt traps (fix GPLEN-1 bit select) (#3386)",
+    "rtl": true
+  },
+  {
+    "sha": "bfcd43ee39826d4f4deb988a551d83fddd53f6da",
+    "date": "2026-09-09T23:54:43+02:00",
+    "title": "csr_regfile: WARL legalize the dcsr write path (prv, v, cause) (#3387)",
+    "rtl": true
+  },
+  {
+    "sha": "6348e9e684678f83b40d0520028513d06b36e7b2",
+    "date": "2026-09-07T23:36:56+02:00",
+    "title": "decoder: zip/unzip are RV32-only, decode as illegal on RV64 (#3527)",
+    "rtl": true
+  },
+  {
+    "sha": "a5747355745117cac059a51ef722ca5bf235ec38",
+    "date": "2026-09-07T23:22:50+02:00",
+    "title": "test: add misaligned branch regression with RVC disabled (#3424)",
+    "rtl": false
+  },
+  {
+    "sha": "9a0e01e383b1d64793a916bdd262020f7ad73538",
+    "date": "2026-09-07T23:17:58+02:00",
+    "title": "fix(ptw): don't apply HLVX rule to G-stage check on VS-stage PTE reads (#3435)",
+    "rtl": true
+  },
+  {
+    "sha": "e7936db438269c801c34be8354afa892f8e08617",
+    "date": "2026-09-07T23:05:50+02:00",
+    "title": "Reject RV64-only FCVT conversions on RV32 (#3540)",
+    "rtl": true
+  },
+  {
+    "sha": "39b10c254e663b59e56ba2fef86e974ea49f71c8",
+    "date": "2026-09-07T22:58:33+02:00",
+    "title": "Fix: Prevent out-of-bounds access in debug loop by introducing shared array size parameter (#3448)",
+    "rtl": true
+  },
+  {
+    "sha": "6b2d6375952813817884d085f8a3858e7a91fbe1",
+    "date": "2026-09-07T15:26:14+02:00",
+    "title": "Fix PMPADDR63 out-of-bounds access (#3485)",
+    "rtl": true
+  },
+  {
+    "sha": "b2a41974342c2def7818b4dac38b029ea4a78064",
+    "date": "2026-09-07T15:18:35+02:00",
+    "title": "Add false 4 KiB alias regression (#3453)",
+    "rtl": false
+  },
+  {
+    "sha": "5173c1e3ebf8cf8c1b07055c5a89290f2de5fe88",
+    "date": "2026-09-07T14:18:13+02:00",
+    "title": "csr_regfile: legalize mstatus.MPP against reserved 2'b10 when RVH=1 (#3414)",
+    "rtl": true
+  },
+  {
+    "sha": "63c502b4c631150f07738aadb0fa68f856890721",
+    "date": "2026-09-07T14:12:51+02:00",
+    "title": "Reject reserved Zcmp rlist encodings (#3482)",
+    "rtl": true
+  },
+  {
+    "sha": "ceb56a5c0ebf025a4a2b2a6a7a43c891d096c200",
+    "date": "2026-09-07T12:21:04+02:00",
+    "title": "Fix SC lock while waiting for AXI AW (#3539)",
+    "rtl": true
+  },
+  {
+    "sha": "2e1336dcff3d1a0b49fbe6282b97802f32ea32af",
+    "date": "2026-09-07T11:09:18+02:00",
+    "title": "pmp_data_if: misaligned trap outranks PMP access fault (#3528)",
+    "rtl": true
+  },
+  {
+    "sha": "47b72e3193708e870d9e3f333de6e39b95b6e9bc",
+    "date": "2026-09-07T00:13:08+02:00",
+    "title": "fix: canonical address check to use registered LSU signals (#3410)",
+    "rtl": true
+  },
+  {
+    "sha": "6fe7b95910343aa81d67eb07527b7590770464bc",
+    "date": "2026-09-06T23:58:28+02:00",
+    "title": "Fix PMP TOR matching at eight-byte grain (#3490)",
+    "rtl": true
+  },
+  {
+    "sha": "99a0807757a2574fc92206310444943fd85932f6",
+    "date": "2026-09-06T23:28:25+02:00",
+    "title": "fix: guest-page-fault reporting for non-leaf VS-stage PTEs (#3407)",
+    "rtl": true
+  },
+  {
+    "sha": "2000196fdfca50fbaf8d3d70adf764b9ff38170c",
+    "date": "2026-09-06T22:02:06+02:00",
+    "title": "Warn on misaligned load offsets (#3534)",
+    "rtl": true
+  },
+  {
+    "sha": "7b4689579e5fb764ec99af80d2859268f191cb06",
+    "date": "2026-09-06T17:28:11+02:00",
+    "title": "Fix Zcmt table jump target LSB (#3501)",
+    "rtl": true
+  },
+  {
+    "sha": "beee10ba27ce6ca988d8bb10ecdb4f33cdc6f964",
+    "date": "2026-09-06T17:08:06+02:00",
+    "title": "csr_regfile: mask epc[1] when C extension is disabled (#3504)",
+    "rtl": true
+  },
+  {
+    "sha": "2d2d0c11b750e6ad92e828987b24d6398404fc0b",
+    "date": "2026-09-05T23:24:13+02:00",
+    "title": "Fix HLV permission reuse after HLVX on G-stage (#3468)",
+    "rtl": true
+  },
+  {
+    "sha": "2544b85e4d4de377b9afce3a64538f7da09159fe",
+    "date": "2026-09-05T23:11:19+02:00",
+    "title": "Fix cm.mva01s equal-register decode (#3476)",
+    "rtl": true
+  },
+  {
+    "sha": "f720af5bef6e9448c8ea9abd2b0e5859b4f28aef",
+    "date": "2026-09-05T22:48:44+02:00",
+    "title": "Mask reserved mstatus bits (#3492)",
+    "rtl": true
+  },
+  {
+    "sha": "7fc03ebb36bb6e7b2f31a9a0c05b0cafc73757cf",
+    "date": "2026-09-05T22:31:04+02:00",
+    "title": "config_pkg: reject RVZCMP+RVD configs at check_cfg time (#3526)",
+    "rtl": true
+  },
+  {
+    "sha": "a2f1c0ab32c9a30a8e15c7097b58ffaecb680f0a",
+    "date": "2026-09-04T22:40:09+02:00",
+    "title": "csr_regfile: guard high-half counter CSRs with IS_XLEN32 (#3529)",
+    "rtl": true
+  },
+  {
+    "sha": "2a12275c11825cdd528423a2fa895a79e26c03df",
+    "date": "2026-09-04T22:26:18+02:00",
+    "title": "Fix CVXIF illegal-instruction GVA (#3531)",
+    "rtl": true
+  },
+  {
+    "sha": "e643a3953d3945319ef5a95b6091b510fb8f157d",
+    "date": "2026-09-04T12:16:40+02:00",
+    "title": "csr: mideleg VS bits read-only-one from reset (#3510)",
+    "rtl": true
+  },
+  {
+    "sha": "cc81a7bb4951b5822df70469ac0ceebac55cbd94",
+    "date": "2026-09-04T10:22:13+02:00",
+    "title": "fix(csr): reject reserved CBIE encoding 2'b10 in menvcfg/senvcfg/henvcfg (#3513)",
+    "rtl": true
+  },
+  {
+    "sha": "9a05a60b6e7c8eaefcaff8d022ce29bba4ef7beb",
+    "date": "2026-09-04T06:42:01+02:00",
+    "title": "tb: fix out-of-bounds loop in rvfi_tracer debug signal tracing (#3518)",
+    "rtl": true
+  },
+  {
+    "sha": "cda3925c41a198c7bca587c5afd5c6014881bd68",
+    "date": "2026-09-04T05:18:07+02:00",
+    "title": "Trigger hardware_error exception when dcache load response error bit is asserted",
+    "rtl": true
+  },
+  {
+    "sha": "ab1de0dffe6d86e9880750de7ed508ee5d794fab",
+    "date": "2026-09-04T05:18:07+02:00",
+    "title": "verif: add C test for sanity check of the HPDcache ECC scrubbing mechanism",
+    "rtl": false
+  },
+  {
+    "sha": "7a1e6d4d62319ae4cf10ae26adaa44d970e74f41",
+    "date": "2026-09-04T05:18:07+02:00",
+    "title": "regress: enable config setting in the smoke-tests-cv64a6_imafdc using TARGET",
+    "rtl": false
+  },
+  {
+    "sha": "a3ed6f29b9bdbea86cc5ec1c763eecc042e7b0d6",
+    "date": "2026-09-04T05:18:07+02:00",
+    "title": "cache-subsys: remove duplicated assertions (definitions already in the hpdcache)",
+    "rtl": true
+  },
+  {
+    "sha": "7081c9fc28573ec795c14e1a9cde0012fb417a2e",
+    "date": "2026-09-04T05:18:07+02:00",
+    "title": "flist: add ECC decoders/encoders and SRAM macros with ECC",
+    "rtl": true
+  },
+  {
+    "sha": "a482adfe5d0f8ef90f165a20fc492b23f573bc7f",
+    "date": "2026-09-04T05:18:07+02:00",
+    "title": "Add CSRs related to error detection and correction in the L1 dcache",
+    "rtl": true
+  },
+  {
+    "sha": "404a28043c01e1d9ba34e5064bbfc858aac22150",
+    "date": "2026-09-04T05:18:07+02:00",
+    "title": "Add new CVA6 parameters to enable ECC and Scrubber in the Dcache",
+    "rtl": true
+  },
+  {
+    "sha": "37b2fa4d465c5d6e75a8d68ba995aa9aca34bc8e",
+    "date": "2026-09-03T23:30:29+02:00",
+    "title": "Bump core/cache_subsystem/hpdcache from `ba3dd4e` to `f404e7e` (#3500)",
+    "rtl": true
+  },
+  {
+    "sha": "f7c4eb44e3bde0bc98e812e8eae5cd1e78d4347b",
+    "date": "2026-09-03T21:36:45+02:00",
+    "title": "Revert \"Allow hello-pk job failure true (#3515)\" (#3524)",
+    "rtl": false
+  },
+  {
+    "sha": "2d913f309482782eae242c71afbb70371e67e71b",
+    "date": "2026-09-02T18:41:22+02:00",
+    "title": "Update riscv-tests git path (was moved on github) (#3514)",
+    "rtl": false
+  },
+  {
+    "sha": "40ac92ccc09534fb0c6b139a613f65868af9f499",
+    "date": "2026-09-01T17:30:31+02:00",
+    "title": "Allow hello-pk job failure true (#3515)",
+    "rtl": false
+  },
+  {
+    "sha": "ba7dec14298051bb5168a9b921987f0608cb33ad",
+    "date": "2026-08-31T23:13:39+02:00",
+    "title": "RTD: Update OS version to ubuntu-lts-latest (#3509)",
+    "rtl": false
+  },
+  {
+    "sha": "3ac6208ed0210ff66a557dd7dc4e79e34f1f2f4a",
+    "date": "2026-08-27T10:19:59+02:00",
+    "title": "docs: fix broken contributing link (#3506)",
+    "rtl": false
+  },
+  {
+    "sha": "6cb200105fb9441d170e45786125a737fab98e91",
+    "date": "2026-08-14T11:56:27+02:00",
+    "title": "Fix Zcmt JVT index calculation (#3451)",
+    "rtl": true
+  },
+  {
+    "sha": "6ee41edb289f9480282493388ae39693df69f76d",
+    "date": "2026-08-14T09:51:29+02:00",
+    "title": "Compute status SD bits from next dirty state (#3469)",
+    "rtl": true
+  },
+  {
+    "sha": "288a27cf46b8d5d19f2efbff35aa88c18446666f",
+    "date": "2026-08-14T07:47:43+02:00",
+    "title": "Preserve SFENCE.VMA rd legality in VS mode (#3470)",
+    "rtl": true
+  },
+  {
+    "sha": "fc5fffba6f61c25319f5d5cd50608195dcfd2607",
+    "date": "2026-08-12T23:09:59+02:00",
+    "title": "Fix MRET virtualization mode for M-mode (#3438)",
+    "rtl": true
+  },
+  {
+    "sha": "3496afa05346c424b00ec80a0e7ddd9baa2ef6e2",
+    "date": "2026-08-11T08:49:06+02:00",
+    "title": "alined cv64a60ax config to master branch (#3455)",
+    "rtl": true
+  },
+  {
+    "sha": "c4c412a9f8c3b9f21ca7f7b6c58b612ec2afe724",
+    "date": "2026-08-06T11:50:17+02:00",
+    "title": "Fixed classifications of c.jr and c.jalr instruction in instr_scan (#3444)",
+    "rtl": true
+  },
+  {
+    "sha": "6544a714c20193b94612f64a6aa43d9299feda49",
+    "date": "2026-08-05T16:42:55+02:00",
+    "title": "Bump core/cache_subsystem/hpdcache from `d1a231e` to `ba3dd4e` (#3434)",
+    "rtl": true
+  },
+  {
+    "sha": "030246b12441bb580a05717f7bc9bb9ba9c27798",
+    "date": "2026-08-04T17:24:56+02:00",
+    "title": "ci(format): freeze Verible version (#3436)",
+    "rtl": false
+  },
+  {
+    "sha": "e4184b665b7c777224688e8973167c8c5842762a",
+    "date": "2026-07-30T12:47:48+02:00",
+    "title": "[sdtrig] trigger module extension and overhaul (#3418)",
+    "rtl": true
+  },
+  {
+    "sha": "88e810c7cb5357ad69b87b9c7480023049fdbe9c",
+    "date": "2026-07-28T15:54:49+02:00",
+    "title": "GitHub: add commit hash input to bug issue template (#3406)",
+    "rtl": false
+  },
+  {
+    "sha": "f003f95aab73d173a9c963d5b288bacdbe7cd681",
+    "date": "2026-07-28T14:24:59+02:00",
+    "title": "Remove duplicate test and reorder load/store tests (#3402)",
+    "rtl": false
+  },
+  {
+    "sha": "e4d8a9784aa14a6395fb2bf7afcb7544d95e87ad",
+    "date": "2026-07-28T11:47:44+02:00",
+    "title": "Bump core/cache_subsystem/hpdcache from `b25a160` to `d1a231e` (#3416)",
+    "rtl": true
+  },
+  {
+    "sha": "a5033701413d69fb41e6caf96dd998f01d60becd",
+    "date": "2026-07-27T15:55:27+02:00",
+    "title": "GitHub CI: remove pull_request_target from Verible (#3415)",
+    "rtl": false
+  },
+  {
+    "sha": "8c199bd32638db247f396c7bc4ef244d9eaf1181",
+    "date": "2026-07-27T13:10:20+02:00",
+    "title": "update GitHub's actions (#3403)",
+    "rtl": false
+  },
+  {
+    "sha": "a3dc2c5e7835b25dc8437eee3e956ab12857ead7",
+    "date": "2026-07-21T14:10:24+02:00",
+    "title": "instr_realign: remove outdated TODOs (#3391)",
+    "rtl": true
+  },
+  {
+    "sha": "a962460efd3f3a0eea366f8516e47e53f80046bd",
+    "date": "2026-07-17T11:00:08+02:00",
+    "title": "Fix link between XLEN and hpdcache configuration (#3393)",
+    "rtl": true
+  },
+  {
+    "sha": "378ed3bcfc3f59fe3be544e9764b8720bd6f5704",
+    "date": "2026-07-12T11:17:20+02:00",
+    "title": "mmu: fix DTLB same-cycle PPN and indexing defect (#3347)",
+    "rtl": true
+  },
+  {
+    "sha": "ed2efa51744387f510bfa4dcec29eb2e1f5697cf",
+    "date": "2026-07-09T08:30:52+02:00",
+    "title": "Improved TLB flushing logic for Supervisor mode (#3312)",
+    "rtl": true
+  },
+  {
+    "sha": "31b45637935e944a0e9b4e2cb14e9bb49c9bdd23",
+    "date": "2026-07-07T16:44:39+02:00",
+    "title": "ci: harden Tier CI result handling and dashboard polish (#3373)",
+    "rtl": false
+  },
+  {
+    "sha": "d0ad8d40d7ae61830a697e366aae65bfff1e6105",
+    "date": "2026-07-07T16:42:59+02:00",
+    "title": "chore(cvfpu): bump version (#3381)",
+    "rtl": true
+  },
+  {
+    "sha": "b30e7dba3e85b887da5a01aab34c2438653efa83",
+    "date": "2026-07-01T09:51:08+02:00",
+    "title": "fix(load_unit): move flush_i branch after ldbuf_w to prevent phantom writeback (#3309)",
+    "rtl": true
+  },
+  {
+    "sha": "a31b556c30d5f71be9124b0f910ebce3f5c34514",
+    "date": "2026-07-01T07:07:24+02:00",
+    "title": "fix(acc_dispatcher): move flush_ex_i branch to end of p_non_speculative_ff (#3310)",
+    "rtl": true
+  },
+  {
+    "sha": "d1b0237f8e28a16d5c761159dea903129ec8c3f7",
+    "date": "2026-06-29T11:50:27+02:00",
+    "title": "Fix/3201 interrupt masking (#3220)",
+    "rtl": true
+  },
+  {
+    "sha": "18b9875e9d070444ed8999255b1268abb55a4ae1",
+    "date": "2026-06-29T10:47:35+02:00",
+    "title": "fix: no error on h-mode SV39x4 translation (#3221)",
+    "rtl": true
+  },
+  {
+    "sha": "e6473dd61f43168c86260052aecbd8143f36a8b3",
+    "date": "2026-06-24T18:12:09+02:00",
+    "title": "Fix aes32esi bug (#3243)",
+    "rtl": true
+  },
+  {
+    "sha": "37e2cb23cadec360f1bdeaec8da945b3062e3cff",
+    "date": "2026-06-23T16:39:23+02:00",
+    "title": "fix for 3136 - tie frontend's flush_bp_i to flush_ctrl_bp (#3353)",
+    "rtl": true
+  },
+  {
+    "sha": "3f39c6830d333ecc40b28790f8f9a1de6463124d",
+    "date": "2026-06-22T11:22:25+02:00",
+    "title": "fpnew: bump version (#3354)",
+    "rtl": true
+  },
+  {
+    "sha": "8a2df2987ab3c0e864f152e2cc7702ef43cc37a4",
+    "date": "2026-06-18T11:26:16+02:00",
+    "title": "Fix XLEN configuration parameter uses and detect future misuses of it (#3333)",
+    "rtl": true
+  },
+  {
+    "sha": "cfec69c1316de818cc034126727e508ff0d98ac8",
+    "date": "2026-06-16T14:25:13+05:00",
+    "title": "trigger_module: fix Verilator lint errors (#3350)",
+    "rtl": true
+  },
+  {
+    "sha": "f0cfdde390f76efc661a73c33ad638b4a0a073c4",
+    "date": "2026-06-13T23:50:52+02:00",
+    "title": "cache: remove CMO-related deadcode (#3340)",
+    "rtl": true
+  },
+  {
+    "sha": "c74e3ab343786a304bce964a589924ddec99642b",
+    "date": "2026-06-13T22:59:02+02:00",
+    "title": "cache_subsys: cut timing path of AMOs with a buffer (#3341)",
+    "rtl": true
+  },
+  {
+    "sha": "a1b3aedec67804e9dec3406bb5e1a0731dbd28eb",
+    "date": "2026-06-13T20:39:07+02:00",
+    "title": "issue template: fix headers for bug issues (#3348)",
+    "rtl": false
+  },
+  {
+    "sha": "7714d6bcf2840b2bf7d2df08535a4a22c0fa7df3",
+    "date": "2026-06-12T21:22:15+02:00",
+    "title": "HOT FIX to allow CI also if Questa is not available (#3349)",
+    "rtl": false
+  },
+  {
+    "sha": "cd4c8b17c1022eefee0d10531f7b1a2e224e0257",
+    "date": "2026-06-09T15:50:31+02:00",
+    "title": "update GitHub checkout action for new CI (#3343)",
+    "rtl": false
+  },
+  {
+    "sha": "bc510437877214793f80b996e9a143f4e2c7b4b8",
+    "date": "2026-06-01T16:09:54+02:00",
+    "title": "Expand contributing options (#3332)",
+    "rtl": false
+  },
+  {
+    "sha": "1ca5e47d67fd9e22e22559a180295780fef2e3a1",
+    "date": "2026-05-26T23:13:36+02:00",
+    "title": "Add SECURITY.md for vulnerability reporting and policy (#3327)",
+    "rtl": false
+  },
+  {
+    "sha": "3559c439198ccb9cd7c901b0112d7066403c8617",
+    "date": "2026-05-26T15:54:37+02:00",
+    "title": "Bump core/cache_subsystem/hpdcache from `e5f6671` to `b25a160` (#3329)",
+    "rtl": true
+  },
+  {
+    "sha": "9c2cf60a83a0a6a7fc5dcd973a5a5f6c0f42cb75",
+    "date": "2026-05-20T09:29:10+02:00",
+    "title": "ci: add Phase 1 tier workflows and tier dashboard (#3285)",
+    "rtl": false
+  },
+  {
+    "sha": "cfb85e7aeea3f9de345167f5819e3230bd313156",
+    "date": "2026-05-19T22:41:27+02:00",
+    "title": "Bump core/cache_subsystem/hpdcache from `acf97c9` to `e5f6671` (#3293)",
+    "rtl": true
+  },
+  {
+    "sha": "07732afe5d9c45d23b8aa50facb4dcd5102e968b",
+    "date": "2026-05-19T16:53:05+02:00",
+    "title": "fix: tie `debug_mode` to 0 if `DebugEn` is false (#3324)",
+    "rtl": true
+  },
+  {
+    "sha": "b3bee0ca1b4cfe78559ed11fd28d3abb137fc8ec",
+    "date": "2026-05-13T13:41:37+02:00",
+    "title": "Add link to wiki (#3318)",
+    "rtl": false
+  },
+  {
+    "sha": "f0c274cad66b84cd58379880741680351c7ce9ab",
+    "date": "2026-05-08T17:42:54+02:00",
+    "title": "Update model (#3304)",
+    "rtl": false
+  }
+]

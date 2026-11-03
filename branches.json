@@ -1,0 +1,10 @@
+[
+  {
+    "name": "master",
+    "synthesis_branch": "ft-synthesis"
+  },
+  {
+    "name": "master_candidate",
+    "synthesis_branch": "ft-synthesis-master_candidate"
+  }
+]

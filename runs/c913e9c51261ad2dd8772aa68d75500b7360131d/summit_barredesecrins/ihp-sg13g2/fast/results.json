@@ -1,0 +1,398 @@
+{
+  "upstream_sha": "c913e9c51261ad2dd8772aa68d75500b7360131d",
+  "upstream_date": "2026-10-27T21:26:59+01:00",
+  "upstream_title": "Give the example compiler.yml an entry for every toolchain cook.py asks for",
+  "target": "summit_barredesecrins",
+  "config": "summit_barredesecrins",
+  "technology": "ihp-sg13g2",
+  "sram_mode": "fakeram",
+  "mode": "fast",
+  "patches": [
+    "hpdcache-blackbox-ecc-sram-port-list.patch",
+    "hpdcache-bufferable-attribute.patch"
+  ],
+  "flow_version": "v1.4",
+  "repo_commit": "08ec69096de6abb6cad90def28435cbc10b9715a",
+  "status": "success",
+  "stdcell_area_um2": 7940580.0,
+  "macro_area_um2": 0,
+  "total_area_um2": 7940580.0,
+  "stdcell_kgate": 1094.1054894179895,
+  "fmax_mhz": 49.4336,
+  "worst_slack_ps": -229.167,
+  "sram_macros": 0,
+  "sram_bits": 0,
+  "clock_period_ps": 20000,
+  "image": "openroad/orfs:26Q4-221-gef324e555@sha256:ca289d6df8401711a4ed310a83b5bd14fd42534d64b9b790bf5cbb02cc496278",
+  "run_started": "2026-11-03T10:03:16+00:00",
+  "gsim_run": null,
+  "gsim_passed": null,
+  "gsim": null,
+  "reports_url": "",
+  "params": {
+    "Clock period": "20000 ps",
+    "I/O delay": "30% of period",
+    "Core utilization": "55%",
+    "Hierarchical synthesis": "yes",
+    "Keep size (NAND2)": "10000",
+    "ABC script": "speed",
+    "Floorplan timing repair": "off",
+    "SRAM model": "fakeram"
+  },
+  "paths": {
+    "in2out": {
+      "slack_ps": -230.0,
+      "start": "noc_resp_i[277]",
+      "end": "noc_req_o[1070]"
+    },
+    "in2reg": {
+      "slack_ps": 3080.0,
+      "start": "noc_resp_i[277]",
+      "end": "i_cva6_top/gen_cva6_dcls.i_cva6_main.i_cva6_pipeline.id_stage_i/issue_entry_o[623]"
+    },
+    "reg2out": {
+      "slack_ps": 2610.0,
+      "start": "i_cva6_top/gen_cva6_dcls.i_cva6_main.i_cva6_pipeline.issue_stage_i.i_scoreboard/_61463_",
+      "end": "noc_req_o[1070]"
+    },
+    "reg2reg": {
+      "slack_ps": 5870.0,
+      "start": "i_cva6_top/gen_cva6_dcls.i_cva6_shadow.i_cva6_pipeline.issue_stage_i.i_scoreboard/_61973_",
+      "end": "i_cva6_top/gen_cva6_dcls.i_cva6_shadow.i_cva6_pipeline.id_stage_i/issue_entry_o[75]"
+    }
+  },
+  "area_tree": {
+    "name": "cva6_example_obi",
+    "module": "cva6_example_obi",
+    "area": 7940582.2,
+    "sram": 0.0,
+    "children": [
+      {
+        "name": "i_cva6_top",
+        "module": "cva6_top",
+        "area": 7921959.2,
+        "sram": 0.0,
+        "children": [
+          {
+            "name": "gen_cva6_dcls",
+            "module": "",
+            "area": 7750493.0,
+            "sram": 0.0,
+            "children": [
+              {
+                "name": "gen_dcls_common_modules.i_dcls_common_modules.gen_dcls_common_regfile.i_dcls_common_regfile.i_ariane_regfile",
+                "module": "ariane_regfile",
+                "area": 325906.2,
+                "sram": 0.0
+              },
+              {
+                "name": "i_cva6_main.i_cva6_pipeline",
+                "module": "",
+                "area": 3715530.3,
+                "sram": 0.0,
+                "children": [
+                  {
+                    "name": "csr_regfile_i",
+                    "module": "csr_regfile",
+                    "area": 463992.9,
+                    "sram": 0.0,
+                    "children": [
+                      {
+                        "name": "tm_gen.trigger_module_i",
+                        "module": "trigger_module",
+                        "area": 222401.9,
+                        "sram": 0.0
+                      },
+                      {
+                        "name": "(local)",
+                        "module": "",
+                        "area": 241591.0,
+                        "sram": 0.0
+                      }
+                    ]
+                  },
+                  {
+                    "name": "ex_stage_i",
+                    "module": "ex_stage",
+                    "area": 1906867.3,
+                    "sram": 0.0,
+                    "children": [
+                      {
+                        "name": "i_mult.i_multiplier",
+                        "module": "multiplier",
+                        "area": 803650.4,
+                        "sram": 0.0
+                      },
+                      {
+                        "name": "lsu_i",
+                        "module": "load_store_unit",
+                        "area": 907871.3,
+                        "sram": 0.0,
+                        "children": [
+                          {
+                            "name": "gen_mmu.i_cva6_mmu",
+                            "module": "cva6_mmu",
+                            "area": 682553.7,
+                            "sram": 0.0,
+                            "children": [
+                              {
+                                "name": "i_dtlb",
+                                "module": "cva6_tlb",
+                                "area": 303944.7,
+                                "sram": 0.0
+                              },
+                              {
+                                "name": "i_itlb",
+                                "module": "cva6_tlb",
+                                "area": 292434.1,
+                                "sram": 0.0
+                              },
+                              {
+                                "name": "(local)",
+                                "module": "",
+                                "area": 86174.9,
+                                "sram": 0.0
+                              }
+                            ]
+                          },
+                          {
+                            "name": "i_store_unit.store_buffer_i",
+                            "module": "store_buffer",
+                            "area": 88987.2,
+                            "sram": 0.0
+                          },
+                          {
+                            "name": "(local)",
+                            "module": "",
+                            "area": 136330.4,
+                            "sram": 0.0
+                          }
+                        ]
+                      },
+                      {
+                        "name": "(local)",
+                        "module": "",
+                        "area": 195345.6,
+                        "sram": 0.0
+                      }
+                    ]
+                  },
+                  {
+                    "name": "i_frontend",
+                    "module": "frontend",
+                    "area": 615930.8,
+                    "sram": 0.0,
+                    "children": [
+                      {
+                        "name": "btb_gen.i_btb",
+                        "module": "btb",
+                        "area": 173953.8,
+                        "sram": 0.0
+                      },
+                      {
+                        "name": "i_instr_queue",
+                        "module": "instr_queue",
+                        "area": 277347.4,
+                        "sram": 0.0
+                      },
+                      {
+                        "name": "(local)",
+                        "module": "",
+                        "area": 164629.6,
+                        "sram": 0.0
+                      }
+                    ]
+                  },
+                  {
+                    "name": "id_stage_i",
+                    "module": "id_stage",
+                    "area": 100610.3,
+                    "sram": 0.0
+                  },
+                  {
+                    "name": "issue_stage_i",
+                    "module": "",
+                    "area": 628129.0,
+                    "sram": 0.0,
+                    "children": [
+                      {
+                        "name": "i_issue_read_operands",
+                        "module": "issue_read_operands",
+                        "area": 121345.3,
+                        "sram": 0.0
+                      },
+                      {
+                        "name": "i_scoreboard",
+                        "module": "scoreboard",
+                        "area": 506783.7,
+                        "sram": 0.0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "i_cva6_shadow.i_cva6_pipeline",
+                "module": "",
+                "area": 3709056.5,
+                "sram": 0.0,
+                "children": [
+                  {
+                    "name": "csr_regfile_i",
+                    "module": "csr_regfile",
+                    "area": 455922.4,
+                    "sram": 0.0,
+                    "children": [
+                      {
+                        "name": "tm_gen.trigger_module_i",
+                        "module": "trigger_module",
+                        "area": 223926.0,
+                        "sram": 0.0
+                      },
+                      {
+                        "name": "(local)",
+                        "module": "",
+                        "area": 231996.4,
+                        "sram": 0.0
+                      }
+                    ]
+                  },
+                  {
+                    "name": "ex_stage_i",
+                    "module": "ex_stage",
+                    "area": 1897167.6,
+                    "sram": 0.0,
+                    "children": [
+                      {
+                        "name": "i_mult.i_multiplier",
+                        "module": "multiplier",
+                        "area": 803650.4,
+                        "sram": 0.0
+                      },
+                      {
+                        "name": "lsu_i",
+                        "module": "load_store_unit",
+                        "area": 903888.8,
+                        "sram": 0.0,
+                        "children": [
+                          {
+                            "name": "gen_mmu.i_cva6_mmu",
+                            "module": "cva6_mmu",
+                            "area": 679846.7,
+                            "sram": 0.0,
+                            "children": [
+                              {
+                                "name": "i_dtlb",
+                                "module": "cva6_tlb",
+                                "area": 303944.7,
+                                "sram": 0.0
+                              },
+                              {
+                                "name": "i_itlb",
+                                "module": "cva6_tlb",
+                                "area": 289935.7,
+                                "sram": 0.0
+                              },
+                              {
+                                "name": "(local)",
+                                "module": "",
+                                "area": 85966.3,
+                                "sram": 0.0
+                              }
+                            ]
+                          },
+                          {
+                            "name": "i_store_unit.store_buffer_i",
+                            "module": "store_buffer",
+                            "area": 88989.1,
+                            "sram": 0.0
+                          },
+                          {
+                            "name": "(local)",
+                            "module": "",
+                            "area": 135053.0,
+                            "sram": 0.0
+                          }
+                        ]
+                      },
+                      {
+                        "name": "(local)",
+                        "module": "",
+                        "area": 189628.4,
+                        "sram": 0.0
+                      }
+                    ]
+                  },
+                  {
+                    "name": "i_frontend",
+                    "module": "frontend",
+                    "area": 620577.4,
+                    "sram": 0.0,
+                    "children": [
+                      {
+                        "name": "btb_gen.i_btb",
+                        "module": "btb",
+                        "area": 173924.8,
+                        "sram": 0.0
+                      },
+                      {
+                        "name": "i_instr_queue",
+                        "module": "instr_queue",
+                        "area": 276445.6,
+                        "sram": 0.0
+                      },
+                      {
+                        "name": "(local)",
+                        "module": "",
+                        "area": 170207.0,
+                        "sram": 0.0
+                      }
+                    ]
+                  },
+                  {
+                    "name": "id_stage_i",
+                    "module": "id_stage",
+                    "area": 100746.4,
+                    "sram": 0.0
+                  },
+                  {
+                    "name": "issue_stage_i",
+                    "module": "",
+                    "area": 634642.7,
+                    "sram": 0.0,
+                    "children": [
+                      {
+                        "name": "i_issue_read_operands",
+                        "module": "issue_read_operands",
+                        "area": 125115.6,
+                        "sram": 0.0
+                      },
+                      {
+                        "name": "i_scoreboard",
+                        "module": "scoreboard",
+                        "area": 509527.1,
+                        "sram": 0.0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "(local)",
+            "module": "",
+            "area": 171466.2,
+            "sram": 0.0
+          }
+        ]
+      },
+      {
+        "name": "(local)",
+        "module": "",
+        "area": 18623.0,
+        "sram": 0.0
+      }
+    ]
+  }
+}
