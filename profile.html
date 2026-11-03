@@ -247,7 +247,7 @@ function drawJobs(F) {
     {h: 'Commit', l: 1, v: j => j.sha, f: j => `<span class="mono">${esc(j.sha)}</span>`}, {h: 'Runner', v: j => j.runner, f: j => j.runner ?? ''},
     {h: 'Job time', v: j => j.dur, f: j => mmss(j.dur)}, {h: 'Peak mem GB', v: j => j.st.length ? j.mem : null, f: j => j.st.length ? (j.mem != null ? gb(j.mem) : '<span class="muted">not measured</span>') : '<span class="muted">no log</span>'},
     {h: 'Phases', v: j => j.fl ? sum(j.st.filter(s => s[1] === 'yosys').map(s => s[3])) / j.fl : null, f: j => j.st.length ? bar(j) : ''},
-    {h: 'Result', l: 1, v: j => j.ok, f: j => `<span class="${j.ok === 'success' ? 'good' : 'bad'}">${esc(j.ok)}</span>`}];
+    {h: 'Result', l: 1, v: j => j.ok, f: j => j.ok === 'success' ? `<span class="good">success</span>` : (j.st && j.st.length) ? `<span class="bad">${esc(j.ok)}</span>` : `<span class="muted">${esc(j.ok)}, no log</span>`}];
   const tot = Array(cols.length).fill(''); tot[0] = `${F.length} jobs`; tot[8] = mmss(sum(F.map(j => j.dur)));
   const mx = maxOf(F.map(j => j.mem)); tot[9] = mx != null ? gb(mx) + ' max' : '';
   table('jobtab', cols, F, {sort: 0, dir: -1, total: tot, redraw: () => drawJobs(F), click: pick});
