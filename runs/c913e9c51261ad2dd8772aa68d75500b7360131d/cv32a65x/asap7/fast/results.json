@@ -11,8 +11,8 @@
     "hpdcache-blackbox-ecc-sram-port-list.patch",
     "hpdcache-bufferable-attribute.patch"
   ],
-  "flow_version": "v1.1",
-  "repo_commit": "1e6fdd239d819f032ffd1a154eb92099530c9ecd",
+  "flow_version": "v1.6",
+  "repo_commit": "79dde9c158dedcece04ac6482100a57238e48c5b",
   "status": "success",
   "stdcell_area_um2": 9347.54,
   "macro_area_um2": 0,
@@ -24,10 +24,59 @@
   "sram_bits": 0,
   "clock_period_ps": 4000,
   "image": "openroad/orfs:26Q4-221-gef324e555@sha256:ca289d6df8401711a4ed310a83b5bd14fd42534d64b9b790bf5cbb02cc496278",
-  "run_started": "2026-11-02T16:47:52+00:00",
-  "gsim_run": null,
-  "gsim_passed": null,
-  "gsim": null,
+  "run_started": "2026-11-03T12:50:08+00:00",
+  "gsim_run": 8,
+  "gsim_passed": 8,
+  "gsim": [
+    {
+      "test": "hello_world-rv32",
+      "rtl": "pass",
+      "gate": "pass",
+      "cycles": 738
+    },
+    {
+      "test": "rv32ui-p-add",
+      "rtl": "pass",
+      "gate": "pass",
+      "cycles": 453
+    },
+    {
+      "test": "rv32ui-p-addi",
+      "rtl": "pass",
+      "gate": "pass",
+      "cycles": 274
+    },
+    {
+      "test": "rv32ui-p-beq",
+      "rtl": "pass",
+      "gate": "pass",
+      "cycles": 429
+    },
+    {
+      "test": "rv32ui-p-jal",
+      "rtl": "pass",
+      "gate": "pass",
+      "cycles": 139
+    },
+    {
+      "test": "rv32ui-p-lw",
+      "rtl": "pass",
+      "gate": "pass",
+      "cycles": 320
+    },
+    {
+      "test": "rv32ui-p-sw",
+      "rtl": "pass",
+      "gate": "pass",
+      "cycles": 560
+    },
+    {
+      "test": "rv32um-p-mul",
+      "rtl": "pass",
+      "gate": "pass",
+      "cycles": 469
+    }
+  ],
   "reports_url": "",
   "params": {
     "Clock period": "4000 ps",
