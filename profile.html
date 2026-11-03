@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CI profiler</title>
 <style>
-:root{color-scheme:light;--plane:#f8f9fa;--surface:#fff;--head:#f1f3f5;--ink:#212529;--ink2:#495057;--muted:#646b72;--grid:#e9ecef;--axis:#adb5bd;--border:#dee2e6;--sel:#e7f1ff;--accent:#0d6efd;--accent-ink:#fff;--nav:#212529;--nav-ink:#f8f9fa;--line:#2a78d6;--s0:#b9b8b1;--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--pass:#198754;--fail:#b02a37;--good-ink:#146c43;--bad-ink:#b02a37;--link:#0a58ca}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--plane:#0d0d0d;--surface:#1a1a19;--head:#232322;--ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a29b;--grid:#2c2c2a;--axis:#5f5e5a;--border:#383835;--sel:#1d2a3d;--accent:#3987e5;--accent-ink:#0b0b0b;--nav:#000;--nav-ink:#f0efec;--line:#3987e5;--s0:#5f5e5a;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--good-ink:#3fbf7f;--bad-ink:#e66767;--link:#86b6ef}}
-:root[data-theme=dark]{color-scheme:dark;--plane:#0d0d0d;--surface:#1a1a19;--head:#232322;--ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a29b;--grid:#2c2c2a;--axis:#5f5e5a;--border:#383835;--sel:#1d2a3d;--accent:#3987e5;--accent-ink:#0b0b0b;--nav:#000;--nav-ink:#f0efec;--line:#3987e5;--s0:#5f5e5a;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--good-ink:#3fbf7f;--bad-ink:#e66767;--link:#86b6ef}
+:root{color-scheme:light;--plane:#f8f9fa;--surface:#fff;--head:#f1f3f5;--ink:#212529;--ink2:#495057;--muted:#646b72;--grid:#e9ecef;--axis:#adb5bd;--border:#dee2e6;--sel:#e7f1ff;--accent:#0d6efd;--accent-ink:#fff;--nav:#212529;--nav-ink:#f8f9fa;--line:#2a78d6;--s0:#b9b8b1;--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--pass:#198754;--fail:#b02a37;--good-ink:#146c43;--bad-ink:#b02a37;--link:#0a58ca;--hm0:#cfe3fb;--hm1:#08306b}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--plane:#0d0d0d;--surface:#1a1a19;--head:#232322;--ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a29b;--grid:#2c2c2a;--axis:#5f5e5a;--border:#383835;--sel:#1d2a3d;--accent:#3987e5;--accent-ink:#0b0b0b;--nav:#000;--nav-ink:#f0efec;--line:#3987e5;--s0:#5f5e5a;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--good-ink:#3fbf7f;--bad-ink:#e66767;--link:#86b6ef;--hm0:#1d3557;--hm1:#a8d4ff}}
+:root[data-theme=dark]{color-scheme:dark;--plane:#0d0d0d;--surface:#1a1a19;--head:#232322;--ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a29b;--grid:#2c2c2a;--axis:#5f5e5a;--border:#383835;--sel:#1d2a3d;--accent:#3987e5;--accent-ink:#0b0b0b;--nav:#000;--nav-ink:#f0efec;--line:#3987e5;--s0:#5f5e5a;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--good-ink:#3fbf7f;--bad-ink:#e66767;--link:#86b6ef;--hm0:#1d3557;--hm1:#a8d4ff}
 *{box-sizing:border-box}
 body{margin:0;background:var(--plane);color:var(--ink);font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
 a{color:var(--link)}a:hover{color:var(--ink)}
@@ -44,6 +44,10 @@ svg{width:100%;height:auto;display:block}
 svg .t{font-size:11px;fill:var(--muted)}svg .tt{font-size:11px;fill:var(--ink2)}svg .bl{font-size:11px;fill:#fff;pointer-events:none}
 .sb{display:inline-flex;width:110px;height:8px;border-radius:2px;overflow:hidden;background:var(--grid);vertical-align:middle}.sb i{display:block;height:100%}
 .chart>div>svg{max-width:560px;margin:0 auto}.tl{overflow-x:auto}.tl svg{min-width:720px}
+.btn{font:inherit;font-size:12px;min-height:28px;padding:0 10px;border:1px solid var(--accent);border-radius:5px;background:var(--surface);color:var(--ink);cursor:pointer}.btn:hover{background:var(--sel)}.btn[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+.btns{display:inline-flex;gap:4px}#timeline{touch-action:pan-y;user-select:none;cursor:crosshair}
+.hmleg{display:flex;flex-wrap:wrap;white-space:nowrap;align-items:center;gap:4px 8px;color:var(--ink2)}.hmleg i{display:inline-block;width:160px;height:10px;border-radius:2px;background:linear-gradient(in oklab 90deg,var(--hm0),var(--hm1))}
+.tick{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
 p{margin:0}.note{color:var(--muted);font-size:12px}
 @media (max-width:640px){main{padding:12px 12px 32px}.charts{grid-template-columns:1fr}.tabs{padding:8px 12px 0}nav{padding:10px 12px}}
 </style>
@@ -56,21 +60,31 @@ p{margin:0}.note{color:var(--muted);font-size:12px}
 <section class="card"><h2>Across all runs</h2><div class="body">
 <div class="row" id="filters"></div>
 <div class="wrap"><table id="phtab"></table></div>
-<div class="note">Elapsed as min:sec. Group rows sum the stages of a group within a job; their memory is the largest stage peak.</div>
+<div class="note">Elapsed as min:sec. Group rows sum the stages of a group within a job; their memory is the largest stage peak. Memory is the flow's own measurement; stages the flow does not report (gate-level simulation, setup) are not counted, and their sampled peaks appear only under One job.</div>
 <div class="legend" id="techleg"></div>
 <div class="chart"><h3>Job time against peak memory (one point per job; click to open it)</h3><div id="scatter"></div></div>
 <p id="sentence"></p></div></section>
 <section class="card"><h2>Job list</h2><div class="body"><div class="wrap"><table id="jobtab"></table></div>
 <div class="legend"><span><i class="sw" style="background:var(--s1)"></i>Yosys</span><span><i class="sw" style="background:var(--s2)"></i>OpenROAD</span><span><i class="sw" style="background:var(--s3)"></i>gate-level sim</span><span><i class="sw" style="background:var(--s0)"></i>other</span></div></div></section>
 <section class="card" id="job-s"><h2 id="job-h">One job</h2><div class="body" id="job"></div></section>
-<section class="card"><h2>CI host, last 12 h</h2><div class="body">
+<section class="card"><h2>CI host</h2><div class="body">
+<div class="row" id="zbar"><span class="btns" id="zbtns"><button type="button" class="btn" data-h="1">1 h</button><button type="button" class="btn" data-h="3">3 h</button><button type="button" class="btn" data-h="6">6 h</button><button type="button" class="btn" data-h="12">12 h</button><button type="button" class="btn" data-h="24">24 h</button><button type="button" class="btn" data-h="0">Reset</button></span>
+<span class="btns"><button type="button" class="btn" id="zl" aria-label="Pan earlier" title="Pan earlier">&#9664;</button><button type="button" class="btn" id="zr" aria-label="Pan later" title="Pan later">&#9654;</button></span><span class="mono" id="zrange"></span></div>
+<p class="note">The runner timeline sets the time window of every time chart on this page (CI host, clock, power, temperatures, per-core clocks). Drag on it to zoom to a range, use the mouse wheel to zoom at the cursor, shift-drag or the arrows to pan, double-click to reset. <span id="zres"></span></p>
 <div class="tl" id="timeline"></div>
 <div class="charts" id="hostcharts"></div></div></section>
 <section class="card" id="cp-card" hidden><h2>Clock and power</h2><div class="body">
 <div class="charts" id="cpcharts"></div>
 <div class="legend"><span><i class="ln"></i>solid = measured</span><span><i class="ln dot"></i>dotted = estimate</span></div>
 <p class="note" id="cpnote"></p></div></section>
-<footer class="note">Phase numbers are the flow's own per-process measurements. Runner figures are sums of that runner's containers in the shared VM, sampled every 15 s, so they are approximate and a short phase may fall between samples. Host figures are sampled every 5 s and averaged per minute (temperature: maximum). Times are UTC.</footer>
+<section class="card" id="tp-card" hidden><h2>Temperatures</h2><div class="body">
+<div class="legend" id="templeg"></div><div class="tl" id="tempchart"></div>
+<p class="note">Sensors of the CI host under generic names, per-minute maxima. Hottest P and E core are the hottest core of that type; Case sensor is the hottest of the firmware's two case readings; its location and accuracy are not confirmed.</p></div></section>
+<section class="card" id="hm-card"><h2>Clock per core</h2><div class="body">
+<div class="tl" id="hm"></div>
+<div class="hmleg"><span>0.4 GHz</span><i></i><span>5.0 GHz</span><span class="muted">blank = idle or no data</span></div>
+<p class="note" id="hmnote"></p></div></section>
+<footer class="note">Phase numbers are the flow's own per-process measurements. Runner figures are sums of that runner's containers in the shared VM, sampled every 15 s, so they are approximate and a short phase may fall between samples. Host figures are sampled every 5 s and averaged per minute (temperature: maximum); below a 2 h window the host charts use 15 s averages. Times are UTC.</footer>
 </main>
 <script>
 // Where profile.json and phases.json are published (directory URL, ends with "/"). ?data=<dir/> overrides it.
@@ -91,7 +105,13 @@ const uniq = a => [...new Set(a.filter(x => x != null))].sort();
 const nice = v => { const p = Math.pow(10, Math.floor(Math.log10(v))), m = v / p; return ([1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find(x => m <= x + 1e-9)) * p; };
 const TECHCOL = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s5)', 'var(--s7)', 'var(--s4)'];
 
-let P = null, J = [], byId = {}, sel = null, techs = [], sorts = {};
+// Stage memory: null = not measured; st[7] = 1 marks a peak taken from the profiler's samples (not the flow's own).
+const flowMem = st => st[6] != null && !st[7] ? st[6] : null;
+const memTip = st => st[6] == null ? 'peak memory not measured' : st[7] ? `peak about ${gb(st[6])} GB (sampled)` : `peak ${gb(st[6])} GB`;
+const memCell = st => st[6] == null ? '<span class="muted">not measured</span>' : st[7] ? `about ${gb(st[6])} <span class="muted">(sampled)</span>` : gb(st[6]);
+const nn = a => a.filter(v => v != null), maxOf = a => (a = nn(a)).length ? Math.max(...a) : null;
+
+let P = null, BASE = '', J = [], byId = {}, sel = null, techs = [], sorts = {};
 let fl = {tech: '', br: '', sram: '', cfg: '', fv: ''};
 
 // ---- data ----
@@ -99,14 +119,15 @@ async function load() {
   let base = DATA_BASE;
   try { base = new URLSearchParams(location.search).get('data') || base; } catch (e) {}
   if (!base.endsWith('/')) base += '/';
+  BASE = base;
   const get = async f => { const r = await fetch(`${base}${f}?t=${Date.now()}`, {cache: 'no-store'}); if (!r.ok) throw new Error(f); return r.json(); };
   [P, {jobs: J}] = await Promise.all([get('profile.json'), get('phases.json')]);
-  J.forEach(j => { j.dur = j.e - j.s; j.fl = sum(j.st.map(s => s[3])); j.mem = Math.max(0, ...j.st.map(s => s[6])); byId[j.id] = j; });
+  J.forEach(j => { j.dur = j.e - j.s; j.fl = sum(j.st.map(s => s[3])); j.mem = maxOf(j.st.map(flowMem)); byId[j.id] = j; });
   techs = uniq(J.map(j => j.tech));
   const done = J.filter(j => j.st.length);
   sel = (done[done.length - 1] || {}).id;
   $('gen').textContent = `data generated ${dhm(P.generated)} UTC`;
-  drawFilters(); drawAll(); drawNow(); drawJob(); drawMachine();
+  drawFilters(); drawAll(); drawNow(); drawJob(); initTime();
 }
 
 // ---- generic sortable table: cols = [{h, v(row) sort value, f(row) html, l: left-align}] ----
@@ -124,11 +145,11 @@ function table(id, cols, rows, opts = {}) {
 
 // ---- line chart: series [{t0, step, v[], color}], x range [x0,x1]; marks = vertical lines ----
 function chart(title, series, x0, x1, o = {}) {
-  const W = 480, H = o.h || 130, L = 38, R = 8, T = 8, B = 20, pw = W - L - R, ph = H - T - B;
+  const W = o.w || 480, H = o.h || 130, L = 38, R = 8, T = 8, B = 20, pw = W - L - R, ph = H - T - B;
   const ymin = o.ymin ?? 0;
-  let ymax = o.ymax ?? ymin + nice(Math.max(...series.flatMap(s => s.v.filter(v => v != null)), 1) - ymin + 1e-9);
+  let ymax = o.ymax ?? ymin + nice(Math.max(...(o.ydata || series).flatMap(s => s.v.filter(v => v != null)), 1) - ymin + 1e-9);
   if (!isFinite(ymax) || ymax <= 0) ymax = 1;
-  const X = t => L + (t - x0) / (x1 - x0) * pw, Y = v => T + ph - (v - ymin) / (ymax - ymin) * ph;
+  const X = t => L + (t - x0) / (x1 - x0) * pw, Y = v => T + ph - (Math.max(ymin, Math.min(v, ymax)) - ymin) / (ymax - ymin) * ph;
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}">`;
   for (let i = 0; i <= 3; i++) { const v = ymin + (ymax - ymin) * i / 3, y = Y(v); s += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="var(--grid)"/><text class="t" x="${L - 4}" y="${y + 4}" text-anchor="end">${v >= 100 ? v.toFixed(0) : v.toFixed(1).replace(/\.0$/, '')}</text>`; }
   const ticks = o.ticks || 6;
@@ -137,7 +158,7 @@ function chart(title, series, x0, x1, o = {}) {
   for (const se of series) {
     let d = '', pen = false;
     se.v.forEach((v, i) => { const t = se.t0 + i * se.step; if (v == null || t < x0 - se.step || t > x1 + se.step) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(Math.max(x0, Math.min(x1, t))).toFixed(1)} ${Y(v).toFixed(1)}`; pen = true; });
-    s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="1.5"${se.dash ? ' stroke-dasharray="1.5 3.5" stroke-linecap="round"' : ''}><title>${esc(se.name || title)}</title></path>`;
+    s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="1.5"${se.dash ? ' stroke-dasharray="1.5 3.5" stroke-linecap="round"' : se.da ? ` stroke-dasharray="${se.da}"` : ''}><title>${esc(se.name || title)}</title></path>`;
   }
   return `<div class="chart"><h3>${esc(title)}${series.length > 1 && !o.nolegend ? ' ' + series.map(q => `<span class="muted"><i class="sw" style="background:${q.color}"></i>${esc(q.name)}</span>`).join(' ') : ''}</h3>${s}</svg></div>`;
 }
@@ -171,26 +192,26 @@ function drawAll() { const F = filtered(); drawPhases(F); drawScatter(F); drawSe
 
 function drawPhases(F) {
   const G = F.filter(j => j.st.length);
-  const stats = (vals) => ({n: vals.length, ...Object.fromEntries([['p50', .5], ['p90', .9]].map(([k, q]) => [k, quant(vals.map(v => v.el), q)])), mx: Math.max(...vals.map(v => v.el)), mm: med(vals.map(v => v.mem)), mmx: Math.max(...vals.map(v => v.mem)), cpu: med(vals.map(v => v.cpu))});
+  const stats = (vals) => ({n: vals.length, ...Object.fromEntries([['p50', .5], ['p90', .9]].map(([k, q]) => [k, quant(vals.map(v => v.el), q)])), mx: Math.max(...vals.map(v => v.el)), mm: med(nn(vals.map(v => v.mem))), mmx: maxOf(vals.map(v => v.mem)), cpu: med(vals.map(v => v.cpu))});
   const rows = [];
   for (const [g, name] of GROUPS) {
-    const per = G.map(j => { const s = j.st.filter(x => x[1] === g); return s.length ? {el: sum(s.map(x => x[3])), mem: Math.max(...s.map(x => x[6])), cpu: sum(s.map(x => x[4])) / Math.max(1, sum(s.map(x => x[3]))) * 100} : null; }).filter(Boolean);
+    const per = G.map(j => { const s = j.st.filter(x => x[1] === g); return s.length ? {el: sum(s.map(x => x[3])), mem: maxOf(s.map(flowMem)), cpu: sum(s.map(x => x[4])) / Math.max(1, sum(s.map(x => x[3]))) * 100} : null; }).filter(Boolean);
     if (!per.length) continue;
     rows.push({g, name: name, grp: true, ...stats(per)});
     const names = uniq(G.flatMap(j => j.st.filter(x => x[1] === g).map(x => x[0])));
-    for (const sn of names) rows.push({g, name: sn, ...stats(G.flatMap(j => j.st.filter(x => x[0] === sn).map(x => ({el: x[3], mem: x[6], cpu: x[5]}))))});
+    for (const sn of names) rows.push({g, name: sn, ...stats(G.flatMap(j => j.st.filter(x => x[0] === sn).map(x => ({el: x[3], mem: flowMem(x), cpu: x[5]}))))});
   }
   const cols = [
     {h: 'Stage', l: 1, v: r => r.name, f: r => `<i class="sw" style="background:${GCOL[r.g]}"></i>${r.grp ? '<b>' + esc(r.name) + '</b>' : '<span class="mono">' + esc(r.name) + '</span>'}`},
     {h: 'Runs', v: r => r.n, f: r => r.n}, {h: 'Median', v: r => r.p50, f: r => mmss(r.p50)}, {h: 'p90', v: r => r.p90, f: r => mmss(r.p90)}, {h: 'Max', v: r => r.mx, f: r => mmss(r.mx)},
-    {h: 'Median mem GB', v: r => r.mm, f: r => r.mm ? gb(r.mm) : ''}, {h: 'Max mem GB', v: r => r.mmx, f: r => r.mmx ? gb(r.mmx) : ''}, {h: 'Median CPU %', v: r => r.cpu, f: r => r.cpu ? Math.round(r.cpu) : ''}];
+    {h: 'Median mem GB', v: r => r.mm, f: r => r.mm != null ? gb(r.mm) : '<span class="muted">not measured</span>'}, {h: 'Max mem GB', v: r => r.mmx, f: r => r.mmx != null ? gb(r.mmx) : '<span class="muted">not measured</span>'}, {h: 'Median CPU %', v: r => r.cpu, f: r => r.cpu ? Math.round(r.cpu) : ''}];
   // Sorting reorders the groups too; the default keeps the group structure.
   table('phtab', cols, rows, {sort: -1, redraw: () => drawPhases(F)});
   if (!rows.length) $('phtab').innerHTML = '<tbody><tr><td class="l muted">No parsed jobs for this filter.</td></tr></tbody>';
 }
 
 function drawScatter(F) {
-  const G = F.filter(j => j.st.length && j.dur > 0);
+  const G = F.filter(j => j.st.length && j.dur > 0 && j.mem != null);
   const W = 480, H = 240, L = 40, R = 10, T = 20, B = 30, pw = W - L - R, ph = H - T - B;
   if (!G.length) { $('scatter').innerHTML = '<p class="muted" style="padding:10px">No data for this filter.</p>'; return; }
   const xm = nice(Math.max(...G.map(j => j.dur / 60)) * 1.02), ym = nice(Math.max(...G.map(j => j.mem / 1024)) * 1.02);
@@ -208,9 +229,10 @@ function drawSentence(F) {
   if (!G.length) { $('sentence').textContent = ''; return; }
   const tot = sum(G.map(j => j.fl)), part = Object.fromEntries(GROUPS.map(([g]) => [g, sum(G.map(j => sum(j.st.filter(s => s[1] === g).map(s => s[3]))))]));
   const top = Object.entries(part).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]).map(([g, v]) => `${GNAME[g]} ${(v / tot * 100).toFixed(0)}%`).join(', ');
-  const cnt = {}; G.forEach(j => { const s = j.st.reduce((a, b) => b[6] > a[6] ? b : a); cnt[s[0]] = (cnt[s[0]] || 0) + 1; });
-  const [sn, k] = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
-  $('sentence').innerHTML = `Over ${G.length} jobs, flow time split into ${top}. Peak memory (median ${gb(med(G.map(j => j.mem)))} GB, maximum ${gb(Math.max(...G.map(j => j.mem)))} GB) came from <span class="mono">${esc(sn)}</span> in ${k} of ${G.length} jobs.`;
+  const M = G.filter(j => j.mem != null), cnt = {};
+  M.forEach(j => { const s = j.st.filter(x => flowMem(x) != null).reduce((a, b) => b[6] > a[6] ? b : a); cnt[s[0]] = (cnt[s[0]] || 0) + 1; });
+  const [sn, k] = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0] || [];
+  $('sentence').innerHTML = `Over ${G.length} jobs, flow time split into ${top}.` + (k ? ` Peak memory (median ${gb(med(M.map(j => j.mem)))} GB, maximum ${gb(Math.max(...M.map(j => j.mem)))} GB) came from <span class="mono">${esc(sn)}</span> in ${k} of ${M.length} jobs with a memory figure.` : '');
 }
 
 // ---- 3. Job list ----
@@ -223,11 +245,11 @@ function drawJobs(F) {
     {h: 'Started (UTC)', l: 1, v: j => j.s, f: j => dhm(j.s)}, {h: 'Config', l: 1, v: j => j.cfg, f: j => esc(j.cfg)}, {h: 'Tech', l: 1, v: j => j.tech, f: j => esc(j.tech)},
     {h: 'Branch', l: 1, v: j => j.br, f: j => esc(j.br)}, {h: 'SRAM', l: 1, v: j => j.sram, f: j => esc(j.sram)}, {h: 'Flow', l: 1, v: j => j.fv, f: j => esc(j.fv)},
     {h: 'Commit', l: 1, v: j => j.sha, f: j => `<span class="mono">${esc(j.sha)}</span>`}, {h: 'Runner', v: j => j.runner, f: j => j.runner ?? ''},
-    {h: 'Job time', v: j => j.dur, f: j => mmss(j.dur)}, {h: 'Peak mem GB', v: j => j.st.length ? j.mem : null, f: j => j.st.length ? gb(j.mem) : '<span class="muted">no log</span>'},
+    {h: 'Job time', v: j => j.dur, f: j => mmss(j.dur)}, {h: 'Peak mem GB', v: j => j.st.length ? j.mem : null, f: j => j.st.length ? (j.mem != null ? gb(j.mem) : '<span class="muted">not measured</span>') : '<span class="muted">no log</span>'},
     {h: 'Phases', v: j => j.fl ? sum(j.st.filter(s => s[1] === 'yosys').map(s => s[3])) / j.fl : null, f: j => j.st.length ? bar(j) : ''},
     {h: 'Result', l: 1, v: j => j.ok, f: j => `<span class="${j.ok === 'success' ? 'good' : 'bad'}">${esc(j.ok)}</span>`}];
   const tot = Array(cols.length).fill(''); tot[0] = `${F.length} jobs`; tot[8] = mmss(sum(F.map(j => j.dur)));
-  const mx = Math.max(0, ...F.map(j => j.mem)); tot[9] = mx ? gb(mx) + ' max' : '';
+  const mx = maxOf(F.map(j => j.mem)); tot[9] = mx != null ? gb(mx) + ' max' : '';
   table('jobtab', cols, F, {sort: 0, dir: -1, total: tot, redraw: () => drawJobs(F), click: pick});
 }
 function pick(id) { sel = id; drawAll(); drawJob(); $('job-s').scrollIntoView({behavior: 'smooth'}); }
@@ -243,12 +265,12 @@ function drawJob() {
   let s = `<svg viewBox="0 0 ${W} 120" role="img" aria-label="Stage timeline">`;
   j.st.forEach((st, i) => {
     const x = X(st[2]), w = Math.max(1.5, st[3] / j.dur * pw), ly = 14 + (i % 3) * 12;
-    s += `<rect x="${x.toFixed(1)}" y="52" width="${w.toFixed(1)}" height="34" fill="${GCOL[st[1]]}"><title>${esc(st[0])}: ${mmss(st[3])}, CPU ${st[5]}%, peak ${gb(st[6])} GB</title></rect>`;
+    s += `<rect x="${x.toFixed(1)}" y="52" width="${w.toFixed(1)}" height="34" fill="${GCOL[st[1]]}"><title>${esc(st[0])}: ${mmss(st[3])}, CPU ${st[5]}%, ${memTip(st)}</title></rect>`;
     s += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${ly + 3}" y2="52" stroke="var(--axis)"/><text class="tt" x="${Math.min(x + 2, W - 120).toFixed(1)}" y="${ly}">${esc(st[0])} ${mmss(st[3])}</text>`;
   });
   for (let i = 0; i <= 6; i++) { const t = j.s + j.dur * i / 6; s += `<text class="t" x="${X(t)}" y="108" text-anchor="${i === 0 ? 'start' : i === 6 ? 'end' : 'middle'}">${hhmm(t)}</text>`; }
   const cols = [{h: 'Stage', l: 1, v: r => r[2], f: r => `<i class="sw" style="background:${GCOL[r[1]]}"></i><span class="mono">${esc(r[0])}</span>`}, {h: 'Group', l: 1, v: r => r[1], f: r => GNAME[r[1]]},
-    {h: 'Elapsed', v: r => r[3], f: r => mmss(r[3])}, {h: 'CPU %', v: r => r[5], f: r => r[5] || ''}, {h: 'Peak mem GB', v: r => r[6], f: r => r[6] ? gb(r[6]) : ''}];
+    {h: 'Elapsed', v: r => r[3], f: r => mmss(r[3])}, {h: 'CPU %', v: r => r[5], f: r => r[5] || ''}, {h: 'Peak mem GB', v: r => r[6], f: r => memCell(r)}];
   $('job').innerHTML = `<p>${meta}</p><div class="tl">${s}</svg></div><div class="wrap"><table id="sttab"></table></div><div id="jobcharts"></div>`;
   table('sttab', cols, j.st, {sort: 0, dir: 1, redraw: drawJob});
   const q = j.ser, marks = j.st.map(x => x[2]), o = {marks, ticks: 6, h: 120};
@@ -257,24 +279,123 @@ function drawJob() {
   $('jobcharts').innerHTML = `<div class="charts">` +
     chart('Runner CPU % (100 = one core)', [ss('runner', q.rcpu, 'var(--s2)')], j.s, j.e, o) + chart('Runner memory GB', [ss('runner', q.rmem, 'var(--s1)')], j.s, j.e, o) +
     chart('CI host CPU %', [ss('host', q.hcpu, 'var(--s2)')], j.s, j.e, {...o, ymax: 100}) + chart('CI host RAM GB', [ss('host', q.hram, 'var(--s1)')], j.s, j.e, o) +
-    chart('CI host hottest temperature °C', [ss('host', q.htemp, 'var(--s4)')], j.s, j.e, {...o, ymin: 30}) + `</div><p class="note">Dashed lines mark stage starts.</p>`;
+    chart('CI host hottest temperature °C', [ss('host', q.htemp, 'var(--s4)')], j.s, j.e, {...o, ymin: 30}) + `</div><p class="note">Dashed lines mark stage starts. "Sampled" memory is the runner's sampled peak during an inferred stage, approximate and not the flow's own figure.</p>`;
 }
 
-// ---- 5. Machine, last 12 h ----
-function drawMachine() {
-  const x1 = P.generated, x0 = x1 - 12 * 3600, W = 960, L = 56, R = 8, pw = W - L - R, X = t => L + (Math.max(x0, Math.min(x1, t)) - x0) / (x1 - x0) * pw;
+// ---- 5. CI host: one time window shared by all time charts ----
+const HR = 3600, MINW = 300, TW = 960, TL = 56, TR = 8;
+let ZB = null, Z = null, F = null, fineState = 0, raf = 0, tempOn = null;
+const span = () => Z[1] - Z[0];
+const tfmt = () => span() > 13 * HR ? dhm : hhmm;
+const useFine = () => F && span() < 2 * HR;
+
+function setZoom(a, b) {
+  const w = Math.min(Math.max(b - a, MINW), ZB[1] - ZB[0]);
+  a = Math.min(Math.max(a, ZB[0]), ZB[1] - w);
+  Z = [a, a + w];
+  if (!raf) raf = requestAnimationFrame(() => { raf = 0; drawTime(); });
+  if (w < 2 * HR && fineState === 0) loadFine();
+}
+const lastHours = h => setZoom(ZB[1] - (h || 12) * HR, ZB[1]);
+
+const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+async function loadFine() {
+  fineState = 1;
+  try {
+    const r = await fetch(`${BASE}fine.json?t=${Date.now()}`, {cache: 'no-store'});
+    if (!r.ok) throw new Error('fine');
+    const f = await r.json(), sc = (a, k) => a.map(v => v == null ? null : v / k);
+    f.s = {cpu: f.cpu, ram: sc(f.ram, 10), temp: f.temp, ck: sc(f.ck, 100), pw: sc(f.pw, 10), disk: sc(f.disk, 10)};
+    f.cmv = f.cm.map(c => { const o = []; for (let i = 0; i + 1 < c.length; i += 2) { const q = B64.indexOf(c[i]) * 64 + B64.indexOf(c[i + 1]); o.push(q === 4095 ? null : q * 4); } return o; });
+    F = f; fineState = 2;
+  } catch (e) { fineState = 3; }
+  setZoom(Z[0], Z[1]);
+}
+
+// minute series plus, when zoomed in, the 15 s series up to its end (the minute series continues after it)
+function pair(minute, fk, color, name, o = {}) {
+  const m = {t0: P.t0, step: P.step, v: minute, color, name, ...o};
+  if (!useFine() || !F.s[fk]) return [m];
+  const end = F.generated;
+  return [{t0: F.t0, step: F.step, v: F.s[fk], color, name, ...o}, {...m, v: minute.map((v, i) => P.t0 + i * P.step <= end ? null : v)}];
+}
+
+function initTime() {
+  ZB = [P.generated - 24 * HR, P.generated];
+  Z = [P.generated - 12 * HR, P.generated];
+  $('zbtns').onclick = e => { const h = e.target.dataset.h; if (h != null) lastHours(+h); };
+  $('zl').onclick = () => setZoom(Z[0] - span() / 4, Z[1] - span() / 4);
+  $('zr').onclick = () => setZoom(Z[0] + span() / 4, Z[1] + span() / 4);
+  const tl = $('timeline'), pw = TW - TL - TR;
+  const geo = e => { const sv = tl.querySelector('svg'); if (!sv) return null; const r = sv.getBoundingClientRect(), ux = (e.clientX - r.left) / r.width * TW; return {ux, r, t: Z[0] + (ux - TL) / pw * span()}; };
+  let drag = null;
+  const clampT = t => Math.max(Z[0], Math.min(Z[1], t));
+  const endDrag = () => { if (drag && drag.rect) drag.rect.remove(); drag = null; };
+  tl.addEventListener('pointerdown', e => {
+    const g = e.button === 0 && geo(e);
+    if (!g || g.ux < TL || g.ux > TW - TR) return;
+    drag = {x: e.clientX, t: clampT(g.t), z: [...Z], pan: e.shiftKey, k: span() / (g.r.width * pw / TW), sv: tl.querySelector('svg'), rect: null};
+    try { tl.setPointerCapture(e.pointerId); } catch (err) {} e.preventDefault();
+  });
+  tl.addEventListener('pointermove', e => {
+    if (!drag) return;
+    if (drag.pan) { const dt = -(e.clientX - drag.x) * drag.k; setZoom(drag.z[0] + dt, drag.z[1] + dt); return; }
+    if (!drag.rect && Math.abs(e.clientX - drag.x) < 4) return;
+    const g = geo(e), a = drag.t, b = clampT(g.t), X = t => TL + (t - Z[0]) / span() * pw;
+    if (!drag.rect) { drag.rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect'); drag.rect.setAttribute('fill', 'var(--accent)'); drag.rect.setAttribute('fill-opacity', '.18'); drag.rect.setAttribute('stroke', 'var(--accent)'); drag.rect.setAttribute('pointer-events', 'none'); drag.sv.appendChild(drag.rect); }
+    drag.rect.setAttribute('x', X(Math.min(a, b))); drag.rect.setAttribute('width', Math.abs(X(b) - X(a))); drag.rect.setAttribute('y', 14); drag.rect.setAttribute('height', drag.sv.viewBox.baseVal.height - 14);
+  });
+  tl.addEventListener('pointerup', e => {
+    if (!drag) return;
+    const d = drag, g = geo(e); endDrag();
+    if (!d.pan && d.rect && g) { const a = d.t, b = clampT(g.t); if (Math.abs(b - a) > 1) setZoom(Math.min(a, b), Math.max(a, b)); }
+  });
+  tl.addEventListener('pointercancel', endDrag);
+  tl.addEventListener('wheel', e => {
+    const g = geo(e);
+    if (!g || g.ux < TL || g.ux > TW - TR) return;
+    e.preventDefault();
+    const f = Math.max(.5, Math.min(2, Math.exp(e.deltaY * (e.deltaMode ? 16 : 1) * .002))), w = span() * f, fr = (g.t - Z[0]) / span();
+    setZoom(g.t - fr * w, g.t - fr * w + w);
+  }, {passive: false});
+  tl.addEventListener('dblclick', () => lastHours(12));
+  drawTime();
+}
+
+function drawTime() {
+  drawZbar(); drawTimeline(); drawHost(); drawClockPower(); drawTemps(); drawHeat();
+}
+
+function drawZbar() {
+  const w = span(), h = w / HR;
+  $('zrange').textContent = `${dhm(Z[0])} to ${dhm(Z[1])} UTC (${h >= 1 ? +h.toFixed(1) + ' h' : Math.round(w / 60) + ' min'})`;
+  const atEnd = Math.abs(Z[1] - ZB[1]) < 1;
+  $('zbtns').querySelectorAll('button').forEach(b => { const x = +b.dataset.h || 12; b.setAttribute('aria-pressed', atEnd && Math.abs(w - x * HR) < 1 ? 'true' : 'false'); });
+  $('zres').textContent = w >= 2 * HR ? 'Resolution: 1 min.' : fineState === 2 ? 'Resolution: host charts, clock, power and per-core clock at 15 s and 10 s (per minute for the newest half hour).'
+    : fineState === 3 ? 'Finer data is not available: showing per-minute data.' : 'Loading finer data; showing per-minute data meanwhile.';
+}
+
+function tickLabels(X, y) {
+  let s = ''; const f = tfmt();
+  for (let i = 0; i <= 6; i++) { const t = Z[0] + span() * i / 6; s += `<text class="t" x="${X(t)}" y="${y}" text-anchor="${i === 0 ? 'start' : i === 6 ? 'end' : 'middle'}">${f(t)}</text>`; }
+  return s;
+}
+
+function drawTimeline() {
+  const [x0, x1] = Z, pw = TW - TL - TR, X = t => TL + (Math.max(x0, Math.min(x1, t)) - x0) / (x1 - x0) * pw;
   const rn = uniq(P.jobs.filter(j => j.runner != null).map(j => j.runner)).concat(Object.keys(P.runners).map(Number)).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b);
   const RH = 54, H = 22 + rn.length * RH;
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Runner timeline">`;
-  for (let i = 0; i <= 12; i += 2) { const t = x0 + (x1 - x0) * i / 12; s += `<line x1="${X(t)}" x2="${X(t)}" y1="14" y2="${H}" stroke="var(--grid)"/><text class="t" x="${X(t)}" y="10" text-anchor="${i === 0 ? 'start' : i === 12 ? 'end' : 'middle'}">${hhmm(t)}</text>`; }
+  let s = `<svg viewBox="0 0 ${TW} ${H}" role="img" aria-label="Runner timeline">`;
+  for (let i = 0; i <= 6; i++) { const t = x0 + (x1 - x0) * i / 6; s += `<line x1="${X(t)}" x2="${X(t)}" y1="14" y2="${H}" stroke="var(--grid)"/>`; }
+  s += tickLabels(X, 10);
   rn.forEach((n, k) => {
     const y = 22 + k * RH;
     s += `<text class="tt" x="4" y="${y + 18}">runner ${n}</text>`;
     for (const j of P.jobs.filter(j => j.runner === n && j.s)) {
-      const e = j.e || x1; if (e < x0) continue;
+      const e = j.e || P.generated; if (e < x0 || j.s > x1) continue;
       const xa = X(j.s), xb = X(e), pj = byId[j.id];
       if (pj && pj.st.length) {
-        for (const st of pj.st) { const a = X(st[2]), b = X(st[2] + st[3]); if (b - a < .3) continue; s += `<rect x="${a.toFixed(1)}" y="${y}" width="${(b - a).toFixed(1)}" height="26" fill="${GCOL[st[1]]}"><title>${esc(j.cfg)} ${esc(j.tech)} · ${esc(st[0])} · ${mmss(st[3])} · peak ${gb(st[6])} GB</title></rect>`; }
+        for (const st of pj.st) { const a = X(st[2]), b = X(st[2] + st[3]); if (b - a < .3 || st[2] > x1 || st[2] + st[3] < x0) continue; s += `<rect x="${a.toFixed(1)}" y="${y}" width="${(b - a).toFixed(1)}" height="26" fill="${GCOL[st[1]]}"><title>${esc(j.cfg)} ${esc(j.tech)} · ${esc(st[0])} · ${mmss(st[3])} · ${memTip(st)}</title></rect>`; }
         s += `<rect x="${xa.toFixed(1)}" y="${y}" width="${(xb - xa).toFixed(1)}" height="26" fill="none" stroke="var(--surface)"/>`;
       } else s += `<rect x="${xa.toFixed(1)}" y="${y}" width="${(xb - xa).toFixed(1)}" height="26" fill="${j.status === 'in_progress' ? 'var(--s7)' : 'var(--s0)'}" fill-opacity="${j.status === 'in_progress' ? .55 : .8}"><title>${esc(j.cfg)} ${esc(j.tech)} · ${j.status === 'in_progress' ? 'running (phases appear when the job finishes)' : 'no phase data'} · ${mmss(e - j.s)}</title></rect>`;
       if (xb - xa > 70) s += `<text class="bl" x="${(xa + 4).toFixed(1)}" y="${y + 17}" style="paint-order:stroke;stroke:rgba(0,0,0,.45);stroke-width:2px">${esc(j.cfg.slice(0, Math.floor((xb - xa) / 7)))}</text>`;
@@ -282,34 +403,100 @@ function drawMachine() {
     const r = P.runners[n];
     if (r) {
       const mx = Math.max(...r.mem.filter(v => v != null), 1); let d = '', pen = false;
-      r.mem.forEach((v, i) => { const t = P.t0 + i * P.step; if (v == null || t < x0) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(t).toFixed(1)} ${(y + 46 - v / mx * 16).toFixed(1)}`; pen = true; });
+      r.mem.forEach((v, i) => { const t = P.t0 + i * P.step; if (v == null || t < x0 - P.step || t > x1 + P.step) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(t).toFixed(1)} ${(y + 46 - v / mx * 16).toFixed(1)}`; pen = true; });
       s += `<path d="${d}" fill="none" stroke="var(--ink2)" stroke-width="1"/><text class="t" x="4" y="${y + 40}">mem ≤${mx.toFixed(0)} GB</text>`;
     }
   });
   $('timeline').innerHTML = `<div class="legend" style="margin-bottom:6px">${GROUPS.map(([, n, c]) => `<span><i class="sw" style="background:${c}"></i>${n}</span>`).join('')}<span><i class="sw" style="background:var(--s7)"></i>running</span><span class="muted">thin line: runner memory</span></div>` + (rn.length ? s + '</svg>' : '<p class="muted">No runner activity.</p>');
-  const starts = [...new Map(P.jobs.filter(j => j.s).map(j => [j.run, j.s])).entries()].map(([, t]) => t);
-  const runStart = Object.values(P.jobs.reduce((a, j) => (j.s && (!a[j.run] || j.s < a[j.run]) && (a[j.run] = j.s), a), {}));
-  const hs = (k, c) => ({t0: P.t0, step: P.step, v: P.host[k], color: c, name: k}), o = {marks: runStart, ticks: 6};
-  const rw = P.host.rd.map((v, i) => v == null && P.host.wr[i] == null ? null : (v || 0) + (P.host.wr[i] || 0));
-  $('hostcharts').innerHTML = chart('CI host CPU %', [hs('cpu', 'var(--s2)')], x0, x1, {...o, ymax: 100}) + chart('CI host RAM GB', [hs('ram', 'var(--s1)')], x0, x1, o) +
-    chart('CI host hottest temperature °C', [hs('temp', 'var(--s4)')], x0, x1, {...o, ymin: 30}) + chart('CI host disk MB/s (read + write)', [{t0: P.t0, step: P.step, v: rw, color: 'var(--s3)', name: 'disk'}], x0, x1, o) +
-    `<p class="note" style="grid-column:1/-1">Dashed lines mark the start of each run.</p>`;
-  drawClockPower(x0, x1, o);
 }
 
-// measured (solid) and estimated (dotted) series in one colour
-function drawClockPower(x0, x1, o) {
-  const H = P.host, E = P.est || {}, card = $('cp-card');
+function drawHost() {
+  const [x0, x1] = Z, H = P.host;
+  const runStart = Object.values(P.jobs.reduce((a, j) => (j.s && (!a[j.run] || j.s < a[j.run]) && (a[j.run] = j.s), a), {}));
+  const o = {marks: runStart, ticks: 6, dates: span() > 13 * HR};
+  const rw = H.rd.map((v, i) => v == null && H.wr[i] == null ? null : (v || 0) + (H.wr[i] || 0));
+  const mk = (title, minute, fk, color, name, oo = {}) => { const ydata = [{v: minute}]; return chart(title, pair(minute, fk, color, name), x0, x1, {...o, ...oo, ydata, nolegend: true}); };
+  $('hostcharts').innerHTML = mk('CI host CPU %', H.cpu, 'cpu', 'var(--s2)', 'cpu', {ymax: 100}) + mk('CI host RAM GB', H.ram, 'ram', 'var(--s1)', 'ram') +
+    mk('CI host hottest temperature °C', H.temp, 'temp', 'var(--s4)', 'temp', {ymin: 30}) + mk('CI host disk MB/s (read + write)', rw, 'disk', 'var(--s3)', 'disk') +
+    `<p class="note" style="grid-column:1/-1">Dashed lines mark the start of each run.</p>`;
+}
+
+// measured (solid) and estimated (dotted) series in one colour; the measured clock is turbostat's where it exists
+function drawClockPower() {
+  const [x0, x1] = Z, H = P.host, E = P.est || {}, card = $('cp-card');
   if (!H.fb_est || !H.power_est) { card.hidden = true; return; }
   card.hidden = false;
-  const ss = (v, c, dash, name) => ({t0: P.t0, step: P.step, v, color: c, name, dash}), op = {...o, nolegend: true};
-  const any = a => a.some(v => v != null), nPw = H.power.filter(v => v != null).length;
-  $('cpcharts').innerHTML = chart('CPU clock, busy-weighted (GHz)', [ss(H.fb_est, 'var(--s2)', 1, 'estimate'), ss(H.fb, 'var(--s2)', 0, 'measured')], x0, x1, op) +
-    chart('Power (W)', [ss(H.power_est, 'var(--s4)', 1, 'estimate'), ss(H.power, 'var(--s4)', 0, 'measured')], x0, x1, op);
+  const o = {ticks: 6, dates: span() > 13 * HR, nolegend: true};
+  const ck = H.fb.map((v, i) => H.tb && H.tb[i] != null ? H.tb[i] : v);
+  const est = (v, c, name) => ({t0: P.t0, step: P.step, v, color: c, name, dash: 1});
+  const nPw = H.power.filter(v => v != null).length;
+  $('cpcharts').innerHTML = chart('CPU clock, busy-weighted (GHz)', [est(H.fb_est, 'var(--s2)', 'estimate'), ...pair(ck, 'ck', 'var(--s2)', 'measured')], x0, x1, {...o, ydata: [{v: ck}, {v: H.fb_est}]}) +
+    chart('Power (W)', [est(H.power_est, 'var(--s4)', 'estimate'), ...pair(H.power, 'pw', 'var(--s4)', 'measured')], x0, x1, {...o, ydata: [{v: H.power}, {v: H.power_est}]});
   const pw = nPw ? `Measured power is RAPL psys, or the system's own draw reading while the CI host is off mains power (${nPw} measured min in the last 24 h).` : 'Power is estimated only so far.';
   const pm = E.power_method === 'bins' ? `The dotted power is the median measured power in the same 10 % CPU bin (${E.power_min} measured min).`
     : 'The dotted power is a straight line, 10 W + 1 W per CPU %, anchored on one real measurement (30 W for the whole system at about 20 % CPU) with the 10 W idle assumed.';
-  $('cpnote').textContent = `${pw} The dotted clock is the median measured busy-weighted clock in the same 10 % CPU bin, taken from all measured minutes. ${pm} Measurements are from the balanced power profile, and before about 09:15 UTC on 2026-11-03 the CI host ran in the performance profile, so dotted clock values before then are probably too low. psys is platform power as reported by the CPU, not a wall measurement. Busy-weighted means each core's clock is weighted by how busy it was, because idle cores park at a low clock.`;
+  const tb = E.tb_min ? ` Where the exact per-CPU counters were available (${E.tb_min} min in the last 24 h) the measured clock is the exact busy clock over all CPUs; otherwise it is the busy-weighted clock from the kernel's frequency readings.` : '';
+  $('cpnote').textContent = `${pw} The dotted clock is the median measured busy-weighted clock in the same 10 % CPU bin, taken from all measured minutes. ${pm}${tb} Measurements are from the balanced power profile, and before about 09:15 UTC on 2026-11-03 the CI host ran in the performance profile, so dotted clock values before then are probably too low. psys is platform power as reported by the CPU, not a wall measurement. Busy-weighted means each core's clock is weighted by how busy it was, because idle cores park at a low clock.`;
+}
+
+// ---- Temperatures ----
+const TCOL = {'CPU package': 'var(--s1)', 'Hottest P core': 'var(--s2)', 'Hottest E core': 'var(--s7)', 'Memory': 'var(--s3)', 'NVMe': 'var(--s4)', 'Wi-Fi': 'var(--s5)', 'Case sensor': 'var(--s6)', 'Ambient': 'var(--ink2)'};
+const TDASH = {'Case sensor': '5 3', 'Ambient': '2 3'};
+function drawTemps() {
+  const T = P.temps, card = $('tp-card'), keys = T ? Object.keys(TCOL).filter(k => T[k] && T[k].some(v => v != null)) : [];
+  if (!keys.length) { card.hidden = true; return; }
+  card.hidden = false;
+  if (!tempOn) {
+    tempOn = Object.fromEntries(keys.map(k => [k, true]));
+    $('templeg').innerHTML = keys.map(k => `<label class="tick"><input type="checkbox" data-k="${esc(k)}" checked><i class="ln" style="border-top-color:${TCOL[k]};border-top-width:3px${TDASH[k] ? ';border-top-style:dashed' : ''}"></i>${esc(k)}</label>`).join('');
+    $('templeg').onchange = e => { tempOn[e.target.dataset.k] = e.target.checked; drawTemps(); };
+  }
+  const all = keys.map(k => ({t0: P.t0, step: P.step, v: T[k], color: TCOL[k], name: k, da: TDASH[k]}));
+  const on = all.filter(se => tempOn[se.name]);
+  $('tempchart').innerHTML = chart('CI host temperatures °C', on, Z[0], Z[1], {w: 960, h: 240, ymin: 20, ticks: 8, nolegend: true, dates: span() > 13 * HR, ydata: all}) +
+    (on.length ? '' : '<p class="muted">No line selected.</p>');
+}
+
+// ---- Clock per core: heatmap, one row per CPU grouped P, E, LP ----
+function drawHeat() {
+  const el = $('hm'), mhz = P.cpu_mhz, ty = P.cpu_types;
+  if (!mhz || !ty || !mhz.some(r => r.some(v => v != null))) { el.innerHTML = '<p class="muted">no per-core data yet</p>'; $('hmnote').textContent = ''; return; }
+  const [x0, x1] = Z, w = x1 - x0, fine = useFine(), N = 400;
+  const dt = Math.max(w / N, fine ? F.cstep : P.step), nb = Math.ceil(w / dt);
+  const W = 960, L = 52, R = 8, RH = 12, GAP = 8, T = 4, pw = W - L - R, X = t => L + (t - x0) / w * pw;
+  const groups = ['P', 'E', 'LP'].map(g => [g, ty.map((t, c) => t === g ? c : -1).filter(c => c >= 0)]).filter(g => g[1].length);
+  const H = T + groups.reduce((a, g) => a + g[1].length * RH + GAP, 0) + 14;
+  const col = q => `color-mix(in oklab,var(--hm1) ${Math.round(Math.max(0, Math.min(1, (q / 10 - .4) / 4.6)) * 100)}%,var(--hm0))`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Clock per core">`, y = T;
+  for (const [g, cpus] of groups) {
+    cpus.forEach((c, k) => {
+      const sum = new Float64Array(nb), cnt = new Uint16Array(nb);
+      const add = (t0, step, v) => {
+        for (let i = 0; i < v.length; i++) {
+          const t = t0 + i * step; if (v[i] == null || t + step <= x0 || t >= x1) continue;
+          const b0 = Math.max(0, Math.floor((t - x0) / dt)), b1 = Math.min(nb - 1, Math.floor((t + step - 1e-6 - x0) / dt));
+          for (let b = b0; b <= b1; b++) { sum[b] += v[i]; cnt[b]++; }
+        }
+      };
+      const cut = fine ? F.generated : -Infinity;
+      if (fine) add(F.ct0, F.cstep, F.cmv[c]);
+      add(P.cpu_t0, 60, mhz[c].map((v, i) => v == null || P.cpu_t0 + i * 60 <= cut ? null : v * (P.cpu_unit || 1)));
+      s += `<rect x="${L}" y="${y}" width="${pw}" height="${RH - 1}" fill="var(--grid)" fill-opacity=".5"/><text class="t" x="${L - 4}" y="${y + 9}" text-anchor="end">${c}</text>`;
+      if (!k) s += `<text class="tt" x="2" y="${y + 9}" font-weight="600">${g}</text>`;
+      for (let b = 0; b < nb;) {
+        if (!cnt[b]) { b++; continue; }
+        const q = Math.round(sum[b] / cnt[b] / 100); let e = b, tot = 0, n = 0;
+        while (e < nb && cnt[e] && Math.round(sum[e] / cnt[e] / 100) === q) { tot += sum[e]; n += cnt[e]; e++; }
+        const a = x0 + b * dt, z = Math.min(x1, x0 + e * dt);
+        s += `<rect x="${X(a).toFixed(1)}" y="${y}" width="${Math.max(.6, X(z) - X(a)).toFixed(1)}" height="${RH - 1}" fill="${col(q)}"><title>CPU ${c} (${g}) · ${tfmt()(a)}–${tfmt()(z)} · ${(tot / n / 1000).toFixed(2)} GHz</title></rect>`;
+        b = e;
+      }
+      y += RH;
+    });
+    y += GAP;
+  }
+  el.innerHTML = s + tickLabels(X, H - 3) + '</svg>';
+  $('hmnote').textContent = 'Each row is one logical CPU (P cores have two hyperthreads). Colour is the CPU clock while busy, from exact counters where available and otherwise from the kernel frequency reading every 10 s; a CPU with no work has no busy clock and stays blank. Hover a cell for its value.';
 }
 
 // ---- theme (same switch as the main page) ----
