@@ -35,6 +35,8 @@ select{font:inherit;font-size:12.5px;min-height:30px;padding:0 6px;border-radius
 .warn{border:1px solid var(--s4);border-radius:4px;padding:6px 10px}
 .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 .legend{display:flex;flex-wrap:wrap;gap:4px 16px;color:var(--ink2)}
+.ln{display:inline-block;width:26px;border-top:2px solid var(--ink2);margin-right:6px;vertical-align:middle}.ln.dot{border-top-style:dotted}
+[hidden]{display:none!important}
 .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:12px}
 .chart{border:1px solid var(--border);border-radius:4px;min-width:0}
 .chart h3{margin:0;padding:5px 10px;border-bottom:1px solid var(--border);font-size:12.5px}
@@ -64,6 +66,10 @@ p{margin:0}.note{color:var(--muted);font-size:12px}
 <section class="card"><h2>CI host, last 12 h</h2><div class="body">
 <div class="tl" id="timeline"></div>
 <div class="charts" id="hostcharts"></div></div></section>
+<section class="card" id="cp-card" hidden><h2>Clock and power</h2><div class="body">
+<div class="charts" id="cpcharts"></div>
+<div class="legend"><span><i class="ln"></i>solid = measured</span><span><i class="ln dot"></i>dotted = estimate</span></div>
+<p class="note" id="cpnote"></p></div></section>
 <footer class="note">Phase numbers are the flow's own per-process measurements. Runner figures are sums of that runner's containers in the shared VM, sampled every 15 s, so they are approximate and a short phase may fall between samples. Host figures are sampled every 5 s and averaged per minute (temperature: maximum). Times are UTC.</footer>
 </main>
 <script>
@@ -131,9 +137,9 @@ function chart(title, series, x0, x1, o = {}) {
   for (const se of series) {
     let d = '', pen = false;
     se.v.forEach((v, i) => { const t = se.t0 + i * se.step; if (v == null || t < x0 - se.step || t > x1 + se.step) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(Math.max(x0, Math.min(x1, t))).toFixed(1)} ${Y(v).toFixed(1)}`; pen = true; });
-    s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="1.5"><title>${esc(se.name || title)}</title></path>`;
+    s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="1.5"${se.dash ? ' stroke-dasharray="1.5 3.5" stroke-linecap="round"' : ''}><title>${esc(se.name || title)}</title></path>`;
   }
-  return `<div class="chart"><h3>${esc(title)}${series.length > 1 ? ' ' + series.map(q => `<span class="muted"><i class="sw" style="background:${q.color}"></i>${esc(q.name)}</span>`).join(' ') : ''}</h3>${s}</svg></div>`;
+  return `<div class="chart"><h3>${esc(title)}${series.length > 1 && !o.nolegend ? ' ' + series.map(q => `<span class="muted"><i class="sw" style="background:${q.color}"></i>${esc(q.name)}</span>`).join(' ') : ''}</h3>${s}</svg></div>`;
 }
 
 // ---- 1. Now ----
@@ -288,6 +294,22 @@ function drawMachine() {
   $('hostcharts').innerHTML = chart('CI host CPU %', [hs('cpu', 'var(--s2)')], x0, x1, {...o, ymax: 100}) + chart('CI host RAM GB', [hs('ram', 'var(--s1)')], x0, x1, o) +
     chart('CI host hottest temperature °C', [hs('temp', 'var(--s4)')], x0, x1, {...o, ymin: 30}) + chart('CI host disk MB/s (read + write)', [{t0: P.t0, step: P.step, v: rw, color: 'var(--s3)', name: 'disk'}], x0, x1, o) +
     `<p class="note" style="grid-column:1/-1">Dashed lines mark the start of each run.</p>`;
+  drawClockPower(x0, x1, o);
+}
+
+// measured (solid) and estimated (dotted) series in one colour
+function drawClockPower(x0, x1, o) {
+  const H = P.host, E = P.est || {}, card = $('cp-card');
+  if (!H.fb_est || !H.power_est) { card.hidden = true; return; }
+  card.hidden = false;
+  const ss = (v, c, dash, name) => ({t0: P.t0, step: P.step, v, color: c, name, dash}), op = {...o, nolegend: true};
+  const any = a => a.some(v => v != null), nPw = H.power.filter(v => v != null).length;
+  $('cpcharts').innerHTML = chart('CPU clock, busy-weighted (GHz)', [ss(H.fb_est, 'var(--s2)', 1, 'estimate'), ss(H.fb, 'var(--s2)', 0, 'measured')], x0, x1, op) +
+    chart('Power (W)', [ss(H.power_est, 'var(--s4)', 1, 'estimate'), ss(H.power, 'var(--s4)', 0, 'measured')], x0, x1, op);
+  const pw = nPw ? `Measured power is RAPL psys, or the system's own draw reading while the CI host is off mains power (${nPw} measured min in the last 24 h).` : 'Power is estimated only so far.';
+  const pm = E.power_method === 'bins' ? `The dotted power is the median measured power in the same 10 % CPU bin (${E.power_min} measured min).`
+    : 'The dotted power is a straight line, 10 W + 1 W per CPU %, anchored on one real measurement (30 W for the whole system at about 20 % CPU) with the 10 W idle assumed.';
+  $('cpnote').textContent = `${pw} The dotted clock is the median measured busy-weighted clock in the same 10 % CPU bin, taken from all measured minutes. ${pm} Measurements are from the balanced power profile, and before about 09:15 UTC on 2026-11-03 the CI host ran in the performance profile, so dotted clock values before then are probably too low. psys is platform power as reported by the CPU, not a wall measurement. Busy-weighted means each core's clock is weighted by how busy it was, because idle cores park at a low clock.`;
 }
 
 // ---- theme (same switch as the main page) ----
