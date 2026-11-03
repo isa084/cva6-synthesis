@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CI profiler</title>
+<style>
+:root{color-scheme:light;--plane:#f8f9fa;--surface:#fff;--head:#f1f3f5;--ink:#212529;--ink2:#495057;--muted:#646b72;--grid:#e9ecef;--axis:#adb5bd;--border:#dee2e6;--sel:#e7f1ff;--accent:#0d6efd;--accent-ink:#fff;--nav:#212529;--nav-ink:#f8f9fa;--line:#2a78d6;--s0:#b9b8b1;--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--pass:#198754;--fail:#b02a37;--good-ink:#146c43;--bad-ink:#b02a37;--link:#0a58ca}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--plane:#0d0d0d;--surface:#1a1a19;--head:#232322;--ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a29b;--grid:#2c2c2a;--axis:#5f5e5a;--border:#383835;--sel:#1d2a3d;--accent:#3987e5;--accent-ink:#0b0b0b;--nav:#000;--nav-ink:#f0efec;--line:#3987e5;--s0:#5f5e5a;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--good-ink:#3fbf7f;--bad-ink:#e66767;--link:#86b6ef}}
+:root[data-theme=dark]{color-scheme:dark;--plane:#0d0d0d;--surface:#1a1a19;--head:#232322;--ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a29b;--grid:#2c2c2a;--axis:#5f5e5a;--border:#383835;--sel:#1d2a3d;--accent:#3987e5;--accent-ink:#0b0b0b;--nav:#000;--nav-ink:#f0efec;--line:#3987e5;--s0:#5f5e5a;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--good-ink:#3fbf7f;--bad-ink:#e66767;--link:#86b6ef}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--link)}a:hover{color:var(--ink)}
+.tabs{display:flex;gap:4px;padding:8px 20px 0;background:var(--head);border-bottom:1px solid var(--border)}
+.tabs a{padding:7px 16px;border-radius:5px 5px 0 0;text-decoration:none;color:var(--ink2);border:1px solid transparent;border-bottom:0;margin-bottom:-1px}
+.tabs a[aria-current=page]{background:var(--plane);color:var(--ink);font-weight:650;border-color:var(--border)}
+nav{background:var(--nav);color:var(--nav-ink);padding:10px 20px;display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;justify-content:space-between}
+nav b{font-size:16px}nav span{font-size:12px;opacity:.85}
+.theme{font:inherit;font-size:12px;margin-left:12px;padding:3px 10px;border-radius:5px;border:1px solid currentColor;background:transparent;color:var(--nav-ink);cursor:pointer}
+main{max-width:1280px;margin:0 auto;padding:16px 20px 40px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:6px;min-width:0}
+.card>h2{margin:0;background:var(--head);border-bottom:1px solid var(--border);border-radius:6px 6px 0 0;padding:8px 14px;font-size:15px}
+.body{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.wrap{overflow:auto;border:1px solid var(--border);border-radius:4px;max-height:440px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:4px 8px;border-top:1px solid var(--grid);text-align:right;vertical-align:middle;white-space:nowrap}
+th{background:var(--head);color:var(--ink2);font-size:12px;font-weight:600;border-top:0;position:sticky;top:0;cursor:pointer;user-select:none}
+th.l,td.l{text-align:left}tr.sel td{background:var(--sel)}tr[data-id]{cursor:pointer}tr[data-id]:hover td{background:var(--sel)}
+tr.tot td,tr.grp td{font-weight:650;background:var(--head)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+.muted{color:var(--muted)}.good{color:var(--good-ink)}.bad{color:var(--bad-ink)}
+.row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+.row label{display:flex;gap:6px;align-items:center;color:var(--ink2)}
+select{font:inherit;font-size:12.5px;min-height:30px;padding:0 6px;border-radius:5px;border:1px solid var(--accent);background:var(--surface);color:var(--ink);max-width:100%}
+.warn{border:1px solid var(--s4);border-radius:4px;padding:6px 10px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;color:var(--ink2)}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:12px}
+.chart{border:1px solid var(--border);border-radius:4px;min-width:0}
+.chart h3{margin:0;padding:5px 10px;border-bottom:1px solid var(--border);font-size:12.5px}
+svg{width:100%;height:auto;display:block}
+svg .t{font-size:11px;fill:var(--muted)}svg .tt{font-size:11px;fill:var(--ink2)}svg .bl{font-size:11px;fill:#fff;pointer-events:none}
+.sb{display:inline-flex;width:110px;height:8px;border-radius:2px;overflow:hidden;background:var(--grid);vertical-align:middle}.sb i{display:block;height:100%}
+.chart>div>svg{max-width:560px;margin:0 auto}.tl{overflow-x:auto}.tl svg{min-width:720px}
+p{margin:0}.note{color:var(--muted);font-size:12px}
+@media (max-width:640px){main{padding:12px 12px 32px}.charts{grid-template-columns:1fr}.tabs{padding:8px 12px 0}nav{padding:10px 12px}}
+</style>
+</head>
+<body>
+<div class="tabs"><a href="index.html">Area and timing</a><a href="profile.html" aria-current="page">Profiler</a></div>
+<nav><b>CI profiler</b><span><span id="gen"></span><button type="button" class="theme" id="theme" aria-label="Colour theme"></button></span></nav>
+<main>
+<section class="card"><h2>Now</h2><div class="body" id="now">Loading…</div></section>
+<section class="card"><h2>Across all runs</h2><div class="body">
+<div class="row" id="filters"></div>
+<div class="wrap"><table id="phtab"></table></div>
+<div class="note">Elapsed as min:sec. Group rows sum the stages of a group within a job; their memory is the largest stage peak.</div>
+<div class="legend" id="techleg"></div>
+<div class="chart"><h3>Job time against peak memory (one point per job; click to open it)</h3><div id="scatter"></div></div>
+<p id="sentence"></p></div></section>
+<section class="card"><h2>Job list</h2><div class="body"><div class="wrap"><table id="jobtab"></table></div>
+<div class="legend"><span><i class="sw" style="background:var(--s1)"></i>Yosys</span><span><i class="sw" style="background:var(--s2)"></i>OpenROAD</span><span><i class="sw" style="background:var(--s3)"></i>gate-level sim</span><span><i class="sw" style="background:var(--s0)"></i>other</span></div></div></section>
+<section class="card" id="job-s"><h2 id="job-h">One job</h2><div class="body" id="job"></div></section>
+<section class="card"><h2>CI host, last 12 h</h2><div class="body">
+<div class="tl" id="timeline"></div>
+<div class="charts" id="hostcharts"></div></div></section>
+<footer class="note">Phase numbers are the flow's own per-process measurements. Runner figures are sums of that runner's containers in the shared VM, sampled every 15 s, so they are approximate and a short phase may fall between samples. Host figures are sampled every 5 s and averaged per minute (temperature: maximum). Times are UTC.</footer>
+</main>
+<script>
+// Where profile.json and phases.json are published (directory URL, ends with "/"). ?data=<dir/> overrides it.
+const DATA_BASE = 'https://raw.githubusercontent.com/isa084/cva6-synthesis/profile/';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const GROUPS = [['yosys', 'Yosys', 'var(--s1)'], ['openroad', 'OpenROAD', 'var(--s2)'], ['gsim', 'Gate-level sim', 'var(--s3)'], ['other', 'Other', 'var(--s0)']];
+const GCOL = Object.fromEntries(GROUPS.map(g => [g[0], g[2]])), GNAME = Object.fromEntries(GROUPS.map(g => [g[0], g[1]]));
+const mmss = s => s == null ? '' : `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`.replace(/:60$/, ':59');
+const hhmm = t => new Date(t * 1000).toISOString().slice(11, 16);
+const dhm = t => new Date(t * 1000).toISOString().slice(5, 16).replace('T', ' ');
+const gb = mb => (mb / 1024).toFixed(1);
+const sum = a => a.reduce((x, y) => x + y, 0);
+const quant = (a, q) => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y), p = (s.length - 1) * q, i = Math.floor(p); return s[i] + (s[Math.min(i + 1, s.length - 1)] - s[i]) * (p - i); };
+const med = a => quant(a, .5);
+const uniq = a => [...new Set(a.filter(x => x != null))].sort();
+const nice = v => { const p = Math.pow(10, Math.floor(Math.log10(v))), m = v / p; return ([1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find(x => m <= x + 1e-9)) * p; };
+const TECHCOL = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s5)', 'var(--s7)', 'var(--s4)'];
+
+let P = null, J = [], byId = {}, sel = null, techs = [], sorts = {};
+let fl = {tech: '', br: '', sram: '', cfg: '', fv: ''};
+
+// ---- data ----
+async function load() {
+  let base = DATA_BASE;
+  try { base = new URLSearchParams(location.search).get('data') || base; } catch (e) {}
+  if (!base.endsWith('/')) base += '/';
+  const get = async f => { const r = await fetch(`${base}${f}?t=${Date.now()}`, {cache: 'no-store'}); if (!r.ok) throw new Error(f); return r.json(); };
+  [P, {jobs: J}] = await Promise.all([get('profile.json'), get('phases.json')]);
+  J.forEach(j => { j.dur = j.e - j.s; j.fl = sum(j.st.map(s => s[3])); j.mem = Math.max(0, ...j.st.map(s => s[6])); byId[j.id] = j; });
+  techs = uniq(J.map(j => j.tech));
+  const done = J.filter(j => j.st.length);
+  sel = (done[done.length - 1] || {}).id;
+  $('gen').textContent = `data generated ${dhm(P.generated)} UTC`;
+  drawFilters(); drawAll(); drawNow(); drawJob(); drawMachine();
+}
+
+// ---- generic sortable table: cols = [{h, v(row) sort value, f(row) html, l: left-align}] ----
+function table(id, cols, rows, opts = {}) {
+  const st = sorts[id] || (sorts[id] = {c: opts.sort ?? -1, d: opts.dir ?? -1});
+  if (st.c >= 0) { const v = cols[st.c].v; rows = [...rows].sort((a, b) => { const x = v(a), y = v(b); return (x == null) - (y == null) || (x < y ? -1 : x > y ? 1 : 0) * st.d; }); }
+  const th = cols.map((c, i) => `<th class="${c.l ? 'l' : ''}" data-c="${i}">${c.h}${st.c === i ? (st.d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('');
+  const body = rows.map(r => `<tr${r.id ? ` data-id="${r.id}"` : ''} class="${r.id === sel ? 'sel' : ''}">${cols.map(c => `<td class="${c.l ? 'l' : ''}">${c.f(r)}</td>`).join('')}</tr>`).join('');
+  const tot = opts.total ? `<tr class="tot">${cols.map((c, i) => `<td class="${c.l ? 'l' : ''}">${opts.total[i] ?? ''}</td>`).join('')}</tr>` : '';
+  const el = $(id);
+  el.innerHTML = `<thead><tr>${th}</tr></thead><tbody>${body}${tot}</tbody>`;
+  el.querySelectorAll('th').forEach(h => h.onclick = () => { const c = +h.dataset.c; sorts[id] = {c, d: st.c === c ? -st.d : (cols[c].l ? 1 : -1)}; opts.redraw(); });
+  if (opts.click) el.querySelectorAll('tr[data-id]').forEach(r => r.onclick = () => opts.click(+r.dataset.id));
+}
+
+// ---- line chart: series [{t0, step, v[], color}], x range [x0,x1]; marks = vertical lines ----
+function chart(title, series, x0, x1, o = {}) {
+  const W = 480, H = o.h || 130, L = 38, R = 8, T = 8, B = 20, pw = W - L - R, ph = H - T - B;
+  const ymin = o.ymin ?? 0;
+  let ymax = o.ymax ?? ymin + nice(Math.max(...series.flatMap(s => s.v.filter(v => v != null)), 1) - ymin + 1e-9);
+  if (!isFinite(ymax) || ymax <= 0) ymax = 1;
+  const X = t => L + (t - x0) / (x1 - x0) * pw, Y = v => T + ph - (v - ymin) / (ymax - ymin) * ph;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}">`;
+  for (let i = 0; i <= 3; i++) { const v = ymin + (ymax - ymin) * i / 3, y = Y(v); s += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="var(--grid)"/><text class="t" x="${L - 4}" y="${y + 4}" text-anchor="end">${v >= 100 ? v.toFixed(0) : v.toFixed(1).replace(/\.0$/, '')}</text>`; }
+  const ticks = o.ticks || 6;
+  for (let i = 0; i <= ticks; i++) { const t = x0 + (x1 - x0) * i / ticks; s += `<text class="t" x="${X(t)}" y="${H - 5}" text-anchor="${i === 0 ? 'start' : i === ticks ? 'end' : 'middle'}">${o.dates ? dhm(t) : hhmm(t)}</text>`; }
+  for (const m of o.marks || []) if (m >= x0 && m <= x1) s += `<line x1="${X(m)}" x2="${X(m)}" y1="${T}" y2="${T + ph}" stroke="${o.markcol || 'var(--axis)'}" stroke-dasharray="3 3"/>`;
+  for (const se of series) {
+    let d = '', pen = false;
+    se.v.forEach((v, i) => { const t = se.t0 + i * se.step; if (v == null || t < x0 - se.step || t > x1 + se.step) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(Math.max(x0, Math.min(x1, t))).toFixed(1)} ${Y(v).toFixed(1)}`; pen = true; });
+    s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="1.5"><title>${esc(se.name || title)}</title></path>`;
+  }
+  return `<div class="chart"><h3>${esc(title)}${series.length > 1 ? ' ' + series.map(q => `<span class="muted"><i class="sw" style="background:${q.color}"></i>${esc(q.name)}</span>`).join(' ') : ''}</h3>${s}</svg></div>`;
+}
+
+// ---- 1. Now ----
+function drawNow() {
+  const n = P.now, age = Date.now() / 1000 - Math.max(P.generated, n.host_time || 0);
+  const stale = age > 1800;
+  const last = (arr) => { for (let i = arr.length - 1; i >= 0; i--) if (arr[i] != null) return arr[i]; return null; };
+  let h = stale ? `<p class="warn">CI host offline or idle, last data ${dhm(Math.max(P.generated, n.host_time || 0))} UTC</p>` : '';
+  h += `<p><b>Run ${esc(n.run)}</b>: ${n.done}/${n.total} jobs done, ${n.running} running, ${n.queued} queued · CI host CPU ${n.cpu ?? '–'}% · RAM ${n.ram != null ? n.ram.toFixed(1) : '–'} GB · ${n.temp ?? '–'} °C · data age ${stale ? dhm(P.generated) : Math.max(0, Math.round(age / 60)) + ' min'}</p>`;
+  const run = P.jobs.filter(j => j.status === 'in_progress');
+  if (run.length) {
+    const nowt = stale ? P.generated : Date.now() / 1000;
+    h += `<div class="wrap"><table><thead><tr><th class="l">Runner</th><th class="l">Config</th><th class="l">Tech</th><th>Elapsed</th><th>Runner CPU %</th><th>Runner RAM GB</th></tr></thead><tbody>` +
+      run.map(j => { const r = P.runners[j.runner] || {cpu: [], mem: []}; return `<tr><td class="l">${j.runner ?? ''}</td><td class="l">${esc(j.cfg)}</td><td class="l">${esc(j.tech)}</td><td>${mmss(nowt - j.s)}</td><td>${last(r.cpu) ?? ''}</td><td>${last(r.mem) ?? ''}</td></tr>`; }).join('') + '</tbody></table></div>';
+  } else h += '<p class="muted">No job is running.</p>';
+  $('now').innerHTML = h;
+}
+
+// ---- 2. Across all runs ----
+function drawFilters() {
+  const fs = [['tech', 'Tech', j => j.tech], ['br', 'Branch', j => j.br], ['sram', 'SRAM mode', j => j.sram], ['cfg', 'Config', j => j.cfg], ['fv', 'Flow version', j => j.fv]];
+  $('filters').innerHTML = fs.map(([k, n, f]) => `<label>${n}<select data-k="${k}"><option value="">all</option>${uniq(J.map(f)).map(v => `<option>${esc(v)}</option>`).join('')}</select></label>`).join('');
+  $('filters').querySelectorAll('select').forEach(s => s.onchange = () => { fl[s.dataset.k] = s.value; drawAll(); });
+  $('techleg').innerHTML = techs.map((t, i) => `<span><i class="sw" style="background:${TECHCOL[i % 6]}"></i>${esc(t)}</span>`).join('');
+}
+const filtered = () => J.filter(j => (!fl.tech || j.tech === fl.tech) && (!fl.br || j.br === fl.br) && (!fl.sram || j.sram === fl.sram) && (!fl.cfg || j.cfg === fl.cfg) && (!fl.fv || j.fv === fl.fv));
+
+function drawAll() { const F = filtered(); drawPhases(F); drawScatter(F); drawSentence(F); drawJobs(F); }
+
+function drawPhases(F) {
+  const G = F.filter(j => j.st.length);
+  const stats = (vals) => ({n: vals.length, ...Object.fromEntries([['p50', .5], ['p90', .9]].map(([k, q]) => [k, quant(vals.map(v => v.el), q)])), mx: Math.max(...vals.map(v => v.el)), mm: med(vals.map(v => v.mem)), mmx: Math.max(...vals.map(v => v.mem)), cpu: med(vals.map(v => v.cpu))});
+  const rows = [];
+  for (const [g, name] of GROUPS) {
+    const per = G.map(j => { const s = j.st.filter(x => x[1] === g); return s.length ? {el: sum(s.map(x => x[3])), mem: Math.max(...s.map(x => x[6])), cpu: sum(s.map(x => x[4])) / Math.max(1, sum(s.map(x => x[3]))) * 100} : null; }).filter(Boolean);
+    if (!per.length) continue;
+    rows.push({g, name: name, grp: true, ...stats(per)});
+    const names = uniq(G.flatMap(j => j.st.filter(x => x[1] === g).map(x => x[0])));
+    for (const sn of names) rows.push({g, name: sn, ...stats(G.flatMap(j => j.st.filter(x => x[0] === sn).map(x => ({el: x[3], mem: x[6], cpu: x[5]}))))});
+  }
+  const cols = [
+    {h: 'Stage', l: 1, v: r => r.name, f: r => `<i class="sw" style="background:${GCOL[r.g]}"></i>${r.grp ? '<b>' + esc(r.name) + '</b>' : '<span class="mono">' + esc(r.name) + '</span>'}`},
+    {h: 'Runs', v: r => r.n, f: r => r.n}, {h: 'Median', v: r => r.p50, f: r => mmss(r.p50)}, {h: 'p90', v: r => r.p90, f: r => mmss(r.p90)}, {h: 'Max', v: r => r.mx, f: r => mmss(r.mx)},
+    {h: 'Median mem GB', v: r => r.mm, f: r => r.mm ? gb(r.mm) : ''}, {h: 'Max mem GB', v: r => r.mmx, f: r => r.mmx ? gb(r.mmx) : ''}, {h: 'Median CPU %', v: r => r.cpu, f: r => r.cpu ? Math.round(r.cpu) : ''}];
+  // Sorting reorders the groups too; the default keeps the group structure.
+  table('phtab', cols, rows, {sort: -1, redraw: () => drawPhases(F)});
+  if (!rows.length) $('phtab').innerHTML = '<tbody><tr><td class="l muted">No parsed jobs for this filter.</td></tr></tbody>';
+}
+
+function drawScatter(F) {
+  const G = F.filter(j => j.st.length && j.dur > 0);
+  const W = 480, H = 240, L = 40, R = 10, T = 20, B = 30, pw = W - L - R, ph = H - T - B;
+  if (!G.length) { $('scatter').innerHTML = '<p class="muted" style="padding:10px">No data for this filter.</p>'; return; }
+  const xm = nice(Math.max(...G.map(j => j.dur / 60)) * 1.02), ym = nice(Math.max(...G.map(j => j.mem / 1024)) * 1.02);
+  const X = v => L + v / xm * pw, Y = v => T + ph - v / ym * ph;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Job time against peak memory">`;
+  for (let i = 0; i <= 4; i++) { const v = ym * i / 4, u = xm * i / 4; s += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)"/><text class="t" x="${L - 4}" y="${Y(v) + 4}" text-anchor="end">${v.toFixed(1)}</text><text class="t" x="${X(u)}" y="${H - 12}" text-anchor="middle">${u.toFixed(0)}</text>`; }
+  s += `<text class="tt" x="${L + pw / 2}" y="${H - 1}" text-anchor="middle">job time (min)</text><text class="tt" x="4" y="11">peak memory (GB)</text>`;
+  for (const j of G) s += `<circle data-id="${j.id}" cx="${X(j.dur / 60).toFixed(1)}" cy="${Y(j.mem / 1024).toFixed(1)}" r="${j.id === sel ? 6 : 4}" fill="${TECHCOL[techs.indexOf(j.tech) % 6]}" fill-opacity=".8" stroke="${j.id === sel ? 'var(--ink)' : 'var(--surface)'}" style="cursor:pointer"><title>${esc(j.cfg)} · ${esc(j.tech)} · ${mmss(j.dur)} · ${gb(j.mem)} GB</title></circle>`;
+  $('scatter').innerHTML = s + '</svg>';
+  $('scatter').querySelectorAll('circle').forEach(c => c.onclick = () => pick(+c.dataset.id));
+}
+
+function drawSentence(F) {
+  const G = F.filter(j => j.st.length);
+  if (!G.length) { $('sentence').textContent = ''; return; }
+  const tot = sum(G.map(j => j.fl)), part = Object.fromEntries(GROUPS.map(([g]) => [g, sum(G.map(j => sum(j.st.filter(s => s[1] === g).map(s => s[3]))))]));
+  const top = Object.entries(part).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]).map(([g, v]) => `${GNAME[g]} ${(v / tot * 100).toFixed(0)}%`).join(', ');
+  const cnt = {}; G.forEach(j => { const s = j.st.reduce((a, b) => b[6] > a[6] ? b : a); cnt[s[0]] = (cnt[s[0]] || 0) + 1; });
+  const [sn, k] = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
+  $('sentence').innerHTML = `Over ${G.length} jobs, flow time split into ${top}. Peak memory (median ${gb(med(G.map(j => j.mem)))} GB, maximum ${gb(Math.max(...G.map(j => j.mem)))} GB) came from <span class="mono">${esc(sn)}</span> in ${k} of ${G.length} jobs.`;
+}
+
+// ---- 3. Job list ----
+function bar(j) {
+  const t = j.fl || 1;
+  return `<span class="sb">${GROUPS.map(([g, , c]) => { const v = sum(j.st.filter(s => s[1] === g).map(s => s[3])); return v ? `<i style="width:${(v / t * 100).toFixed(1)}%;background:${c}" title="${GNAME[g]} ${mmss(v)}"></i>` : ''; }).join('')}</span>`;
+}
+function drawJobs(F) {
+  const cols = [
+    {h: 'Started (UTC)', l: 1, v: j => j.s, f: j => dhm(j.s)}, {h: 'Config', l: 1, v: j => j.cfg, f: j => esc(j.cfg)}, {h: 'Tech', l: 1, v: j => j.tech, f: j => esc(j.tech)},
+    {h: 'Branch', l: 1, v: j => j.br, f: j => esc(j.br)}, {h: 'SRAM', l: 1, v: j => j.sram, f: j => esc(j.sram)}, {h: 'Flow', l: 1, v: j => j.fv, f: j => esc(j.fv)},
+    {h: 'Commit', l: 1, v: j => j.sha, f: j => `<span class="mono">${esc(j.sha)}</span>`}, {h: 'Runner', v: j => j.runner, f: j => j.runner ?? ''},
+    {h: 'Job time', v: j => j.dur, f: j => mmss(j.dur)}, {h: 'Peak mem GB', v: j => j.st.length ? j.mem : null, f: j => j.st.length ? gb(j.mem) : '<span class="muted">no log</span>'},
+    {h: 'Phases', v: j => j.fl ? sum(j.st.filter(s => s[1] === 'yosys').map(s => s[3])) / j.fl : null, f: j => j.st.length ? bar(j) : ''},
+    {h: 'Result', l: 1, v: j => j.ok, f: j => `<span class="${j.ok === 'success' ? 'good' : 'bad'}">${esc(j.ok)}</span>`}];
+  const tot = Array(cols.length).fill(''); tot[0] = `${F.length} jobs`; tot[8] = mmss(sum(F.map(j => j.dur)));
+  const mx = Math.max(0, ...F.map(j => j.mem)); tot[9] = mx ? gb(mx) + ' max' : '';
+  table('jobtab', cols, F, {sort: 0, dir: -1, total: tot, redraw: () => drawJobs(F), click: pick});
+}
+function pick(id) { sel = id; drawAll(); drawJob(); $('job-s').scrollIntoView({behavior: 'smooth'}); }
+
+// ---- 4. One job ----
+function drawJob() {
+  const j = byId[sel];
+  if (!j) { $('job').innerHTML = '<p class="muted">No finished job with parsed stages yet.</p>'; return; }
+  $('job-h').textContent = `One job: ${j.cfg}, ${j.tech}`;
+  const meta = `${esc(j.br)} · commit ${esc(j.sha)} · SRAM ${esc(j.sram)} · flow ${esc(j.fv)} · ${esc(j.mode)} mode · runner ${j.runner ?? '?'} · ${dhm(j.s)} UTC · ${mmss(j.dur)} · ${esc(j.ok)}`;
+  if (!j.st.length) { $('job').innerHTML = `<p>${meta}</p><p class="muted">No log available for this job (expired or not parsed).</p>`; return; }
+  const W = 720, L = 10, R = 10, pw = W - L - R, X = t => L + (t - j.s) / j.dur * pw;
+  let s = `<svg viewBox="0 0 ${W} 120" role="img" aria-label="Stage timeline">`;
+  j.st.forEach((st, i) => {
+    const x = X(st[2]), w = Math.max(1.5, st[3] / j.dur * pw), ly = 14 + (i % 3) * 12;
+    s += `<rect x="${x.toFixed(1)}" y="52" width="${w.toFixed(1)}" height="34" fill="${GCOL[st[1]]}"><title>${esc(st[0])}: ${mmss(st[3])}, CPU ${st[5]}%, peak ${gb(st[6])} GB</title></rect>`;
+    s += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${ly + 3}" y2="52" stroke="var(--axis)"/><text class="tt" x="${Math.min(x + 2, W - 120).toFixed(1)}" y="${ly}">${esc(st[0])} ${mmss(st[3])}</text>`;
+  });
+  for (let i = 0; i <= 6; i++) { const t = j.s + j.dur * i / 6; s += `<text class="t" x="${X(t)}" y="108" text-anchor="${i === 0 ? 'start' : i === 6 ? 'end' : 'middle'}">${hhmm(t)}</text>`; }
+  const cols = [{h: 'Stage', l: 1, v: r => r[2], f: r => `<i class="sw" style="background:${GCOL[r[1]]}"></i><span class="mono">${esc(r[0])}</span>`}, {h: 'Group', l: 1, v: r => r[1], f: r => GNAME[r[1]]},
+    {h: 'Elapsed', v: r => r[3], f: r => mmss(r[3])}, {h: 'CPU %', v: r => r[5], f: r => r[5] || ''}, {h: 'Peak mem GB', v: r => r[6], f: r => r[6] ? gb(r[6]) : ''}];
+  $('job').innerHTML = `<p>${meta}</p><div class="tl">${s}</svg></div><div class="wrap"><table id="sttab"></table></div><div id="jobcharts"></div>`;
+  table('sttab', cols, j.st, {sort: 0, dir: 1, redraw: drawJob});
+  const q = j.ser, marks = j.st.map(x => x[2]), o = {marks, ticks: 6, h: 120};
+  if (!q) { $('jobcharts').innerHTML = '<p class="muted">No machine samples for this run.</p>'; return; }
+  const ss = (name, v, color) => ({t0: q.t0, step: 60, v, color, name});
+  $('jobcharts').innerHTML = `<div class="charts">` +
+    chart('Runner CPU % (100 = one core)', [ss('runner', q.rcpu, 'var(--s2)')], j.s, j.e, o) + chart('Runner memory GB', [ss('runner', q.rmem, 'var(--s1)')], j.s, j.e, o) +
+    chart('CI host CPU %', [ss('host', q.hcpu, 'var(--s2)')], j.s, j.e, {...o, ymax: 100}) + chart('CI host RAM GB', [ss('host', q.hram, 'var(--s1)')], j.s, j.e, o) +
+    chart('CI host hottest temperature °C', [ss('host', q.htemp, 'var(--s4)')], j.s, j.e, {...o, ymin: 30}) + `</div><p class="note">Dashed lines mark stage starts.</p>`;
+}
+
+// ---- 5. Machine, last 12 h ----
+function drawMachine() {
+  const x1 = P.generated, x0 = x1 - 12 * 3600, W = 960, L = 56, R = 8, pw = W - L - R, X = t => L + (Math.max(x0, Math.min(x1, t)) - x0) / (x1 - x0) * pw;
+  const rn = uniq(P.jobs.filter(j => j.runner != null).map(j => j.runner)).concat(Object.keys(P.runners).map(Number)).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b);
+  const RH = 54, H = 22 + rn.length * RH;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Runner timeline">`;
+  for (let i = 0; i <= 12; i += 2) { const t = x0 + (x1 - x0) * i / 12; s += `<line x1="${X(t)}" x2="${X(t)}" y1="14" y2="${H}" stroke="var(--grid)"/><text class="t" x="${X(t)}" y="10" text-anchor="${i === 0 ? 'start' : i === 12 ? 'end' : 'middle'}">${hhmm(t)}</text>`; }
+  rn.forEach((n, k) => {
+    const y = 22 + k * RH;
+    s += `<text class="tt" x="4" y="${y + 18}">runner ${n}</text>`;
+    for (const j of P.jobs.filter(j => j.runner === n && j.s)) {
+      const e = j.e || x1; if (e < x0) continue;
+      const xa = X(j.s), xb = X(e), pj = byId[j.id];
+      if (pj && pj.st.length) {
+        for (const st of pj.st) { const a = X(st[2]), b = X(st[2] + st[3]); if (b - a < .3) continue; s += `<rect x="${a.toFixed(1)}" y="${y}" width="${(b - a).toFixed(1)}" height="26" fill="${GCOL[st[1]]}"><title>${esc(j.cfg)} ${esc(j.tech)} · ${esc(st[0])} · ${mmss(st[3])} · peak ${gb(st[6])} GB</title></rect>`; }
+        s += `<rect x="${xa.toFixed(1)}" y="${y}" width="${(xb - xa).toFixed(1)}" height="26" fill="none" stroke="var(--surface)"/>`;
+      } else s += `<rect x="${xa.toFixed(1)}" y="${y}" width="${(xb - xa).toFixed(1)}" height="26" fill="${j.status === 'in_progress' ? 'var(--s7)' : 'var(--s0)'}" fill-opacity="${j.status === 'in_progress' ? .55 : .8}"><title>${esc(j.cfg)} ${esc(j.tech)} · ${j.status === 'in_progress' ? 'running (phases appear when the job finishes)' : 'no phase data'} · ${mmss(e - j.s)}</title></rect>`;
+      if (xb - xa > 70) s += `<text class="bl" x="${(xa + 4).toFixed(1)}" y="${y + 17}" style="paint-order:stroke;stroke:rgba(0,0,0,.45);stroke-width:2px">${esc(j.cfg.slice(0, Math.floor((xb - xa) / 7)))}</text>`;
+    }
+    const r = P.runners[n];
+    if (r) {
+      const mx = Math.max(...r.mem.filter(v => v != null), 1); let d = '', pen = false;
+      r.mem.forEach((v, i) => { const t = P.t0 + i * P.step; if (v == null || t < x0) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(t).toFixed(1)} ${(y + 46 - v / mx * 16).toFixed(1)}`; pen = true; });
+      s += `<path d="${d}" fill="none" stroke="var(--ink2)" stroke-width="1"/><text class="t" x="4" y="${y + 40}">mem ≤${mx.toFixed(0)} GB</text>`;
+    }
+  });
+  $('timeline').innerHTML = `<div class="legend" style="margin-bottom:6px">${GROUPS.map(([, n, c]) => `<span><i class="sw" style="background:${c}"></i>${n}</span>`).join('')}<span><i class="sw" style="background:var(--s7)"></i>running</span><span class="muted">thin line: runner memory</span></div>` + (rn.length ? s + '</svg>' : '<p class="muted">No runner activity.</p>');
+  const starts = [...new Map(P.jobs.filter(j => j.s).map(j => [j.run, j.s])).entries()].map(([, t]) => t);
+  const runStart = Object.values(P.jobs.reduce((a, j) => (j.s && (!a[j.run] || j.s < a[j.run]) && (a[j.run] = j.s), a), {}));
+  const hs = (k, c) => ({t0: P.t0, step: P.step, v: P.host[k], color: c, name: k}), o = {marks: runStart, ticks: 6};
+  const rw = P.host.rd.map((v, i) => v == null && P.host.wr[i] == null ? null : (v || 0) + (P.host.wr[i] || 0));
+  $('hostcharts').innerHTML = chart('CI host CPU %', [hs('cpu', 'var(--s2)')], x0, x1, {...o, ymax: 100}) + chart('CI host RAM GB', [hs('ram', 'var(--s1)')], x0, x1, o) +
+    chart('CI host hottest temperature °C', [hs('temp', 'var(--s4)')], x0, x1, {...o, ymin: 30}) + chart('CI host disk MB/s (read + write)', [{t0: P.t0, step: P.step, v: rw, color: 'var(--s3)', name: 'disk'}], x0, x1, o) +
+    `<p class="note" style="grid-column:1/-1">Dashed lines mark the start of each run.</p>`;
+}
+
+// ---- theme (same switch as the main page) ----
+const THEMES = ['auto', 'light', 'dark'];
+function setTheme(t) { if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t; $('theme').textContent = `Theme: ${t}`; try { localStorage.setItem('theme', t); } catch (e) {} }
+let theme = 'auto';
+const qt = new URLSearchParams(location.search).get('theme');
+try { theme = THEMES.includes(localStorage.getItem('theme')) ? localStorage.getItem('theme') : 'auto'; } catch (e) {}
+if (THEMES.includes(qt)) theme = qt;
+setTheme(theme);
+$('theme').addEventListener('click', () => setTheme(theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length]));
+load().catch(e => { $('now').innerHTML = `<p class="warn">Profile data is not available (${esc(e.message)}).</p>`; });
+</script>
+</body>
+</html>
