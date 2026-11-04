@@ -1,5 +1,89 @@
 [
   {
+    "sha": "94e8bc156481b52f91d8a0f33daa73d60dc16e16",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "Program the board with the first of vivado_lab, vivado found in PATH",
+    "rtl": false
+  },
+  {
+    "sha": "00b3f58a4e69b39017efa999be4cbd3c4e281cfb",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "Change Error to Warning when negative wns",
+    "rtl": false
+  },
+  {
+    "sha": "1ad0f291e97f0a9aa340f9d2885cbb53dd77cf2a",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "the 64 bit linux image takes sometimes more than 420s",
+    "rtl": false
+  },
+  {
+    "sha": "4ecfa7581eeedbc43003592c48410878c1ebf6b3",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "full-regression: fpga-boot opens its own SSH tunnel to the bench ($BENCH_SSH)",
+    "rtl": false
+  },
+  {
+    "sha": "cd0f9227c21d803737f77ab34b2e4d8e76946f0c",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "full-regression: per-target console for fpga-linux-boot ($UART_SERIAL_<TARGET>)",
+    "rtl": false
+  },
+  {
+    "sha": "d0646c76c54cfdac8edd3ac6b06c7d550b065fcc",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "full-regression: one board lock per JTAG cable ($HW_TARGET_<TARGET>)",
+    "rtl": false
+  },
+  {
+    "sha": "a827132c8e9352d86046b49bf4f2effe66c2278c",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "Add: uart-boot: wake an idle console only if silent since opened",
+    "rtl": false
+  },
+  {
+    "sha": "34e0c063a84230a69c8c8a53acf213be41100981",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "Add: A check if the program recipe passed before checking the linux boot",
+    "rtl": false
+  },
+  {
+    "sha": "1a038dfac92862f25e38abb0b13c5f65681f65ca",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "Add login prompt for images whose console asks for a login",
+    "rtl": false
+  },
+  {
+    "sha": "a38ce0f60110bb312bea7c97b032733fc8310340",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "Fix Program recipe",
+    "rtl": false
+  },
+  {
+    "sha": "e5d4293ec44864279c6f0f3706e3716223f24f99",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "Fix clean-ips option",
+    "rtl": false
+  },
+  {
+    "sha": "b31d66bc4a41de225953de3ad98ea8c78b76cee3",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "Add Fpga Flist check",
+    "rtl": false
+  },
+  {
+    "sha": "dc512ea4fa5ca53183953fb0de807b370274a215",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "Add clean_ips option to clean the IP cores + A warning if FpgaEn = 0 for fpga build",
+    "rtl": false
+  },
+  {
+    "sha": "0b3fdfbf11e795181e6a85e8473705d940c133a2",
+    "date": "2026-11-03T23:34:51+01:00",
+    "title": "Fix Fpga Flist",
+    "rtl": false
+  },
+  {
     "sha": "c913e9c51261ad2dd8772aa68d75500b7360131d",
     "date": "2026-10-27T21:26:59+01:00",
     "title": "Give the example compiler.yml an entry for every toolchain cook.py asks for",
@@ -514,89 +598,5 @@
     "date": "2026-10-14T17:40:23+02:00",
     "title": "Update the branch predictor slot of a 4-byte instruction without C",
     "rtl": true
-  },
-  {
-    "sha": "eb8c5493811756fd1e6a67fade3e17d2d3e4b93c",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Show the hardware options of each target next to its name in the dashboard",
-    "rtl": false
-  },
-  {
-    "sha": "8e769459603800432a7ee6b0d61868dcc558da71",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Drop the superscalar restrictions that no longer hold from the docs",
-    "rtl": false
-  },
-  {
-    "sha": "9c9ead3df6aa741b256da318bdbf7845e8607551",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Add targets for C, Zcmp and Zcmt on RV32 and RV64",
-    "rtl": true
-  },
-  {
-    "sha": "24d88a75d4408fad899fa10eba80fdc507e902fd",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Run the misaligned fetch test on every target built with GCC",
-    "rtl": false
-  },
-  {
-    "sha": "47eaa200541aefd41146bf96db334b5576d2399d",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Test the misaligned instruction fetch with and without C",
-    "rtl": false
-  },
-  {
-    "sha": "04186d6f6894a1ef96dbf9c61418786a2946ca61",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Read the Zcmt jump table in XLEN-bit entries on RV64",
-    "rtl": true
-  },
-  {
-    "sha": "3241e38845821b8109429e56b6be8fe122cda3aa",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Stop cook.py when a patch of a Git submodule is not applied",
-    "rtl": false
-  },
-  {
-    "sha": "a59f104892de4eab985032d12286a4a72132f4ae",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Report the recipe warnings as WARN lines of the summary",
-    "rtl": false
-  },
-  {
-    "sha": "e75d5f27cee6070269cd46b83908c8bac6a050d0",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Drop the Zcmt table read of a flushed instruction",
-    "rtl": true
-  },
-  {
-    "sha": "12685d2b5e9a03208859b7c66b3e487731590c18",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Tolerate a 5% deviation on the synthesis counts",
-    "rtl": false
-  },
-  {
-    "sha": "8e91e66f4b5c5d4c5b718bdac031ff7739ca57f2",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Chart the Yosys synthesis of a target in the dashboard first",
-    "rtl": false
-  },
-  {
-    "sha": "7a820d6f37bcec25efbc67f857c315969d032439",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Lower the RTL lint baselines to the configuration checks moved to elaboration",
-    "rtl": false
-  },
-  {
-    "sha": "cbb22eab7917c4d4480a358d73e6882f03701214",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Check the configuration at elaboration in cva6",
-    "rtl": true
-  },
-  {
-    "sha": "6f08b38cacc1b1eda0ed0e5225aa50fb89bc033c",
-    "date": "2026-10-14T17:40:23+02:00",
-    "title": "Run on every target the testlists its configuration supports",
-    "rtl": false
   }
 ]
