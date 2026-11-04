@@ -11,20 +11,20 @@
     "hpdcache-blackbox-ecc-sram-port-list.patch",
     "hpdcache-bufferable-attribute.patch"
   ],
-  "flow_version": "v1.4",
-  "repo_commit": "08ec69096de6abb6cad90def28435cbc10b9715a",
+  "flow_version": "v1.7",
+  "repo_commit": "70bedd68886e474682b3bd02565c8fdbfa4edb1e",
   "status": "success",
-  "stdcell_area_um2": 7940580.0,
+  "stdcell_area_um2": 8146290.0,
   "macro_area_um2": 0,
-  "total_area_um2": 7940580.0,
-  "stdcell_kgate": 1094.1054894179895,
-  "fmax_mhz": 49.4336,
-  "worst_slack_ps": -229.167,
+  "total_area_um2": 8146290.0,
+  "stdcell_kgate": 1122.4495701058202,
+  "fmax_mhz": 48.8971,
+  "worst_slack_ps": -451.109,
   "sram_macros": 0,
   "sram_bits": 0,
   "clock_period_ps": 20000,
   "image": "openroad/orfs:26Q4-221-gef324e555@sha256:ca289d6df8401711a4ed310a83b5bd14fd42534d64b9b790bf5cbb02cc496278",
-  "run_started": "2026-11-03T10:03:16+00:00",
+  "run_started": "2026-11-03T22:47:27+00:00",
   "gsim_run": null,
   "gsim_passed": null,
   "gsim": null,
@@ -41,72 +41,72 @@
   },
   "paths": {
     "in2out": {
-      "slack_ps": -230.0,
+      "slack_ps": -450.0,
       "start": "noc_resp_i[277]",
       "end": "noc_req_o[1070]"
     },
     "in2reg": {
-      "slack_ps": 3080.0,
+      "slack_ps": 2440.0,
       "start": "noc_resp_i[277]",
-      "end": "i_cva6_top/gen_cva6_dcls.i_cva6_main.i_cva6_pipeline.id_stage_i/issue_entry_o[623]"
+      "end": "i_cva6_top/gen_cva6_dcls.i_cva6_main.i_cva6_pipeline.id_stage_i/issue_entry_o[202]"
     },
     "reg2out": {
-      "slack_ps": 2610.0,
+      "slack_ps": 2370.0,
       "start": "i_cva6_top/gen_cva6_dcls.i_cva6_main.i_cva6_pipeline.issue_stage_i.i_scoreboard/_61463_",
       "end": "noc_req_o[1070]"
     },
     "reg2reg": {
-      "slack_ps": 5870.0,
-      "start": "i_cva6_top/gen_cva6_dcls.i_cva6_shadow.i_cva6_pipeline.issue_stage_i.i_scoreboard/_61973_",
-      "end": "i_cva6_top/gen_cva6_dcls.i_cva6_shadow.i_cva6_pipeline.id_stage_i/issue_entry_o[75]"
+      "slack_ps": 5260.0,
+      "start": "i_cva6_top/gen_cva6_dcls.i_cva6_main.i_cva6_pipeline.issue_stage_i.i_scoreboard/_61463_",
+      "end": "i_cva6_top/gen_cva6_dcls.i_cva6_main.i_cva6_pipeline.id_stage_i/issue_entry_o[202]"
     }
   },
   "area_tree": {
     "name": "cva6_example_obi",
     "module": "cva6_example_obi",
-    "area": 7940582.2,
+    "area": 8146293.4,
     "sram": 0.0,
     "children": [
       {
         "name": "i_cva6_top",
         "module": "cva6_top",
-        "area": 7921959.2,
+        "area": 8127670.4,
         "sram": 0.0,
         "children": [
           {
             "name": "gen_cva6_dcls",
             "module": "",
-            "area": 7750493.0,
+            "area": 7948371.4,
             "sram": 0.0,
             "children": [
               {
                 "name": "gen_dcls_common_modules.i_dcls_common_modules.gen_dcls_common_regfile.i_dcls_common_regfile.i_ariane_regfile",
                 "module": "ariane_regfile",
-                "area": 325906.2,
+                "area": 336807.1,
                 "sram": 0.0
               },
               {
                 "name": "i_cva6_main.i_cva6_pipeline",
                 "module": "",
-                "area": 3715530.3,
+                "area": 3771185.1,
                 "sram": 0.0,
                 "children": [
                   {
                     "name": "csr_regfile_i",
                     "module": "csr_regfile",
-                    "area": 463992.9,
+                    "area": 511755.1,
                     "sram": 0.0,
                     "children": [
                       {
                         "name": "tm_gen.trigger_module_i",
                         "module": "trigger_module",
-                        "area": 222401.9,
+                        "area": 254734.5,
                         "sram": 0.0
                       },
                       {
                         "name": "(local)",
                         "module": "",
-                        "area": 241591.0,
+                        "area": 257020.6,
                         "sram": 0.0
                       }
                     ]
@@ -114,43 +114,43 @@
                   {
                     "name": "ex_stage_i",
                     "module": "ex_stage",
-                    "area": 1906867.3,
+                    "area": 1785629.1,
                     "sram": 0.0,
                     "children": [
                       {
                         "name": "i_mult.i_multiplier",
                         "module": "multiplier",
-                        "area": 803650.4,
+                        "area": 577202.4,
                         "sram": 0.0
                       },
                       {
                         "name": "lsu_i",
                         "module": "load_store_unit",
-                        "area": 907871.3,
+                        "area": 982421.4,
                         "sram": 0.0,
                         "children": [
                           {
                             "name": "gen_mmu.i_cva6_mmu",
                             "module": "cva6_mmu",
-                            "area": 682553.7,
+                            "area": 743954.8,
                             "sram": 0.0,
                             "children": [
                               {
                                 "name": "i_dtlb",
                                 "module": "cva6_tlb",
-                                "area": 303944.7,
+                                "area": 331614.3,
                                 "sram": 0.0
                               },
                               {
                                 "name": "i_itlb",
                                 "module": "cva6_tlb",
-                                "area": 292434.1,
+                                "area": 320241.6,
                                 "sram": 0.0
                               },
                               {
                                 "name": "(local)",
                                 "module": "",
-                                "area": 86174.9,
+                                "area": 92098.9,
                                 "sram": 0.0
                               }
                             ]
@@ -158,13 +158,13 @@
                           {
                             "name": "i_store_unit.store_buffer_i",
                             "module": "store_buffer",
-                            "area": 88987.2,
+                            "area": 93200.3,
                             "sram": 0.0
                           },
                           {
                             "name": "(local)",
                             "module": "",
-                            "area": 136330.4,
+                            "area": 145266.3,
                             "sram": 0.0
                           }
                         ]
@@ -172,7 +172,7 @@
                       {
                         "name": "(local)",
                         "module": "",
-                        "area": 195345.6,
+                        "area": 226005.3,
                         "sram": 0.0
                       }
                     ]
@@ -180,25 +180,25 @@
                   {
                     "name": "i_frontend",
                     "module": "frontend",
-                    "area": 615930.8,
+                    "area": 663319.3,
                     "sram": 0.0,
                     "children": [
                       {
                         "name": "btb_gen.i_btb",
                         "module": "btb",
-                        "area": 173953.8,
+                        "area": 183715.3,
                         "sram": 0.0
                       },
                       {
                         "name": "i_instr_queue",
                         "module": "instr_queue",
-                        "area": 277347.4,
+                        "area": 298795.4,
                         "sram": 0.0
                       },
                       {
                         "name": "(local)",
                         "module": "",
-                        "area": 164629.6,
+                        "area": 180808.6,
                         "sram": 0.0
                       }
                     ]
@@ -206,25 +206,25 @@
                   {
                     "name": "id_stage_i",
                     "module": "id_stage",
-                    "area": 100610.3,
+                    "area": 109290.4,
                     "sram": 0.0
                   },
                   {
                     "name": "issue_stage_i",
                     "module": "",
-                    "area": 628129.0,
+                    "area": 701191.2,
                     "sram": 0.0,
                     "children": [
                       {
                         "name": "i_issue_read_operands",
                         "module": "issue_read_operands",
-                        "area": 121345.3,
+                        "area": 134828.1,
                         "sram": 0.0
                       },
                       {
                         "name": "i_scoreboard",
                         "module": "scoreboard",
-                        "area": 506783.7,
+                        "area": 566363.1,
                         "sram": 0.0
                       }
                     ]
@@ -234,25 +234,25 @@
               {
                 "name": "i_cva6_shadow.i_cva6_pipeline",
                 "module": "",
-                "area": 3709056.5,
+                "area": 3840379.2,
                 "sram": 0.0,
                 "children": [
                   {
                     "name": "csr_regfile_i",
                     "module": "csr_regfile",
-                    "area": 455922.4,
+                    "area": 514714.5,
                     "sram": 0.0,
                     "children": [
                       {
                         "name": "tm_gen.trigger_module_i",
                         "module": "trigger_module",
-                        "area": 223926.0,
+                        "area": 259352.2,
                         "sram": 0.0
                       },
                       {
                         "name": "(local)",
                         "module": "",
-                        "area": 231996.4,
+                        "area": 255362.3,
                         "sram": 0.0
                       }
                     ]
@@ -260,43 +260,43 @@
                   {
                     "name": "ex_stage_i",
                     "module": "ex_stage",
-                    "area": 1897167.6,
+                    "area": 1805834.3,
                     "sram": 0.0,
                     "children": [
                       {
                         "name": "i_mult.i_multiplier",
                         "module": "multiplier",
-                        "area": 803650.4,
+                        "area": 577545.3,
                         "sram": 0.0
                       },
                       {
                         "name": "lsu_i",
                         "module": "load_store_unit",
-                        "area": 903888.8,
+                        "area": 1005839.9,
                         "sram": 0.0,
                         "children": [
                           {
                             "name": "gen_mmu.i_cva6_mmu",
                             "module": "cva6_mmu",
-                            "area": 679846.7,
+                            "area": 760293.5,
                             "sram": 0.0,
                             "children": [
                               {
                                 "name": "i_dtlb",
                                 "module": "cva6_tlb",
-                                "area": 303944.7,
+                                "area": 340457.6,
                                 "sram": 0.0
                               },
                               {
                                 "name": "i_itlb",
                                 "module": "cva6_tlb",
-                                "area": 289935.7,
+                                "area": 325516.1,
                                 "sram": 0.0
                               },
                               {
                                 "name": "(local)",
                                 "module": "",
-                                "area": 85966.3,
+                                "area": 94319.8,
                                 "sram": 0.0
                               }
                             ]
@@ -304,13 +304,13 @@
                           {
                             "name": "i_store_unit.store_buffer_i",
                             "module": "store_buffer",
-                            "area": 88989.1,
+                            "area": 96820.0,
                             "sram": 0.0
                           },
                           {
                             "name": "(local)",
                             "module": "",
-                            "area": 135053.0,
+                            "area": 148726.4,
                             "sram": 0.0
                           }
                         ]
@@ -318,7 +318,7 @@
                       {
                         "name": "(local)",
                         "module": "",
-                        "area": 189628.4,
+                        "area": 222449.1,
                         "sram": 0.0
                       }
                     ]
@@ -326,25 +326,25 @@
                   {
                     "name": "i_frontend",
                     "module": "frontend",
-                    "area": 620577.4,
+                    "area": 685983.0,
                     "sram": 0.0,
                     "children": [
                       {
                         "name": "btb_gen.i_btb",
                         "module": "btb",
-                        "area": 173924.8,
+                        "area": 190620.9,
                         "sram": 0.0
                       },
                       {
                         "name": "i_instr_queue",
                         "module": "instr_queue",
-                        "area": 276445.6,
+                        "area": 307624.3,
                         "sram": 0.0
                       },
                       {
                         "name": "(local)",
                         "module": "",
-                        "area": 170207.0,
+                        "area": 187737.8,
                         "sram": 0.0
                       }
                     ]
@@ -352,25 +352,25 @@
                   {
                     "name": "id_stage_i",
                     "module": "id_stage",
-                    "area": 100746.4,
+                    "area": 112229.7,
                     "sram": 0.0
                   },
                   {
                     "name": "issue_stage_i",
                     "module": "",
-                    "area": 634642.7,
+                    "area": 721617.7,
                     "sram": 0.0,
                     "children": [
                       {
                         "name": "i_issue_read_operands",
                         "module": "issue_read_operands",
-                        "area": 125115.6,
+                        "area": 142798.7,
                         "sram": 0.0
                       },
                       {
                         "name": "i_scoreboard",
                         "module": "scoreboard",
-                        "area": 509527.1,
+                        "area": 578819.0,
                         "sram": 0.0
                       }
                     ]
@@ -382,7 +382,7 @@
           {
             "name": "(local)",
             "module": "",
-            "area": 171466.2,
+            "area": 179299.0,
             "sram": 0.0
           }
         ]
