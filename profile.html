@@ -68,7 +68,7 @@ p{margin:0}.note{color:var(--muted);font-size:12px}
 <div class="legend"><span><i class="sw" style="background:var(--s1)"></i>Yosys</span><span><i class="sw" style="background:var(--s2)"></i>OpenROAD</span><span><i class="sw" style="background:var(--s3)"></i>gate-level sim</span><span><i class="sw" style="background:var(--s0)"></i>other</span></div></div></section>
 <section class="card" id="job-s"><h2 id="job-h">One job</h2><div class="body" id="job"></div></section>
 <section class="card"><h2>CI host</h2><div class="body">
-<div class="row" id="zbar"><span class="btns" id="zbtns"><button type="button" class="btn" data-h="1">1 h</button><button type="button" class="btn" data-h="3">3 h</button><button type="button" class="btn" data-h="6">6 h</button><button type="button" class="btn" data-h="12">12 h</button><button type="button" class="btn" data-h="24">24 h</button><button type="button" class="btn" data-h="0">Reset</button></span>
+<div class="row" id="zbar"><span class="btns" id="zbtns"><button type="button" class="btn" data-h="1">1 h</button><button type="button" class="btn" data-h="3">3 h</button><button type="button" class="btn" data-h="6">6 h</button><button type="button" class="btn" data-h="12">12 h</button><button type="button" class="btn" data-h="24">24 h</button><button type="button" class="btn" data-h="0">Reset</button><button type="button" class="btn" id="znow">Latest</button></span>
 <span class="btns"><button type="button" class="btn" id="zl" aria-label="Pan earlier" title="Pan earlier">&#9664;</button><button type="button" class="btn" id="zr" aria-label="Pan later" title="Pan later">&#9654;</button></span><span class="mono" id="zrange"></span></div>
 <p class="note">The runner timeline sets the time window of every time chart on this page (CI host, clock, power, temperatures, per-core clocks). Drag on it to zoom to a range, use the mouse wheel to zoom at the cursor, shift-drag or the arrows to pan, double-click to reset. <span id="zres"></span></p>
 <div class="tl" id="timeline"></div>
@@ -165,11 +165,11 @@ function chart(title, series, x0, x1, o = {}) {
 
 // ---- 1. Now ----
 function drawNow() {
-  const n = P.now, age = Date.now() / 1000 - Math.max(P.generated, n.host_time || 0);
+  const n = P.now, age = Date.now() / 1000 - (n.host_time || P.generated);   // age of the last host sample
   const stale = age > 1800;
   const last = (arr) => { for (let i = arr.length - 1; i >= 0; i--) if (arr[i] != null) return arr[i]; return null; };
-  let h = stale ? `<p class="warn">CI host offline or idle, last data ${dhm(Math.max(P.generated, n.host_time || 0))} UTC</p>` : '';
-  h += `<p><b>Run ${esc(n.run)}</b>: ${n.done}/${n.total} jobs done, ${n.running} running, ${n.queued} queued · CI host CPU ${n.cpu ?? '–'}% · RAM ${n.ram != null ? n.ram.toFixed(1) : '–'} GB · ${n.temp ?? '–'} °C · data age ${stale ? dhm(P.generated) : Math.max(0, Math.round(age / 60)) + ' min'}</p>`;
+  let h = stale ? `<p class="warn">CI host offline or idle, last data ${dhm(n.host_time || P.generated)} UTC</p>` : '';
+  h += `<p><b>Run ${esc(n.run)}</b>: ${n.done}/${n.total} jobs done, ${n.running} running, ${n.queued} queued · CI host CPU ${n.cpu ?? '–'}% · RAM ${n.ram != null ? n.ram.toFixed(1) : '–'} GB · ${n.temp ?? '–'} °C · ${stale ? 'host data up to ' + dhm(n.host_time || P.generated) : 'data age ' + Math.max(0, Math.round(age / 60)) + ' min'}</p>`;
   const run = P.jobs.filter(j => j.status === 'in_progress');
   if (run.length) {
     const nowt = stale ? P.generated : Date.now() / 1000;
@@ -296,7 +296,15 @@ function setZoom(a, b) {
   if (!raf) raf = requestAnimationFrame(() => { raf = 0; drawTime(); });
   if (w < 2 * HR && fineState === 0) loadFine();
 }
-const lastHours = h => setZoom(ZB[1] - (h || 12) * HR, ZB[1]);
+// Zoom buttons keep the end of the current view, so zooming in stays on the period being looked at.
+const lastHours = h => h ? setZoom(Z[1] - h * HR, Z[1]) : defaultView();
+// Default view: the 24 h up to the last finished job in the data (plus 30 min), else the last 12 h,
+// so a visitor sees the last busy period rather than an idle day.
+function defaultView() {
+  const ends = J.map(j => j.e).filter(e => e > ZB[0] && e <= ZB[1]);
+  const end = ends.length ? Math.min(ZB[1], Math.max(...ends) + 1800) : ZB[1];
+  setZoom(end - (ends.length ? 24 : 12) * HR, end);
+}
 
 const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 async function loadFine() {
@@ -321,9 +329,11 @@ function pair(minute, fk, color, name, o = {}) {
 }
 
 function initTime() {
-  ZB = [P.generated - 24 * HR, P.generated];
+  ZB = [P.t0, P.generated];
   Z = [P.generated - 12 * HR, P.generated];
+  defaultView();
   $('zbtns').onclick = e => { const h = e.target.dataset.h; if (h != null) lastHours(+h); };
+  $('znow').onclick = () => setZoom(ZB[1] - 24 * HR, ZB[1]);
   $('zl').onclick = () => setZoom(Z[0] - span() / 4, Z[1] - span() / 4);
   $('zr').onclick = () => setZoom(Z[0] + span() / 4, Z[1] + span() / 4);
   const tl = $('timeline'), pw = TW - TL - TR;
@@ -358,7 +368,7 @@ function initTime() {
     const f = Math.max(.5, Math.min(2, Math.exp(e.deltaY * (e.deltaMode ? 16 : 1) * .002))), w = span() * f, fr = (g.t - Z[0]) / span();
     setZoom(g.t - fr * w, g.t - fr * w + w);
   }, {passive: false});
-  tl.addEventListener('dblclick', () => lastHours(12));
+  tl.addEventListener('dblclick', defaultView);
   drawTime();
 }
 
@@ -413,7 +423,7 @@ function drawTimeline() {
 function drawHost() {
   const [x0, x1] = Z, H = P.host;
   const runStart = Object.values(P.jobs.reduce((a, j) => (j.s && (!a[j.run] || j.s < a[j.run]) && (a[j.run] = j.s), a), {}));
-  const o = {marks: runStart, ticks: 6, dates: span() > 13 * HR};
+  const o = {marks: runStart, ticks: span() > 13 * HR ? 4 : 6, dates: span() > 13 * HR};
   const rw = H.rd.map((v, i) => v == null && H.wr[i] == null ? null : (v || 0) + (H.wr[i] || 0));
   const mk = (title, minute, fk, color, name, oo = {}) => { const ydata = [{v: minute}]; return chart(title, pair(minute, fk, color, name), x0, x1, {...o, ...oo, ydata, nolegend: true}); };
   $('hostcharts').innerHTML = mk('CI host CPU %', H.cpu, 'cpu', 'var(--s2)', 'cpu', {ymax: 100}) + mk('CI host RAM GB', H.ram, 'ram', 'var(--s1)', 'ram') +
@@ -426,16 +436,16 @@ function drawClockPower() {
   const [x0, x1] = Z, H = P.host, E = P.est || {}, card = $('cp-card');
   if (!H.fb_est || !H.power_est) { card.hidden = true; return; }
   card.hidden = false;
-  const o = {ticks: 6, dates: span() > 13 * HR, nolegend: true};
+  const o = {ticks: span() > 13 * HR ? 4 : 6, dates: span() > 13 * HR, nolegend: true};
   const ck = H.fb.map((v, i) => H.tb && H.tb[i] != null ? H.tb[i] : v);
   const est = (v, c, name) => ({t0: P.t0, step: P.step, v, color: c, name, dash: 1});
   const nPw = H.power.filter(v => v != null).length;
   $('cpcharts').innerHTML = chart('CPU clock, busy-weighted (GHz)', [est(H.fb_est, 'var(--s2)', 'estimate'), ...pair(ck, 'ck', 'var(--s2)', 'measured')], x0, x1, {...o, ydata: [{v: ck}, {v: H.fb_est}]}) +
     chart('Power (W)', [est(H.power_est, 'var(--s4)', 'estimate'), ...pair(H.power, 'pw', 'var(--s4)', 'measured')], x0, x1, {...o, ydata: [{v: H.power}, {v: H.power_est}]});
-  const pw = nPw ? `Measured power is RAPL psys, or the system's own draw reading while the CI host is off mains power (${nPw} measured min in the last 24 h).` : 'Power is estimated only so far.';
+  const pw = nPw ? `Measured power is RAPL psys, or the system's own draw reading while the CI host is off mains power (${nPw} measured min in this data).` : 'Power is estimated only so far.';
   const pm = E.power_method === 'bins' ? `The dotted power is the median measured power in the same 10 % CPU bin (${E.power_min} measured min).`
     : 'The dotted power is a straight line, 10 W + 1 W per CPU %, anchored on one real measurement (30 W for the whole system at about 20 % CPU) with the 10 W idle assumed.';
-  const tb = E.tb_min ? ` Where the exact per-CPU counters were available (${E.tb_min} min in the last 24 h) the measured clock is the exact busy clock over all CPUs; otherwise it is the busy-weighted clock from the kernel's frequency readings.` : '';
+  const tb = E.tb_min ? ` Where the exact per-CPU counters were available (${E.tb_min} min in this data) the measured clock is the exact busy clock over all CPUs; otherwise it is the busy-weighted clock from the kernel's frequency readings.` : '';
   $('cpnote').textContent = `${pw} The dotted clock is the median measured busy-weighted clock in the same 10 % CPU bin, taken from all measured minutes. ${pm}${tb} Measurements are from the balanced power profile, and before about 09:15 UTC on 2026-11-03 the CI host ran in the performance profile, so dotted clock values before then are probably too low. psys is platform power as reported by the CPU, not a wall measurement. Busy-weighted means each core's clock is weighted by how busy it was, because idle cores park at a low clock.`;
 }
 
